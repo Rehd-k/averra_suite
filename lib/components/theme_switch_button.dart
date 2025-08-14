@@ -1,0 +1,31 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../helpers/theme_provider.dart';
+
+/// A reusable IconButton to toggle between light and dark themes.
+class ThemeSwitchButton extends StatelessWidget {
+  const ThemeSwitchButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Watch for changes in the theme state to update the icon.
+    final themeProvider = context.watch<ThemeProvider>();
+
+    return IconButton(
+      // Choose icon based on the current theme.
+      icon: Icon(
+        themeProvider.isDarkMode
+            ? Icons.wb_sunny_outlined
+            : Icons.nightlight_round,
+      ),
+      tooltip: 'Toggle Theme',
+      onPressed: () {
+        // Call the toggle function. 'read' is used here because we're
+        // calling a function and don't need to rebuild this specific widget
+        // when the state changes (the parent MaterialApp handles that).
+        context.read<ThemeProvider>().toggleTheme();
+      },
+    );
+  }
+}
