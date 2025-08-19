@@ -1,4 +1,5 @@
 import 'package:averra_suite/helpers/financial_string_formart.dart';
+import 'package:averra_suite/service/api.service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -9,27 +10,43 @@ class TransactionModel {
   final DateTime date;
   final String description;
   final int inwardQty;
-  final double inwardAmt;
+  final int inwardAmt;
   final int outwardQty;
-  final double outwardAmt;
+  final int outwardAmt;
 
   TransactionModel({
     required this.date,
     required this.description,
     this.inwardQty = 0,
-    this.inwardAmt = 0.0,
+    this.inwardAmt = 0,
     this.outwardQty = 0,
-    this.outwardAmt = 0.0,
+    this.outwardAmt = 0,
   });
 }
 
 // --- THE TRANSACTION TABLE WIDGET ---
-class TransactionsTable extends StatelessWidget {
-  final List<TransactionModel> transactions;
+class TransactionsTable extends StatefulWidget {
+  final String id;
+  final DateTime? fromDate;
+  final DateTime? toDate;
 
-  const TransactionsTable({super.key, required this.transactions});
+  const TransactionsTable({
+    super.key,
+    required this.fromDate,
+    required this.toDate,
+    required this.id,
+  });
 
-  // Define 12 constant colors for the months, avoiding red.
+  @override
+  DayLedgerState createState() => DayLedgerState();
+}
+
+class DayLedgerState extends State<TransactionsTable> {
+  late List<TransactionModel> transactions = [];
+  late String id;
+  late DateTime? fromDate;
+  late DateTime? toDate;
+  ApiService apiService = ApiService();
   static const List<Color> _monthColors = [
     Color(0xFFE3F2FD), // Jan - Light Blue
     Color(0xFFE8F5E9), // Feb - Light Green
@@ -44,6 +61,38 @@ class TransactionsTable extends StatelessWidget {
     Color(0xFFF9FBE7), // Nov - Lighter Yellow
     Color(0xFFECEFF1), // Dec - Blue Grey
   ];
+
+  @override
+  void initState() {
+    id = widget.id;
+    fromDate = widget.fromDate;
+    toDate = widget.toDate;
+    getReportData();
+    super.initState();
+  }
+
+  Future<void> getReportData() async {
+    var result = await apiService.get(
+      'analytics/get-products-report?id=$id&start=$fromDate&end=$toDate',
+    );
+    List<TransactionModel> innerTransaction = [];
+    for (var element in result.data) {
+      innerTransaction.add(
+        TransactionModel(
+          date: DateTime.parse(element['Date']),
+          description: element['Description'],
+          inwardQty: element['direction'] == 'inward' ? element['qty'] : 0,
+          inwardAmt: element['direction'] == 'inward' ? element['amount'] : 0,
+          outwardQty: element['direction'] == 'outward' ? element['qty'] : 0,
+          outwardAmt: element['direction'] == 'outward' ? element['amount'] : 0,
+        ),
+      );
+    }
+
+    setState(() {
+      transactions.addAll(innerTransaction);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -186,24 +235,26 @@ class TransactionsTable extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Table(
-          border: TableBorder.all(color: Colors.grey.shade400),
-          columnWidths: const <int, TableColumnWidth>{
-            0: IntrinsicColumnWidth(),
-            1: IntrinsicColumnWidth(flex: 2.0),
-            2: IntrinsicColumnWidth(),
-            3: IntrinsicColumnWidth(),
-            4: IntrinsicColumnWidth(),
-            5: IntrinsicColumnWidth(),
-            6: IntrinsicColumnWidth(),
-            7: IntrinsicColumnWidth(),
-          },
-          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-          children: tableRows,
-        ),
-      ),
+      body: transactions.isNotEmpty
+          ? SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Table(
+                border: TableBorder.all(color: Colors.grey.shade400),
+                columnWidths: const <int, TableColumnWidth>{
+                  0: IntrinsicColumnWidth(),
+                  1: IntrinsicColumnWidth(flex: 2.0),
+                  2: IntrinsicColumnWidth(),
+                  3: IntrinsicColumnWidth(),
+                  4: IntrinsicColumnWidth(),
+                  5: IntrinsicColumnWidth(),
+                  6: IntrinsicColumnWidth(),
+                  7: IntrinsicColumnWidth(),
+                },
+                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                children: tableRows,
+              ),
+            )
+          : Center(child: Text('No Data')),
     );
   }
 

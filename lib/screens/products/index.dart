@@ -166,7 +166,7 @@ class ProductsIndexState extends State<ProductsScreen> {
   @override
   Widget build(BuildContext context) {
     // Responsive: adjust layout for mini/mobile screens
-    final isMini = MediaQuery.of(context).size.width < 600;
+
     return Scaffold(
       body: KeyboardListener(
         focusNode: _scannerFocusNode,

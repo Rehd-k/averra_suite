@@ -7,6 +7,7 @@ class FinanceCard extends StatelessWidget {
   final Icon icon;
   final bool isFinancial;
   final double fontSize;
+  final Color? color;
 
   const FinanceCard({
     super.key,
@@ -15,11 +16,13 @@ class FinanceCard extends StatelessWidget {
     required this.icon,
     required this.isFinancial,
     required this.fontSize,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: color,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20),
         child: Row(

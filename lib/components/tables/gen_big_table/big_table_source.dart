@@ -8,8 +8,9 @@ import 'package:intl/intl.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../../app_router.gr.dart';
-import '../../../screens/ledgers/day_ledger.dart';
+import '../../../screens/products/product_dashbaord/helpers/update_purchase.dart';
 import '../../../service/token.service.dart';
+import '../../make_purchace_payments.dart';
 
 /// Represents the definition of a single column passed from the parent.
 class ColumnDefinition {
@@ -224,243 +225,183 @@ class MyAsyncDataSource extends AsyncDataTableSource {
 
     // Special handling for 'Actions' column (or any column needing widgets)
     if (colDef.field == 'purchases_actions') {
-      // Assuming empty field means actions
       return DataCell(
-        // Row(
-        //   mainAxisSize: MainAxisSize.min,
-        //   children: [
-        //     IconButton(
-        //       icon: Icon(
-        //         Icons.remove_circle_outline,
-        //         color: Theme.of(context).colorScheme.primary,
-        //         size: 18,
-        //       ),
-        //       tooltip: 'Do Damaged',
-        //       splashRadius: 18,
-        //       onPressed: () {
-        //
-        //       },
-        //     ),
-        //   ],
-        // ),
-        PopupMenuButton<int>(
+        PopupMenuButton<String>(
           padding: const EdgeInsets.all(1),
           icon: Icon(
             Icons.more_vert_outlined,
             color: Theme.of(context).colorScheme.onSurface,
           ),
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.create_new_folder_outlined,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withAlpha(180),
-                    size: 16,
+          itemBuilder: (context) {
+            final items = <PopupMenuEntry<String>>[];
+
+            if (rowData['debt'] > 0) {
+              items.add(
+                PopupMenuItem(
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.create_new_folder_outlined,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                        size: 16,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        "Make Payment",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withAlpha(180),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 10),
-                  Text(
-                    "Make Payment",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withAlpha(180),
+                  onTap: () => {
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return MakePurchacePayments(purchaseInfo: rowData);
+                      },
                     ),
-                  ),
-                ],
-              ),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TransactionsTable(
-                      transactions: [
-                        TransactionModel(
-                          date: DateTime.parse("2024-01-12"),
-                          description: "Purchases",
-                          inwardQty: 3000,
-                          inwardAmt: 10000,
-                        ),
-                        TransactionModel(
-                          date: DateTime.parse("2024-01-12"),
-                          description: "Sales",
-                          outwardQty: 12,
-                          outwardAmt: 2000,
-                        ),
-                        TransactionModel(
-                          date: DateTime.parse("2024-01-13"),
-                          description: "Send to branch 2",
-                          outwardQty: 5,
-                          outwardAmt: 1000,
-                        ),
-                        TransactionModel(
-                          date: DateTime.parse("2024-02-13"),
-                          description: "Sales",
-                          outwardQty: 3,
-                          outwardAmt: 500,
-                        ),
-                        TransactionModel(
-                          date: DateTime.parse("2024-02-14"),
-                          description: "Received From Store",
-                          inwardQty: 200,
-                          inwardAmt: 3000,
-                        ),
-                        TransactionModel(
-                          date: DateTime.parse("2024-03-05"),
-                          description: "Stock Adjustment",
-                          inwardQty: 50,
-                          inwardAmt: 750,
-                        ),
-                        TransactionModel(
-                          date: DateTime.parse("2024-03-10"),
-                          description: "Returned Goods",
-                          outwardQty: 10,
-                          outwardAmt: 1500,
-                        ),
-                        TransactionModel(
-                          date: DateTime.parse("2024-03-20"),
-                          description: "New Purchases",
-                          inwardQty: 1500,
-                          inwardAmt: 5000,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              },
-            ),
-            PopupMenuItem(
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.edit_note_outlined,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withAlpha(180),
-                    size: 16,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    "Edit",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withAlpha(180),
-                    ),
-                  ),
-                ],
-              ),
-              onTap: () => {},
-            ),
-            PopupMenuItem(
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.details,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withAlpha(180),
-                    size: 16,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    "Show Report",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withAlpha(180),
-                    ),
-                  ),
-                ],
-              ),
-              onTap: () => {
-                showModalBottomSheet(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return SizedBox();
                   },
-                  isScrollControlled: true,
                 ),
-              },
-            ),
-            PopupMenuItem(
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.upload_file_outlined,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withAlpha(180),
-                    size: 16,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    "Send Report",
-                    style: TextStyle(
-                      fontSize: 12,
+              );
+            }
+            items.addAll([
+              PopupMenuItem(
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.edit_note_outlined,
                       color: Theme.of(
                         context,
                       ).colorScheme.onSurface.withAlpha(180),
+                      size: 16,
                     ),
+                    const SizedBox(width: 10),
+                    Text(
+                      "Edit",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                    ),
+                  ],
+                ),
+                onTap: () => {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return UpdatePurchase(purchaseInfo: rowData);
+                    },
                   ),
-                ],
+                },
               ),
-              onTap: () async {},
-            ),
-            PopupMenuItem(
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.download_outlined,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withAlpha(180),
-                    size: 16,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    "Save Report",
-                    style: TextStyle(
-                      fontSize: 12,
+              PopupMenuItem(
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.details,
                       color: Theme.of(
                         context,
                       ).colorScheme.onSurface.withAlpha(180),
+                      size: 16,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 10),
+                    Text(
+                      "Show Report",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                    ),
+                  ],
+                ),
+                onTap: () => {},
               ),
-              onTap: () async {},
-            ),
-            PopupMenuItem(
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.delete_outline,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withAlpha(180),
-                    size: 16,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    "Register Damaged Goods",
-                    style: TextStyle(
-                      fontSize: 12,
+              PopupMenuItem(
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.upload_file_outlined,
                       color: Theme.of(
                         context,
                       ).colorScheme.onSurface.withAlpha(180),
+                      size: 16,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 10),
+                    Text(
+                      "Send Report",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                    ),
+                  ],
+                ),
+                onTap: () async {},
               ),
-              onTap: () => {doDamagedGoods(rowData)},
-            ),
-          ],
+              PopupMenuItem(
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.download_outlined,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withAlpha(180),
+                      size: 16,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      "Save Report",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                    ),
+                  ],
+                ),
+                onTap: () async {},
+              ),
+              PopupMenuItem(
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.delete_outline,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withAlpha(180),
+                      size: 16,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      "Register Damaged Goods",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                    ),
+                  ],
+                ),
+                onTap: () => {doDamagedGoods(rowData)},
+              ),
+            ]);
+            return items;
+          },
+
           elevation: 2,
         ),
       );

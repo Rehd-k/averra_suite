@@ -96,6 +96,14 @@ class ApiService {
     }
   }
 
+  Future<Response> patch(String endpoint, Map<String, dynamic> data) async {
+    try {
+      return await _dio.patch(endpoint, data: data);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
   Future<Response> delete(String endpoint) async {
     try {
       return await _dio.delete(endpoint);
@@ -178,7 +186,7 @@ class ApiService {
       description: description != null ? Text(description) : null,
       type: type,
       style: ToastificationStyle.flat,
-      autoCloseDuration: const Duration(seconds: 5),
+      autoCloseDuration: const Duration(seconds: 3),
       alignment: Alignment.topRight,
       animationBuilder: (context, animation, alignment, child) {
         return FadeTransition(opacity: animation, child: child);

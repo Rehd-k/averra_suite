@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-// import 'package:lottie/lottie.dart';
 
+@RoutePage()
 class ErrorPage extends StatelessWidget {
   final VoidCallback? onRetry;
 
@@ -17,12 +17,7 @@ class ErrorPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Lottie.asset(
-              //   'assets/lottie/error.json', // Add an animated error illustration
-              //   width: 250,
-              //   height: 250,
-              //   fit: BoxFit.cover,
-              // ),
+              Icon(Icons.dangerous_outlined),
               const SizedBox(height: 20),
               SelectableText(
                 "Oops! Something went wrong",

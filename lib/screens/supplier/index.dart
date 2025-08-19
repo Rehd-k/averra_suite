@@ -25,7 +25,6 @@ class SupplierIndexState extends State<SupplierScreen> {
     double width = MediaQuery.sizeOf(context).width;
     bool smallScreen = width <= 1200;
     return Scaffold(
-      appBar: AppBar(),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(

@@ -12,6 +12,7 @@ import '../../../components/finance_card.dart';
 import '../../../components/tables/gen_big_table/big_table.dart';
 import '../../../components/tables/gen_big_table/big_table_source.dart';
 import '../../../service/api.service.dart';
+import '../../ledgers/day_ledger.dart';
 import 'add_order.dart';
 import 'header.dart';
 import 'helpers/damaged_goods.dart';
@@ -172,7 +173,7 @@ class ProductDashboardState extends State<ProductDashboard> {
   }
 
   handleDamagedGoods(data) async {
-    await apiService.put('purchases/update/${data['_id']}', {
+    await apiService.put('purchases/doDamage/${data['_id']}', {
       ...data,
       "productId": productId,
     });
@@ -254,39 +255,208 @@ class ProductDashboardState extends State<ProductDashboard> {
                 child: Icon(Icons.keyboard_arrow_down),
               ),
             ),
-            IconButton(
-              tooltip: 'Add Order',
-              onPressed: () => showBarModalBottomSheet(
-                expand: true,
-                context: context,
-                backgroundColor: Colors.transparent,
-                builder: (context) => AddOrder(
-                  productId: productId,
-                  getUpDate: getAllData,
-                  type: widget.type,
+            if (isBigScreen)
+              IconButton(
+                tooltip: 'Add Order',
+                onPressed: () => showBarModalBottomSheet(
+                  expand: true,
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => AddOrder(
+                    productId: productId,
+                    getUpDate: getAllData,
+                    type: widget.type,
+                  ),
                 ),
+                icon: Icon(Icons.add_box_outlined),
               ),
-              icon: Icon(Icons.add_box_outlined),
-            ),
-            IconButton(
-              tooltip: 'Edit Product',
-              onPressed: () => showBarModalBottomSheet(
-                expand: true,
-                context: context,
-                backgroundColor: Colors.transparent,
-                builder: (context) => EditProduct(
-                  updatePageInfo: getAllData,
-                  productId: widget.productId,
+            if (isBigScreen)
+              IconButton(
+                tooltip: 'View Report',
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TransactionsTable(
+                      toDate: _toDate,
+                      fromDate: _fromDate,
+                      id: productId,
+                    ),
+                  ),
                 ),
+
+                icon: Icon(Icons.view_agenda_outlined, size: 20),
               ),
-              icon: Icon(Icons.edit_note_outlined),
-            ),
-            IconButton(
-              onPressed: () {
-                // openBox(context, deleteProduct);
-              },
-              icon: Icon(Icons.delete_outline),
-            ),
+            if (isBigScreen)
+              IconButton(
+                tooltip: 'Send Report',
+                onPressed: () => showBarModalBottomSheet(
+                  expand: true,
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => AddOrder(
+                    productId: productId,
+                    getUpDate: getAllData,
+                    type: widget.type,
+                  ),
+                ),
+                icon: Icon(Icons.send_outlined, size: 20),
+              ),
+            if (isBigScreen)
+              IconButton(
+                tooltip: 'Save Report',
+                onPressed: () => showBarModalBottomSheet(
+                  expand: true,
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => AddOrder(
+                    productId: productId,
+                    getUpDate: getAllData,
+                    type: widget.type,
+                  ),
+                ),
+                icon: Icon(Icons.save_alt_outlined, size: 20),
+              ),
+            if (isBigScreen)
+              IconButton(
+                tooltip: 'Edit Product',
+                onPressed: () => showBarModalBottomSheet(
+                  expand: true,
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => EditProduct(
+                    updatePageInfo: getAllData,
+                    productId: widget.productId,
+                  ),
+                ),
+                icon: Icon(Icons.edit_note_outlined),
+              ),
+            if (isBigScreen)
+              IconButton(
+                onPressed: () {
+                  // openBox(context, deleteProduct);
+                },
+                icon: Icon(Icons.delete_outline),
+              ),
+
+            if (!isBigScreen)
+              PopupMenuButton<int>(
+                padding: const EdgeInsets.all(1),
+                icon: Icon(
+                  Icons.more_vert_outlined,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                itemBuilder: (context) {
+                  return [
+                    PopupMenuItem(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.edit_note_outlined,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withAlpha(180),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            "Edit",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withAlpha(180),
+                            ),
+                          ),
+                        ],
+                      ),
+                      onTap: () => {
+                        showBarModalBottomSheet(
+                          expand: true,
+                          context: context,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => EditProduct(
+                            updatePageInfo: getAllData,
+                            productId: widget.productId,
+                          ),
+                        ),
+                      },
+                    ),
+                    PopupMenuItem(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.details,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withAlpha(180),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            "Show Report",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withAlpha(180),
+                            ),
+                          ),
+                        ],
+                      ),
+                      onTap: () => {},
+                    ),
+                    PopupMenuItem(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.upload_file_outlined,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withAlpha(180),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            "Send Report",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withAlpha(180),
+                            ),
+                          ),
+                        ],
+                      ),
+                      onTap: () async {},
+                    ),
+                    PopupMenuItem(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.download_outlined,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withAlpha(180),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            "Save Report",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withAlpha(180),
+                            ),
+                          ),
+                        ],
+                      ),
+                      onTap: () async {},
+                    ),
+                  ];
+                },
+                elevation: 2,
+              ),
           ],
         ),
         floatingActionButton: isBigScreen
