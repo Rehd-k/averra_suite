@@ -27,6 +27,7 @@ class ViewProducts extends StatelessWidget {
   final JsonEncoder jsonEncoder;
   final int rowsPerPage;
   final Widget tableHeader;
+  final List<Widget> actions;
 
   const ViewProducts({
     super.key,
@@ -49,6 +50,7 @@ class ViewProducts extends StatelessWidget {
     required this.searchController,
     required this.rowsPerPage,
     required this.tableHeader,
+    required this.actions,
   });
 
   Future<Map<String, dynamic>> _fetchServerData({
@@ -113,6 +115,7 @@ class ViewProducts extends StatelessWidget {
                     handleSelectedRows(selected);
                   },
                   header: tableHeader,
+                  actions: actions,
                   initialSortField: initialSort,
                   initialSortAscending: true,
                   rowsPerPage: 15,

@@ -259,7 +259,6 @@ class AddInvoiceState extends State<AddInvoice> {
               });
               focusNodes.add(node);
             }
-            // selectedProducts.add(suggestion);
             productController.clear();
           })
         : toastification.show(

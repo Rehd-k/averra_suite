@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 /// allowing the UI to rebuild with the new theme.
 class ThemeProvider extends ChangeNotifier {
   // Default to light mode.
-  ThemeMode _themeMode = ThemeMode.light;
+  ThemeMode _themeMode = ThemeMode.dark;
 
   /// Returns the current theme mode.
   ThemeMode get themeMode => _themeMode;

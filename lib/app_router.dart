@@ -31,11 +31,18 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: ViewInvoices.page),
         AutoRoute(page: ChargesRoute.page),
         AutoRoute(page: StoreDashboard.page),
+        AutoRoute(page: StoreIndex.page),
+        AutoRoute(page: SendProducts.page),
+        AutoRoute(page: StoreHistory.page),
+        AutoRoute(page: Settings.page),
       ],
     ),
     AutoRoute(
       page: StoreNavigation.page,
-      children: [AutoRoute(page: StoreDashboard.page)],
+      children: [
+        AutoRoute(page: StoreDashboard.page),
+        AutoRoute(page: StoreIndex.page),
+      ],
     ),
   ];
 }

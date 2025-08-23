@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:toastification/toastification.dart';
+import '../../app_router.gr.dart';
 import '../../components/tables/gen_big_table/big_table_source.dart';
 import '../../service/api.service.dart';
 import '../../service/products.excel.dart';
@@ -207,77 +208,74 @@ class ProductsIndexState extends State<ProductsScreen> {
                 jsonEncoder: jsonEncoder,
                 searchController: _searchController,
                 rowsPerPage: rowsPerPage,
-                tableHeader: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            setState(() {});
-                          },
-                          tooltip: 'Refresh Table',
-                          icon: Icon(Icons.refresh_outlined),
+                actions: [
+                  DropdownButton(
+                    elevation: 0,
+                    hint: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        'Filter',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w100,
                         ),
-                      ],
+                      ),
                     ),
-
-                    Row(
-                      children: [
-                        DropdownButton(
-                          elevation: 0,
-                          hint: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              'Filter',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w100,
-                              ),
-                            ),
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                          icon: Icon(Icons.filter_alt_outlined, size: 10),
-                          // value: 'all',
-                          items: [
-                            DropdownMenuItem(value: 'all', child: Text('All')),
-                            DropdownMenuItem(
-                              value: 'low stock',
-                              child: Text('Low Stock'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'no   stock',
-                              child: Text('No Stock'),
-                            ),
-                          ],
-                          onChanged: (v) {},
-                        ),
-                        SizedBox(width: 4),
-                        JwtService().decodedToken!['role'] != 'cashier'
-                            ? IconButton(
-                                onPressed: () {
-                                  handleShowModal(barcodeHolder);
-                                },
-                                tooltip: 'Add New Product',
-                                icon: Icon(Icons.add_box_outlined),
-                              )
-                            : SizedBox(),
-                        IconButton(
+                    borderRadius: BorderRadius.circular(10),
+                    icon: Icon(Icons.filter_alt_outlined, size: 10),
+                    // value: 'all',
+                    items: [
+                      DropdownMenuItem(value: 'all', child: Text('All')),
+                      DropdownMenuItem(
+                        value: 'low stock',
+                        child: Text('Low Stock'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'no   stock',
+                        child: Text('No Stock'),
+                      ),
+                    ],
+                    onChanged: (v) {},
+                  ),
+                  SizedBox(width: 4),
+                  JwtService().decodedToken!['role'] != 'cashier'
+                      ? IconButton(
                           onPressed: () {
-                            createExcelFile();
+                            handleShowModal(barcodeHolder);
                           },
-                          tooltip: 'Extract to Excel',
-                          icon: Icon(Icons.dataset_outlined),
-                        ),
+                          tooltip: 'Add New Product',
+                          icon: Icon(Icons.add_box_outlined),
+                        )
+                      : SizedBox(),
+                  IconButton(
+                    onPressed: () {
+                      createExcelFile();
+                    },
+                    tooltip: 'Extract to Excel',
+                    icon: Icon(Icons.dataset_outlined),
+                  ),
 
-                        IconButton(
-                          onPressed: () {},
-                          tooltip: 'Print Result',
-                          icon: Icon(Icons.print_outlined),
-                        ),
-                      ],
-                    ),
-                  ],
+                  IconButton(
+                    onPressed: () {},
+                    tooltip: 'Print Result',
+                    icon: Icon(Icons.print_outlined),
+                  ),
+
+                  IconButton(
+                    onPressed: () {
+                      context.router.push(SendProducts());
+                    },
+                    tooltip: 'Send Products',
+                    icon: Icon(Icons.send_to_mobile),
+                  ),
+                ],
+
+                tableHeader: IconButton(
+                  onPressed: () {
+                    setState(() {});
+                  },
+                  tooltip: 'Refresh Table',
+                  icon: Icon(Icons.refresh_outlined),
                 ),
               ),
             ),

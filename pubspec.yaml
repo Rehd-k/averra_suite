@@ -61,6 +61,7 @@ dependencies:
   ffi: ^2.1.4
   win32: ^5.14.0
   bitsdojo_window: ^0.1.6
+  flutter_multi_select_items: ^0.4.3
 
 dev_dependencies:
   flutter_test:

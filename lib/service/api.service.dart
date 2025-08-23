@@ -74,7 +74,12 @@ class ApiService {
 
   Future<Response> get(String endpoint) async {
     try {
-      return await _dio.get(endpoint);
+      var result = await _dio.get(endpoint);
+      if (result.statusCode! >= 400) {
+        throw result.data['message'];
+      } else {
+        return result;
+      }
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -82,7 +87,12 @@ class ApiService {
 
   Future post(String endpoint, Map<String, dynamic> data) async {
     try {
-      return await _dio.post(endpoint, data: data);
+      var result = await _dio.post(endpoint, data: data);
+      if (result.statusCode! >= 400) {
+        throw result.data['message'];
+      } else {
+        return result;
+      }
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -90,7 +100,12 @@ class ApiService {
 
   Future<Response> put(String endpoint, Map<String, dynamic> data) async {
     try {
-      return await _dio.put(endpoint, data: data);
+      var result = await _dio.put(endpoint, data: data);
+      if (result.statusCode! >= 400) {
+        throw result.data['message'];
+      } else {
+        return result;
+      }
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -98,7 +113,12 @@ class ApiService {
 
   Future<Response> patch(String endpoint, Map<String, dynamic> data) async {
     try {
-      return await _dio.patch(endpoint, data: data);
+      var result = await _dio.patch(endpoint, data: data);
+      if (result.statusCode! >= 400) {
+        throw result.data['message'];
+      } else {
+        return result;
+      }
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -106,7 +126,12 @@ class ApiService {
 
   Future<Response> delete(String endpoint) async {
     try {
-      return await _dio.delete(endpoint);
+      var result = await _dio.delete(endpoint);
+      if (result.statusCode! >= 400) {
+        throw result.data['message'];
+      } else {
+        return result;
+      }
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -140,6 +165,7 @@ class ApiService {
             "Access denied.",
             response: error.response,
           );
+        case 400:
         case 404:
           _showToast(
             'Not Found',

@@ -61,16 +61,19 @@ final List<MenuItem> menuData = [
       ),
       MenuItem(
         icon: Icons.perm_identity_outlined,
-        title: 'Category',
-        link: CategoryRoute(),
+        title: 'Details',
+        link: StoreIndex(),
       ),
       MenuItem(
         icon: Icons.local_shipping_outlined,
-        title: 'Suppliers',
-        link: SupplierRoute(),
+        title: 'Products',
+        link: ProductsRoute(),
       ),
+      MenuItem(icon: Icons.list_alt, title: 'Logs', link: StoreHistory()),
     ],
   ),
+
+  MenuItem(title: 'Settings', icon: Icons.settings, link: Settings()),
 ];
 
 @RoutePage()

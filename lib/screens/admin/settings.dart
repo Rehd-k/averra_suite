@@ -1,21 +1,49 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:toastification/toastification.dart';
 
-class Addcharge extends StatelessWidget {
-  const Addcharge({
-    super.key,
-    required this.formKey,
-    required this.titleController,
-    required this.descriptionController,
-    required this.amountController,
-    required this.handleSubmit,
-  });
+import '../../service/api.service.dart';
 
-  final GlobalKey<FormState> formKey;
-  final TextEditingController titleController;
-  final TextEditingController descriptionController;
-  final TextEditingController amountController;
-  final Function handleSubmit;
+@RoutePage()
+class Settings extends StatefulWidget {
+  const Settings({super.key});
+
+  @override
+  SettingsState createState() => SettingsState();
+}
+
+class SettingsState extends State<Settings> {
+  final apiService = ApiService();
+  final _formKey = GlobalKey<FormState>();
+
+  final firmName = TextEditingController();
+
+  final roles = TextEditingController();
+
+  @override
+  void dispose() {
+    firmName.dispose();
+    roles.dispose();
+    super.dispose();
+  }
+
+  _showToast(String message, ToastificationType type) {
+    toastification.show(
+      title: Text('Loading'),
+      description: Text(message),
+      type: type,
+    );
+  }
+
+  void handleSubmit(BuildContext context) async {
+    _showToast('Adding Setting', ToastificationType.info);
+
+    await apiService.post('settings', {
+      'firm_name': firmName.text,
+      'roles': roles.text.split(','),
+    });
+    _showToast('Setting Added', ToastificationType.success);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,13 +56,13 @@ class Addcharge extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
-            key: formKey,
+            key: _formKey,
             child: Column(
               children: <Widget>[
                 TextFormField(
-                  controller: titleController,
+                  controller: firmName,
                   decoration: InputDecoration(
-                    labelText: 'Title *',
+                    labelText: 'Firm Name *',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(5.0)),
                       borderSide: BorderSide(color: Colors.blue),
@@ -46,17 +74,16 @@ class Addcharge extends StatelessWidget {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a title';
+                      return 'Please enter the first name';
                     }
                     return null;
                   },
                 ),
                 SizedBox(height: 10),
                 TextFormField(
-                  keyboardType: TextInputType.emailAddress,
-                  controller: descriptionController,
+                  controller: roles,
                   decoration: InputDecoration(
-                    labelText: 'Description',
+                    labelText: 'roles *',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(5.0)),
                       borderSide: BorderSide(color: Colors.blue),
@@ -66,35 +93,18 @@ class Addcharge extends StatelessWidget {
                       fontSize: 15,
                     ),
                   ),
-                ),
-                SizedBox(height: 10),
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: 'Amount *',
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(width: 0),
-                    ),
-                  ),
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Enter a valid number';
-                    } else {
-                      final intValue = int.parse(value);
-                      if (intValue < 1) {
-                        return 'Minimum value is 1';
-                      }
+                      return 'Please enter the first name';
                     }
                     return null;
                   },
-                  controller: amountController,
-                  keyboardType: TextInputType.number,
                 ),
-                SizedBox(height: 10),
+                SizedBox(height: 40),
                 ElevatedButton(
                   onPressed: () {
-                    if (formKey.currentState!.validate()) {
-                      handleSubmit();
+                    if (_formKey.currentState!.validate()) {
+                      handleSubmit(context);
                     }
                   },
                   child: Text('Submit'),

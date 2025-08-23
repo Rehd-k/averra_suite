@@ -15,25 +15,31 @@ class UpdatePurchase extends StatefulWidget {
 class UpdatePurchaseState extends State<UpdatePurchase> {
   final ApiService apiService = ApiService();
   late Map purchaseInfo;
+  late bool isDelivered = false;
 
   Future updatePurchase(String statusValue) async {
     final navigator = Navigator.of(context);
     try {
       showToast('loading', ToastificationType.info);
-      await apiService.patch('purchases/update/${purchaseInfo['_id']}', {
-        'status': statusValue,
+      var updatedPruchase = await apiService.patch(
+        'purchases/update/${purchaseInfo['_id']}',
+        {'status': statusValue},
+      );
+      showToast('Updated', ToastificationType.success);
+
+      setState(() {
+        updatedPruchase.data['status'] == 'Delivered' ? true : false;
       });
       navigator.pop();
     } catch (e) {
       showToast('Error', ToastificationType.error, description: e.toString());
     }
-
-    showToast('Updated', ToastificationType.success);
   }
 
   @override
   void initState() {
     purchaseInfo = widget.purchaseInfo;
+    isDelivered = purchaseInfo['status'] == 'Delivered' ? true : false;
     super.initState();
   }
 
@@ -46,11 +52,9 @@ class UpdatePurchaseState extends State<UpdatePurchase> {
         children: [
           Text('Delivered'),
           Switch(
-            value: purchaseInfo['status'] == 'Delivered' ? true : false,
+            value: isDelivered,
             onChanged: (bool value) {
-              setState(() {
-                updatePurchase(value ? 'Delivered' : 'Not Delivered');
-              });
+              updatePurchase(value ? 'Delivered' : 'Not Delivered');
             },
           ),
         ],

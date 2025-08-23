@@ -62,6 +62,11 @@ class AppTheme {
         elevation: 2,
       ),
 
+      // dataTableTheme: DataTableThemeData(
+      //   decoration: BoxDecoration(
+      //     color: Colors.black
+      //   )
+      // ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: colorScheme.tertiaryContainer,
         foregroundColor: colorScheme.onTertiaryContainer,

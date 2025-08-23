@@ -185,13 +185,13 @@ class _EditProductState extends State<EditProduct> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _servingPrice,
-                      decoration: const InputDecoration(
-                        labelText: 'Carton Price',
+                      decoration: InputDecoration(
+                        labelText: '${product['type']} Price',
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter a carton price';
+                          return 'Please enter a ${product['type']} price';
                         }
                         if (double.tryParse(value) == null) {
                           return 'Please enter a valid number';
@@ -236,8 +236,8 @@ class _EditProductState extends State<EditProduct> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _servingSize,
-                      decoration: const InputDecoration(
-                        labelText: 'Amount In Carton',
+                      decoration: InputDecoration(
+                        labelText: 'Amount In ${product['type']}',
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
