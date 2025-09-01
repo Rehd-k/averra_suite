@@ -95,8 +95,9 @@ class MyAsyncDataSource extends AsyncDataTableSource {
   final FetchDataCallback fetchDataCallback;
   final SelectionChangedCallback onSelectionChanged;
   final List<ColumnDefinition> columnDefinitions; // Use definitions now
+  final Function(dynamic rowData) doDamagedGoods;
   final Function(dynamic rowData)
-  doDamagedGoods; // Example callback for an action button
+  doReturnGoods; // Example callback for an action button
   final Function? handleShowDetails;
   // final VoidCallback?
   final BuildContext context;
@@ -118,6 +119,7 @@ class MyAsyncDataSource extends AsyncDataTableSource {
     required this.onSelectionChanged,
     required this.columnDefinitions,
     required this.doDamagedGoods,
+    required this.doReturnGoods,
     required this.context,
     this.handleShowDetails,
     String? initialSortField,
@@ -188,13 +190,20 @@ class MyAsyncDataSource extends AsyncDataTableSource {
       case 'text':
       case 'string': // Treat string same as text
       default:
-        formattedValue = SelectableText(formatText(value));
+        formattedValue = SelectableText(
+          capitalizeFirstLetter(formatText(value)),
+        );
     }
 
     // Special handling for 'Actions' column (or any column needing widgets)
     if (colDef.field == '') {
       // Assuming empty field means actions
       return DataCell(viewProductDetails(rowData));
+    }
+
+    if (colDef.field == 'rmActions') {
+      // Assuming empty field means actions
+      return DataCell(viewRmProductDetails(rowData));
     }
 
     if (colDef.field == 'invoiceActions') {
@@ -362,7 +371,7 @@ class MyAsyncDataSource extends AsyncDataTableSource {
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      "Save Report",
+                      "Do Return",
                       style: TextStyle(
                         fontSize: 12,
                         color: Theme.of(
@@ -372,7 +381,9 @@ class MyAsyncDataSource extends AsyncDataTableSource {
                     ),
                   ],
                 ),
-                onTap: () async {},
+                onTap: () async {
+                  doReturnGoods(rowData);
+                },
               ),
               PopupMenuItem(
                 child: Row(
@@ -432,6 +443,42 @@ class MyAsyncDataSource extends AsyncDataTableSource {
                   productName: rowData['title'],
                   type: rowData['type'],
                   cartonAmount: rowData['cartonAmount'].toString(),
+                ),
+              );
+            } else {
+              doShowToast(
+                'You Cannot Access This Section',
+                ToastificationType.info,
+              );
+            }
+          },
+        ),
+        // Add more action buttons if needed
+      ],
+    );
+  }
+
+  Row viewRmProductDetails(TableDataModel rowData) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: Icon(
+            Icons.login_outlined,
+            color: Theme.of(context).colorScheme.primary,
+            size: 18,
+          ),
+          tooltip: 'View Details',
+          splashRadius: 18,
+          onPressed: () {
+            var userinfo = JwtService().decodedToken;
+            if (userinfo?['role'] == 'admin' || userinfo?['role'] == 'god') {
+              context.router.push(
+                RawMaterialDashboard(
+                  rawmaterialId: rowData['_id'],
+                  rawmaterialName: rowData['title'],
+                  servingSize: rowData['servingSize'],
+                  unit: rowData['unit'],
                 ),
               );
             } else {

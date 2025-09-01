@@ -100,7 +100,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       setState(() {
         isBankLoading = true;
       });
-      var dbbanks = await apiService.get('banks?skip=${banks.length}');
+      var dbbanks = await apiService.get('bank?skip=${banks.length}');
       setState(() {
         banks = dbbanks.data;
         if (banks.isNotEmpty) {
@@ -189,6 +189,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       'charges': selectedCharges,
       'transactionDate': DateTime.now().toString(),
       'createdAt': DateTime.now().toUtc().toIso8601String(),
+      'invoiceId': widget.invoiceId,
     };
     // Capture the context before the async gap
     var scaffoldMessenger = ScaffoldMessenger.of(context);

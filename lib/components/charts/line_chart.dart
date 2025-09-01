@@ -36,7 +36,7 @@ class MainLineChart extends StatelessWidget {
                 'Sales Visualization',
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.primary,
-                  fontSize: 18,
+                  fontSize: 10,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 2,
                 ),

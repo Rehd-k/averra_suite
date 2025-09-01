@@ -1,25 +1,21 @@
 // Define columns using the provided structure
-final List<Map<String, dynamic>> columnDefinitionMaps = [
+final List<Map<String, dynamic>> columnRmDefinitionMaps = [
   {'name': 'Title', 'sortable': true, 'type': 'text', 'field': 'title'},
   {'name': 'Category', 'sortable': true, 'type': 'text', 'field': 'category'},
-  {'name': 'Type', 'sortable': true, 'type': 'text', 'field': 'type'},
-  {'name': 'Price', 'sortable': true, 'type': 'money', 'field': 'price'},
   {'name': 'ROQ', 'sortable': false, 'type': 'number', 'field': 'roq'},
   {'name': 'Quantity', 'sortable': true, 'type': 'number', 'field': 'quantity'},
+  {'name': 'Measured In', 'sortable': true, 'type': 'text', 'field': 'unit'},
+  {
+    'name': 'Quanity Per',
+    'sortable': true,
+    'type': 'number',
+    'field': 'servingSize',
+  },
   {
     'name': 'Description',
     'sortable': false,
     'type': 'text',
     'field': 'description',
-  },
-  {'name': 'Brand', 'sortable': false, 'type': 'text', 'field': 'brand'},
-  {'name': 'Weight', 'sortable': false, 'type': 'number', 'field': 'weight'},
-  {'name': 'Unit', 'sortable': false, 'type': 'string', 'field': 'unit'},
-  {
-    'name': 'Available',
-    'sortable': false,
-    'type': 'string',
-    'field': 'isAvailable',
   },
   {
     'name': 'Initiator',
@@ -37,20 +33,14 @@ final List<Map<String, dynamic>> columnDefinitionMaps = [
     'name': 'Actions',
     'sortable': false,
     'type': 'string',
-    'field': '',
+    'field': 'rmActions',
   }, // Empty field for actions
 ];
 
 // Define columns using the provided structure
-final List<Map<String, dynamic>> dropDownMaps = [
+final List<Map<String, dynamic>> dropRmDownMaps = [
   {'name': 'Title', 'field': 'title'},
   {'name': 'Category', 'field': 'category'},
-  {'name': 'Price', 'field': 'price'},
   {'name': 'ROQ', 'field': 'roq'},
-  {'name': 'Quantity', 'field': 'quantity'},
   {'name': 'SKU', 'field': 'barcode'},
-  {'name': 'Description', 'field': 'description'},
-  {'name': 'Brand', 'field': 'brand'},
-  {'name': 'Weight', 'field': 'weight'},
-  {'name': 'Unit', 'field': 'unit'}, // Empty field for actions
 ];

@@ -4,26 +4,26 @@ import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../../service/api.service.dart';
-import 'create.store.dart';
-import 'view.stores.dart';
+import 'create.department.dart';
+import 'view.department.dart';
 
 @RoutePage()
-class StoreIndex extends StatefulWidget {
-  const StoreIndex({super.key});
+class DepartmentIndex extends StatefulWidget {
+  const DepartmentIndex({super.key});
 
   @override
-  StoreIndexState createState() => StoreIndexState();
+  DepartmentIndexState createState() => DepartmentIndexState();
 }
 
-class StoreIndexState extends State<StoreIndex> {
+class DepartmentIndexState extends State<DepartmentIndex> {
   final formKey = GlobalKey<FormState>();
   final ApiService apiService = ApiService();
   final TextEditingController title = TextEditingController();
   final TextEditingController description = TextEditingController();
   final TextEditingController searchController = TextEditingController();
 
-  List filteredstores = [];
-  late List stores = [];
+  List filtereddepartments = [];
+  late List departments = [];
   late Map settings = {};
   bool isLoading = true;
   int rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
@@ -31,7 +31,7 @@ class StoreIndexState extends State<StoreIndex> {
   String sortBy = "title";
   bool ascending = true;
   bool active = true;
-  String type = 'Store';
+  String type = 'Department';
   List<String> access = [];
 
   void updateActive() {
@@ -55,20 +55,20 @@ class StoreIndexState extends State<StoreIndex> {
   void handleSubmitData() async {
     doShowToast('loading...', ToastificationType.info);
     try {
-      await apiService.post('store', {
+      await apiService.post('department', {
         'title': title.text,
         'description': description.text,
         'type': type,
         'access': access,
       });
-      doShowToast('New Store Added', ToastificationType.success);
+      doShowToast('New Department Added', ToastificationType.success);
       title.clear();
       description.clear();
       setState(() {
-        type = 'Store';
+        type = 'Department';
         active = true;
       });
-      getStores();
+      getDepartments();
     } catch (e) {
       doShowToast('Error $e', ToastificationType.error);
     }
@@ -82,16 +82,16 @@ class StoreIndexState extends State<StoreIndex> {
     }
   }
 
-  void getStores() async {
+  void getDepartments() async {
     try {
-      var allStore = await Future.wait([
-        apiService.get('store'),
+      var allDepartment = await Future.wait([
+        apiService.get('department'),
         apiService.get('settings'),
       ]);
       setState(() {
-        stores = allStore[0].data;
-        settings = allStore[1].data[0];
-        filteredstores = List.from(stores);
+        departments = allDepartment[0].data;
+        settings = allDepartment[1].data[0];
+        filtereddepartments = List.from(departments);
         isLoading = false;
       });
     } catch (e) {
@@ -99,11 +99,11 @@ class StoreIndexState extends State<StoreIndex> {
     }
   }
 
-  void filterStores(String query) {
+  void filterDepartments(String query) {
     setState(() {
       searchQuery = query;
-      filteredstores = stores.where((store) {
-        return store.values.any(
+      filtereddepartments = departments.where((department) {
+        return department.values.any(
           (value) =>
               value.toString().toLowerCase().contains(query.toLowerCase()),
         );
@@ -111,17 +111,17 @@ class StoreIndexState extends State<StoreIndex> {
     });
   }
 
-  Future deletestore(String id) async {
-    await apiService.delete('store/$id');
+  Future deletedepartment(String id) async {
+    await apiService.delete('department/$id');
     setState(() {
-      stores.removeWhere((store) => store['_id'] == id);
-      filteredstores = List.from(stores);
+      departments.removeWhere((department) => department['_id'] == id);
+      filtereddepartments = List.from(departments);
       isLoading = false;
     });
   }
 
   List getFilteredAndSortedRows() {
-    List filteredCategories = stores.where((product) {
+    List filteredCategories = departments.where((product) {
       return product.values.any(
         (value) =>
             value.toString().toLowerCase().contains(searchQuery.toLowerCase()),
@@ -141,7 +141,7 @@ class StoreIndexState extends State<StoreIndex> {
 
   @override
   void initState() {
-    getStores();
+    getDepartments();
     super.initState();
   }
 
@@ -165,7 +165,7 @@ class StoreIndexState extends State<StoreIndex> {
           if (!smallScreen)
             Expanded(
               flex: 1,
-              child: CreateStore(
+              child: CreateDepartment(
                 formKey: formKey,
                 title: title,
                 description: description,
@@ -181,15 +181,15 @@ class StoreIndexState extends State<StoreIndex> {
           SizedBox(width: smallScreen ? 0 : 20),
           Expanded(
             flex: 2,
-            child: ViewStores(
+            child: ViewDepartments(
               searchController: searchController,
               isLoading: isLoading,
               sortBy: sortBy,
               ascending: ascending,
               getFilteredAndSortedRows: getFilteredAndSortedRows,
-              deleteStore: deletestore,
-              filteredStores: filteredstores,
-              filterStore: filterStores,
+              deleteDepartment: deletedepartment,
+              filteredDepartments: filtereddepartments,
+              filterDepartment: filterDepartments,
             ),
           ),
         ],

@@ -5,8 +5,8 @@ import '../../app_router.gr.dart';
 import '../../components/theme_switch_button.dart';
 
 @RoutePage()
-class StoreNavigation extends StatelessWidget {
-  const StoreNavigation({super.key});
+class DepartmentNavigation extends StatelessWidget {
+  const DepartmentNavigation({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,12 +25,12 @@ class StoreNavigation extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Theme.of(context).appBarTheme.backgroundColor,
                     ),
-                    child: Text('Store Navigation'),
+                    child: Text('Department Navigation'),
                   ),
                   ListTile(
                     title: Text('Dashboard'),
                     onTap: () {
-                      context.router.push(StoreDashboard());
+                      context.router.push(DepartmentDashboard());
                     },
                   ),
                 ],
@@ -53,7 +53,7 @@ class StoreNavigation extends StatelessWidget {
                       ListTile(
                         title: Text('Dashboard'),
                         onTap: () {
-                          context.router.push(StoreDashboard());
+                          context.router.push(DepartmentDashboard());
                         },
                       ),
                     ],

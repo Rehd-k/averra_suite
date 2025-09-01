@@ -8,43 +8,39 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:toastification/toastification.dart';
 
-import '../../../components/charts/line_chart.dart';
 import '../../../components/charts/range.dart';
 import '../../../components/error.dart';
 import '../../../components/finance_card.dart';
-import '../../../components/tables/gen_big_table/big_table.dart';
 import '../../../components/tables/gen_big_table/big_table_source.dart';
 import '../../../service/api.service.dart';
 import '../../ledgers/day_ledger.dart';
 import 'add_order.dart';
-import 'header.dart';
 import 'helpers/damaged_goods.dart';
-import 'helpers/edit_product.dart';
 import 'table_collums.dart';
 
 @RoutePage()
-class ProductDashboard extends StatefulWidget {
-  final String? productId;
-  final String? productName;
-  final String type;
-  final String? cartonAmount;
+class RawMaterialDashboard extends StatefulWidget {
+  final String rawmaterialId;
+  final String rawmaterialName;
+  final num servingSize;
+  final String unit;
 
-  const ProductDashboard({
+  const RawMaterialDashboard({
     super.key,
-    this.productId,
-    this.productName,
-    required this.type,
-    required this.cartonAmount,
+    required this.rawmaterialId,
+    required this.rawmaterialName,
+    required this.servingSize,
+    required this.unit,
   });
 
   @override
-  ProductDashboardState createState() => ProductDashboardState();
+  RawMaterialDashboardState createState() => RawMaterialDashboardState();
 }
 
-class ProductDashboardState extends State<ProductDashboard> {
+class RawMaterialDashboardState extends State<RawMaterialDashboard> {
   ApiService apiService = ApiService();
   JsonEncoder jsonEncoder = JsonEncoder();
-  late String productId;
+  late String rawmaterialId;
   late Map data;
   bool loading = true;
   bool loadingTable = true;
@@ -66,12 +62,11 @@ class ProductDashboardState extends State<ProductDashboard> {
   Set supplierSet = <String>{};
   dynamic totalSales = 0;
   bool hasError = false;
-  dynamic cartonAmount = 1;
 
   String initialSort = 'createdAt';
   int rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
   String searchQuery = "";
-  List<TableDataModel> _selectedRows = [];
+  final List<TableDataModel> _selectedRows = [];
 
   // Convert maps to ColumnDefinition objects
   late List<ColumnDefinition> _columnDefinitions;
@@ -82,37 +77,22 @@ class ProductDashboardState extends State<ProductDashboard> {
         .map((map) => ColumnDefinition.fromMap(map))
         .toList();
 
-    if (widget.productId != null) {
-      productId = widget.productId!;
-    } else {
-      hasError = true;
-      return;
-    }
+    rawmaterialId = widget.rawmaterialId;
 
-    if (widget.cartonAmount != null && widget.cartonAmount!.isNotEmpty) {
-      if (int.tryParse(widget.cartonAmount!) != null) {
-        cartonAmount = int.parse(widget.cartonAmount!);
-      }
-    }
-    getAllData();
+    getDashboardData();
     super.initState();
   }
 
-  getAllData() async {
-    await getDashboardData();
-    await getChartData('Today');
-  }
-
-  Future deleteProduct() async {
+  Future deleteRawMaterial() async {
     showToast('loading...', ToastificationType.info);
-    await apiService.delete('products/delete/${widget.productId}');
+    await apiService.delete('rawmaterial/${widget.rawmaterialId}');
     showToast('success', ToastificationType.success);
   }
 
   Future getDashboardData() async {
     try {
       final dynamic response = await apiService.get(
-        'products/dashboard/$productId',
+        'rm-purchases/dashboard/$rawmaterialId',
       );
 
       setState(() {
@@ -126,27 +106,6 @@ class ProductDashboardState extends State<ProductDashboard> {
         loading = false;
       });
     }
-  }
-
-  Future getChartData(dateRange) async {
-    final range = getDateRange(dateRange);
-    final response = await apiService.get(
-      'sales/getchart/$productId?filter={"sorter":"$dateRange"}&startDate=${range.startDate}&endDate=${range.endDate}',
-    );
-    setState(() {
-      spots.clear();
-      response.data.forEach((item) {
-        spots.add(
-          FlSpot(
-            (item['for'] as num).toDouble(),
-            (item['totalSales'] as num).toDouble(),
-          ),
-        );
-      });
-      rangeInfo = range;
-      loadingCharts = false;
-      loadingTable = false;
-    });
   }
 
   Future callDialog() => showDialog(
@@ -214,7 +173,7 @@ class ProductDashboardState extends State<ProductDashboard> {
   handleDamagedGoods(data) async {
     await apiService.put('purchases/doDamage/${data['_id']}', {
       ...data,
-      "productId": productId,
+      "rawmaterialId": rawmaterialId,
     });
   }
 
@@ -227,7 +186,7 @@ class ProductDashboardState extends State<ProductDashboard> {
 
     // await apiService.put('purchases/return/${data['_id']}', {
     //   ...data,
-    //   "productId": productId,
+    //   "rawmaterialId": rawmaterialId,
     // });
   }
 
@@ -247,7 +206,6 @@ class ProductDashboardState extends State<ProductDashboard> {
     setState(() {
       selectedRange = rangeLabel;
     });
-    getChartData(selectedRange);
   }
 
   Future<Map<String, dynamic>> _fetchServerData({
@@ -259,12 +217,12 @@ class ProductDashboardState extends State<ProductDashboard> {
     var sorting = jsonEncoder.convert({
       "$sortField": (sortAscending ?? true) ? 'asc' : 'desc',
     });
-    var dbproducts = await apiService.get(
-      'purchases?filter={"productId":"$productId", "$searchFeild" : "","supplier":"$selectedSupplier", "status" :  "${selectedStatus?.toLowerCase()}"}&sort=$sorting&startDate=$_fromDate&endDate=$_toDate&skip=$offset&limit=$limit',
+    var dbrawmaterial = await apiService.get(
+      'purchases?filter={"rawmaterialId":"$rawmaterialId", "$searchFeild" : "","supplier":"$selectedSupplier", "status" :  "${selectedStatus?.toLowerCase()}"}&sort=$sorting&startDate=$_fromDate&endDate=$_toDate&skip=$offset&limit=$limit',
     );
 
     var {'purchases': purchases, 'totalDocuments': totalDocuments} =
-        dbproducts.data;
+        dbrawmaterial.data;
     // --- Sorting Logic (Mock) ---
 
     List<TableDataModel> data = List.from(purchases); // Work on a copy
@@ -294,7 +252,7 @@ class ProductDashboardState extends State<ProductDashboard> {
             icon: Icon(Icons.arrow_back_ios_new_outlined),
           ),
           title: Text(
-            '${capitalizeFirstLetter(widget.productName!)} Dashboard',
+            '${capitalizeFirstLetter(widget.rawmaterialName)} Dashboard',
             style: TextStyle(fontSize: 10),
           ),
           actions: [
@@ -318,9 +276,10 @@ class ProductDashboardState extends State<ProductDashboard> {
                   context: context,
                   backgroundColor: Colors.transparent,
                   builder: (context) => AddOrder(
-                    productId: productId,
-                    getUpDate: getAllData,
-                    type: widget.type,
+                    rawmaterialId: rawmaterialId,
+                    getUpDate: getDashboardData,
+                    servingSize: widget.servingSize,
+                    unit: widget.unit,
                   ),
                 ),
                 icon: Icon(Icons.add_box_outlined),
@@ -334,7 +293,7 @@ class ProductDashboardState extends State<ProductDashboard> {
                     builder: (context) => TransactionsTable(
                       toDate: _toDate,
                       fromDate: _fromDate,
-                      id: productId,
+                      id: rawmaterialId,
                     ),
                   ),
                 ),
@@ -349,25 +308,27 @@ class ProductDashboardState extends State<ProductDashboard> {
                   context: context,
                   backgroundColor: Colors.transparent,
                   builder: (context) => AddOrder(
-                    productId: productId,
-                    getUpDate: getAllData,
-                    type: widget.type,
+                    rawmaterialId: rawmaterialId,
+                    getUpDate: getDashboardData,
+                    servingSize: widget.servingSize,
+                    unit: widget.unit,
                   ),
                 ),
                 icon: Icon(Icons.save_alt_outlined, size: 20),
               ),
             if (isBigScreen)
               IconButton(
-                tooltip: 'Edit Product',
-                onPressed: () => showBarModalBottomSheet(
-                  expand: true,
-                  context: context,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => EditProduct(
-                    updatePageInfo: getAllData,
-                    productId: widget.productId,
-                  ),
-                ),
+                tooltip: 'Edit RawMaterial',
+                onPressed: () => {},
+                // showBarModalBottomSheet(
+                //   expand: true,
+                //   context: context,
+                //   backgroundColor: Colors.transparent,
+                //   builder: (context) => EditRawMaterial(
+                //     updatePageInfo: getAllData,
+                //     rawmaterialId: widget.rawmaterialId,
+                //   ),
+                // ),
                 icon: Icon(Icons.edit_note_outlined),
               ),
             if (isBigScreen)
@@ -375,7 +336,7 @@ class ProductDashboardState extends State<ProductDashboard> {
                 onPressed: () async {
                   final bool doDelete = await callDialog();
                   if (doDelete) {
-                    deleteProduct();
+                    deleteRawMaterial();
                   }
                 },
                 icon: Icon(Icons.delete_outline),
@@ -418,9 +379,10 @@ class ProductDashboardState extends State<ProductDashboard> {
                           context: context,
                           backgroundColor: Colors.transparent,
                           builder: (context) => AddOrder(
-                            productId: productId,
-                            getUpDate: getAllData,
-                            type: widget.type,
+                            rawmaterialId: rawmaterialId,
+                            getUpDate: getDashboardData,
+                            servingSize: widget.servingSize,
+                            unit: widget.unit,
                           ),
                         ),
                       },
@@ -437,7 +399,7 @@ class ProductDashboardState extends State<ProductDashboard> {
                           ),
                           const SizedBox(width: 10),
                           Text(
-                            "Edit Product",
+                            "Edit RawMaterial",
                             style: TextStyle(
                               fontSize: 12,
                               color: Theme.of(
@@ -452,10 +414,11 @@ class ProductDashboardState extends State<ProductDashboard> {
                           expand: true,
                           context: context,
                           backgroundColor: Colors.transparent,
-                          builder: (context) => EditProduct(
-                            updatePageInfo: getAllData,
-                            productId: widget.productId,
-                          ),
+                          builder: (context) => SizedBox(),
+                          // EditRawMaterial(
+                          //   updatePageInfo: getAllData,
+                          //   rawmaterialId: widget.rawmaterialId,
+                          // ),
                         ),
                       },
                     ),
@@ -511,7 +474,7 @@ class ProductDashboardState extends State<ProductDashboard> {
                           builder: (context) => TransactionsTable(
                             toDate: _toDate,
                             fromDate: _fromDate,
-                            id: productId,
+                            id: rawmaterialId,
                           ),
                         ),
                       ),
@@ -528,7 +491,7 @@ class ProductDashboardState extends State<ProductDashboard> {
                           ),
                           const SizedBox(width: 10),
                           Text(
-                            "Delete Product",
+                            "Delete RawMaterial",
                             style: TextStyle(
                               fontSize: 12,
                               color: Theme.of(
@@ -541,7 +504,7 @@ class ProductDashboardState extends State<ProductDashboard> {
                       onTap: () async {
                         final bool doDelete = await callDialog();
                         if (doDelete) {
-                          deleteProduct();
+                          deleteRawMaterial();
                         }
                       },
                     ),
@@ -560,9 +523,10 @@ class ProductDashboardState extends State<ProductDashboard> {
                   context: context,
                   backgroundColor: Colors.transparent,
                   builder: (context) => AddOrder(
-                    productId: productId,
-                    getUpDate: getAllData,
-                    type: widget.type,
+                    rawmaterialId: rawmaterialId,
+                    getUpDate: getDashboardData,
+                    servingSize: widget.servingSize,
+                    unit: widget.unit,
                   ),
                 ),
                 child: Icon(Icons.add_outlined),
@@ -581,31 +545,31 @@ class ProductDashboardState extends State<ProductDashboard> {
                   height: showDetails ? 200 : 0,
                   child: Column(
                     children: [
-                      ProductHeader(
-                        selectedField: searchFeild,
-                        selectedSupplier: selectedSupplier,
-                        selectedStatus: selectedStatus,
-                        onFieldChange: (value) {
-                          setState(() {
-                            searchFeild = value;
-                          });
-                        },
-                        onSupplierChange: (value) {
-                          setState(() {
-                            selectedSupplier = value;
-                          });
-                        },
-                        onSelectStatus: (value) {
-                          setState(() {
-                            selectedStatus = value;
-                          });
-                        },
-                        suppliers: suppliers,
-                        handleRangeChange: handleRangeChange,
-                        fromDate: _fromDate,
-                        toDate: _toDate,
-                        handleDateReset: handleDateReset,
-                      ),
+                      // RawMaterialHeader(
+                      //   selectedField: searchFeild,
+                      //   selectedSupplier: selectedSupplier,
+                      //   selectedStatus: selectedStatus,
+                      //   onFieldChange: (value) {
+                      //     setState(() {
+                      //       searchFeild = value;
+                      //     });
+                      //   },
+                      //   onSupplierChange: (value) {
+                      //     setState(() {
+                      //       selectedSupplier = value;
+                      //     });
+                      //   },
+                      //   onSelectStatus: (value) {
+                      //     setState(() {
+                      //       selectedStatus = value;
+                      //     });
+                      //   },
+                      //   suppliers: suppliers,
+                      //   handleRangeChange: handleRangeChange,
+                      //   fromDate: _fromDate,
+                      //   toDate: _toDate,
+                      //   handleDateReset: handleDateReset,
+                      // ),
                     ],
                   ),
                 ),
@@ -623,109 +587,47 @@ class ProductDashboardState extends State<ProductDashboard> {
                         )
                       : cardsInfo(isBigScreen, data),
                 ),
-                loadingCharts
-                    ? Center(
-                        child: SizedBox(
-                          width: 50,
-                          height: 50,
-                          child: CircularProgressIndicator(),
-                        ),
-                      )
-                    : Container(
-                        height: isBigScreen ? 600 : 900,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: isBigScreen
-                            ? Row(
-                                children: [
-                                  Expanded(
-                                    flex: 3,
-                                    child: Card(
-                                      elevation: 3,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.surface,
-                                      child: MainLineChart(
-                                        onRangeChanged: handleRangeChanged,
-                                        rangeInfo: rangeInfo,
-                                        selectedRange: selectedRange,
-                                        spots: spots,
-                                        isCurved: true,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 5),
-                                  Expanded(
-                                    flex: 2,
-                                    child: ProductCategoryChart(),
-                                  ),
-                                ],
-                              )
-                            : Column(
-                                children: [
-                                  Expanded(
-                                    child: Card(
-                                      elevation: 3,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.surface,
-                                      child: MainLineChart(
-                                        onRangeChanged: handleRangeChanged,
-                                        rangeInfo: rangeInfo,
-                                        selectedRange: selectedRange,
-                                        spots: [],
-                                        isCurved: false,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 50),
-                                  Expanded(child: ProductCategoryChart()),
-                                ],
-                              ),
-                      ),
                 SizedBox(height: 16),
-                SizedBox(
-                  height: 600,
-                  child: loadingTable
-                      ? CircularProgressIndicator()
-                      : ReusableAsyncPaginatedDataTable(
-                          columnDefinitions:
-                              _columnDefinitions, // Pass definitions
-                          fetchDataCallback: _fetchServerData,
-                          onSelectionChanged: (selected) {
-                            _selectedRows = selected;
-                          },
-                          header: const Text(
-                            'Purchases',
-                            style: TextStyle(fontSize: 10),
-                          ),
-                          initialSortField: initialSort,
-                          initialSortAscending: true,
-                          rowsPerPage: 15,
-                          availableRowsPerPage: const [10, 15, 25, 50],
-                          showCheckboxColumn: true,
-                          fixedLeftColumns: 1, // Fix the 'Title' column
-                          minWidth: 2500, // Increase minWidth for more columns
-                          empty: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                          border: TableBorder.all(
-                            color: Colors.grey.shade100,
-                            width: 1,
-                          ),
-                          columnSpacing: 30,
-                          dataRowHeight: 50,
-                          headingRowHeight: 60,
-                          doDamagedGoods: (rowData) {
-                            handleDamagedGoodsClicked(rowData);
-                          },
-                          doReturnGoods: (rowData) {
-                            handleReturndGoods(rowData);
-                          },
-                        ),
-                ),
+                // SizedBox(
+                //   height: 600,
+                //   child: loadingTable
+                //       ? CircularProgressIndicator()
+                //       : ReusableAsyncPaginatedDataTable(
+                //           columnDefinitions:
+                //               _columnDefinitions, // Pass definitions
+                //           fetchDataCallback: _fetchServerData,
+                //           onSelectionChanged: (selected) {
+                //             _selectedRows = selected;
+                //           },
+                //           header: const Text(
+                //             'Purchases',
+                //             style: TextStyle(fontSize: 10),
+                //           ),
+                //           initialSortField: initialSort,
+                //           initialSortAscending: true,
+                //           rowsPerPage: 15,
+                //           availableRowsPerPage: const [10, 15, 25, 50],
+                //           showCheckboxColumn: true,
+                //           fixedLeftColumns: 1, // Fix the 'Title' column
+                //           minWidth: 2500, // Increase minWidth for more columns
+                //           empty: const Center(
+                //             child: CircularProgressIndicator(),
+                //           ),
+                //           border: TableBorder.all(
+                //             color: Colors.grey.shade100,
+                //             width: 1,
+                //           ),
+                //           columnSpacing: 30,
+                //           dataRowHeight: 50,
+                //           headingRowHeight: 60,
+                //           doDamagedGoods: (rowData) {
+                //             handleDamagedGoodsClicked(rowData);
+                //           },
+                //           doReturnGoods: (rowData) {
+                //             handleReturndGoods(rowData);
+                //           },
+                //         ),
+                // ),
               ],
             ),
           ),
@@ -790,7 +692,7 @@ class ProductDashboardState extends State<ProductDashboard> {
             SizedBox(
               width: cardWidth,
               child: FinanceCard(
-                title: 'Total Sales',
+                title: 'Total Used',
                 icon: Icon(Icons.sell_outlined, size: isBigScreen ? 10 : 8),
                 isFinancial: false,
                 amount: data['totalSales'],
@@ -817,7 +719,7 @@ class ProductDashboardState extends State<ProductDashboard> {
             SizedBox(
               width: cardWidth,
               child: FinanceCard(
-                title: 'Total Purchases',
+                title: 'Total Orders Value',
                 icon: Icon(
                   Icons.drive_file_move_rtl_outlined,
                   size: isBigScreen ? 10 : 8,
@@ -832,34 +734,10 @@ class ProductDashboardState extends State<ProductDashboard> {
             SizedBox(
               width: cardWidth,
               child: FinanceCard(
-                title: 'Total Revenue',
-                icon: Icon(Icons.payments_outlined, size: isBigScreen ? 10 : 8),
-                isFinancial: true,
-                amount: data['totalSalesValue'],
-                fontSize: isBigScreen ? 10 : 5,
-                largeScreen: largeScreen,
-              ),
-            ),
-
-            SizedBox(
-              width: cardWidth,
-              child: FinanceCard(
-                title: 'Profit Margin',
-                icon: Icon(Icons.money_outlined, size: isBigScreen ? 10 : 8),
-                isFinancial: true,
-                amount: data['totalProfit'],
-                fontSize: isBigScreen ? 10 : 5,
-                largeScreen: largeScreen,
-              ),
-            ),
-
-            SizedBox(
-              width: cardWidth,
-              child: FinanceCard(
                 title: 'Quanitity at Store',
                 icon: Icon(
                   Icons.inventory_2_outlined,
-                  size: isBigScreen ? 10 : 8,
+                  size: isBigScreen ? 10 : 5,
                 ),
                 isFinancial: false,
                 amount: (data['quantity'] - data['totalSales']),
@@ -897,80 +775,9 @@ class ProductDashboardState extends State<ProductDashboard> {
                 largeScreen: largeScreen,
               ),
             ),
-
-            SizedBox(
-              width: cardWidth,
-              child: FinanceCard(
-                title: '${widget.type}s',
-                icon: Icon(
-                  Icons.dangerous_outlined,
-                  size: isBigScreen ? 10 : 8,
-                ),
-                isFinancial: false,
-                amount: widget.type != 'unit'
-                    ? (((data['quantity'] ?? 0) - (data['totalSales'] ?? 0)) ~/
-                          cartonAmount)
-                    : ((data['quantity'] ?? 0) - (data['totalSales'] ?? 0)),
-                fontSize: isBigScreen ? 10 : 5,
-                largeScreen: largeScreen,
-                // color: Theme.of(context).colorScheme.surface,
-              ),
-            ),
-
-            if (widget.type != 'unit')
-              SizedBox(
-                width: cardWidth,
-                child: FinanceCard(
-                  title: 'units',
-                  icon: Icon(
-                    Icons.dangerous_outlined,
-                    size: isBigScreen ? 10 : 8,
-                  ),
-                  isFinancial: false,
-                  amount:
-                      (((data['quantity'] ?? 0) - (data['totalSales'] ?? 0)) %
-                      cartonAmount),
-                  fontSize: isBigScreen ? 10 : 5,
-                  largeScreen: largeScreen,
-                  // color: Theme.of(context).colorScheme.surface,
-                ),
-              ),
           ],
         );
       },
-    );
-  }
-}
-
-class ProductCategoryChart extends StatelessWidget {
-  const ProductCategoryChart({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      color: Theme.of(context).colorScheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        child: BarChart(
-          BarChartData(
-            barGroups: [
-              BarChartGroupData(
-                x: 1,
-                barRods: [BarChartRodData(color: Colors.green, toY: 30)],
-              ),
-              BarChartGroupData(
-                x: 2,
-                barRods: [BarChartRodData(toY: 20, color: Colors.red)],
-              ),
-              BarChartGroupData(
-                x: 3,
-                barRods: [BarChartRodData(toY: 40, color: Colors.blue)],
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

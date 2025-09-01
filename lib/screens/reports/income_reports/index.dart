@@ -605,7 +605,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
           icon: Icon(Icons.payments_outlined),
           isFinancial: true,
           amount: data['cash'],
-          fontSize: isBigScreen ? 20 : 10,
+          fontSize: isBigScreen ? 10 : 5,
           color: Theme.of(context).colorScheme.surface,
         ),
         FinanceCard(
@@ -613,7 +613,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
           icon: Icon(Icons.payments_outlined),
           isFinancial: true,
           amount: data['discount'],
-          fontSize: isBigScreen ? 20 : 10,
+          fontSize: isBigScreen ? 10 : 5,
           color: Theme.of(context).colorScheme.surface,
         ),
         FinanceCard(
@@ -621,7 +621,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
           icon: Icon(Icons.payments_outlined),
           isFinancial: true,
           amount: data['profit'],
-          fontSize: isBigScreen ? 20 : 10,
+          fontSize: isBigScreen ? 10 : 5,
           color: Theme.of(context).colorScheme.surface,
         ),
       ],

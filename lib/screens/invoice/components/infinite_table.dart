@@ -2,10 +2,12 @@
 import 'dart:io';
 
 import 'package:averra_suite/helpers/financial_string_formart.dart';
+import 'package:averra_suite/service/toast.service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:toastification/toastification.dart';
 
 import '../../../service/invoice.pdf.dart';
 import 'handle.payments.dart';
@@ -103,7 +105,7 @@ class InvoiceTablePage extends StatelessWidget {
     required this.deleteInvoice,
   });
 
-  Color _rowColor(String status) {
+  Color _rowColor(String status, BuildContext context) {
     switch (status.toLowerCase()) {
       case 'paid':
         return Colors.green.shade100;
@@ -112,7 +114,7 @@ class InvoiceTablePage extends StatelessWidget {
       case 'overdue':
         return Colors.red.shade100;
       default:
-        return Colors.white;
+        return Theme.of(context).cardColor;
     }
   }
 
@@ -139,7 +141,6 @@ class InvoiceTablePage extends StatelessWidget {
   }
 
   Future<void> savePdf(Invoice invoice, BuildContext context) async {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
     final file = await generateInvoicePdf(invoice);
     final downloadsPath = await getDownloadsPath();
 
@@ -149,21 +150,15 @@ class InvoiceTablePage extends StatelessWidget {
     try {
       await filePath.writeAsBytes(file.readAsBytesSync());
     } catch (e) {
-      scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text("Canceled, Not Saved")),
-      );
+      showToast("Canceled, Not Saved", ToastificationType.warning);
     }
 
     if (downloadsPath.isEmpty) {
-      scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text("Canceled, Not Saved")),
-      );
+      showToast("Canceled, Not Saved", ToastificationType.warning);
       return;
     }
 
-    scaffoldMessenger.showSnackBar(
-      SnackBar(content: Text("Saved to Downloads")),
-    );
+    showToast("Saved to Downloads", ToastificationType.success);
   }
 
   Future<void> sharePdf(Invoice invoice) async {
@@ -195,7 +190,7 @@ class InvoiceTablePage extends StatelessWidget {
               DataColumn(label: Text('Customer')),
               DataColumn(label: Text('Issue date')),
               DataColumn(label: Text('Due date')),
-              DataColumn(label: Text('Recurring cycle')),
+              DataColumn(label: Text('From')),
               DataColumn(label: Text('Discount')),
               DataColumn(label: Text('Total')),
               DataColumn(label: Text('Transaction Id')),
@@ -205,7 +200,9 @@ class InvoiceTablePage extends StatelessWidget {
             rows: invoices.asMap().entries.map((entry) {
               final invoice = entry.value;
               return DataRow(
-                color: WidgetStateProperty.all(_rowColor(invoice.status)),
+                color: WidgetStateProperty.all(
+                  _rowColor(invoice.status, context),
+                ),
                 cells: [
                   DataCell(Text(invoice.invoiceNumber.toUpperCase())),
                   DataCell(Text(invoice.customer['name'])),
@@ -259,17 +256,7 @@ class InvoiceTablePage extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                onTap: () => {
-                                  // context.router.push(CheckoutRoute(
-                                  //     total: (invoice.total + invoice.discount)
-                                  //         .toDouble(),
-                                  //     cart: invoice.items,
-                                  //     selectedBank: invoice.bank,
-                                  //     selectedUser: invoice.customer,
-                                  //     discount: invoice.discount,
-                                  //     invoiceId: invoice.id,
-                                  //     handleComplete: updateInvoice))
-                                },
+                                onTap: () => {},
                               )
                             : PopupMenuItem(
                                 child: Row(

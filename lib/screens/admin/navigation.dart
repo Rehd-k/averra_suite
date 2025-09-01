@@ -29,19 +29,69 @@ final List<MenuItem> menuData = [
     link: AdminDashbaord(),
   ),
   MenuItem(
-    icon: Icons.point_of_sale_outlined,
-    title: 'Products',
-    link: ProductsRoute(),
+    icon: Icons.supervised_user_circle_outlined,
+    title: 'Team',
+    link: UserManagementRoute(),
+    children: [
+      MenuItem(
+        icon: Icons.settings,
+        title: 'Dashbaord',
+        link: StaffDashboard(),
+      ),
+      MenuItem(
+        icon: Icons.settings,
+        title: 'Add New',
+        link: UserManagementRoute(),
+      ),
+    ],
   ),
   MenuItem(
     icon: Icons.perm_identity_outlined,
-    title: 'Category',
-    link: CategoryRoute(),
+    title: 'Customers',
+    link: CustomerRoute(),
   ),
+  MenuItem(
+    icon: Icons.point_of_sale_outlined,
+    title: 'Goods',
+    link: ProductsRoute(),
+    children: [
+      MenuItem(
+        icon: Icons.point_of_sale_outlined,
+        title: 'Products',
+        link: ProductsRoute(),
+      ),
+      MenuItem(
+        icon: Icons.raw_off_outlined,
+        title: 'Raw Material',
+        link: RawMaterialIndex(),
+      ),
+      MenuItem(
+        icon: Icons.perm_identity_outlined,
+        title: 'Category',
+        link: CategoryRoute(),
+      ),
+      MenuItem(
+        icon: Icons.perm_identity_outlined,
+        title: 'Serving Size',
+        link: IndexServingsizeRoute(),
+      ),
+    ],
+  ),
+
   MenuItem(
     icon: Icons.local_shipping_outlined,
     title: 'Suppliers',
     link: SupplierRoute(),
+  ),
+  MenuItem(
+    icon: Icons.sell_outlined,
+    title: 'Make Sell',
+    link: MakeSaleRoute(),
+  ),
+  MenuItem(
+    icon: Icons.data_array_outlined,
+    title: 'Sells Report',
+    link: IncomeReportsRoute(),
   ),
   MenuItem(
     icon:
@@ -51,29 +101,41 @@ final List<MenuItem> menuData = [
   ),
   MenuItem(
     icon: Icons.store_mall_directory_outlined, // Changed to a more fitting icon
-    title: 'Store',
-    link: StoreNavigation(), // This route might be a parent/wrapper
+    title: 'Department',
+    link: DepartmentNavigation(), // This route might be a parent/wrapper
     children: [
       MenuItem(
         icon: Icons.point_of_sale_outlined,
         title: 'Dashboard',
-        link: StoreDashboard(),
+        link: DepartmentDashboard(),
       ),
       MenuItem(
         icon: Icons.perm_identity_outlined,
         title: 'Details',
-        link: StoreIndex(),
+        link: DepartmentIndex(),
       ),
       MenuItem(
         icon: Icons.local_shipping_outlined,
-        title: 'Products',
-        link: ProductsRoute(),
+        title: 'Move Products',
+        link: SendProducts(),
       ),
-      MenuItem(icon: Icons.list_alt, title: 'Logs', link: StoreHistory()),
+      MenuItem(icon: Icons.list_alt, title: 'Logs', link: DepartmentHistory()),
     ],
   ),
-
-  MenuItem(title: 'Settings', icon: Icons.settings, link: Settings()),
+  MenuItem(
+    title: 'Invoices',
+    icon: Icons.inventory_2_rounded,
+    children: [
+      MenuItem(icon: Icons.add, title: 'Create Invoices', link: AddInvoice()),
+      MenuItem(
+        icon: Icons.list_alt,
+        title: 'Handle Invoices',
+        link: ViewInvoices(),
+      ),
+    ],
+    link: AddInvoice(),
+  ),
+  MenuItem(icon: Icons.settings, title: 'Settings', link: Settings()),
 ];
 
 @RoutePage()
@@ -93,7 +155,10 @@ class AdminNavigation extends StatelessWidget {
           appBar: isLargeScreen
               ? null
               : AppBar(
-                  title: const Text("Admin Panel"),
+                  title: const Text(
+                    "Admin Panel",
+                    style: TextStyle(fontSize: 10),
+                  ),
                   actions: const [ThemeSwitchButton()],
                 ),
           // Use a Drawer for smaller screens
@@ -103,7 +168,7 @@ class AdminNavigation extends StatelessWidget {
               // Show the permanent side menu on large screens
               if (isLargeScreen)
                 const SizedBox(
-                  width: 250, // A common width for side navigation
+                  width: 190, // A common width for side navigation
                   child: _AdminMenuList(),
                 ),
               // This is the main content area that will be displayed
@@ -140,12 +205,20 @@ class __AdminMenuListState extends State<_AdminMenuList> {
           decoration: BoxDecoration(
             color: Theme.of(context).appBarTheme.backgroundColor,
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              const Text('Admin Navigation'),
-              // On large screens, the ThemeSwitchButton is here because there's no AppBar.
-              if (isLargeScreen) const ThemeSwitchButton(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Admin Navigation',
+                    style: TextStyle(fontSize: 10),
+                  ),
+                  // On large screens, the ThemeSwitchButton is here because there's no AppBar.
+                  if (isLargeScreen) const ThemeSwitchButton(),
+                ],
+              ),
             ],
           ),
         ),
@@ -165,25 +238,29 @@ class __AdminMenuListState extends State<_AdminMenuList> {
       final bool isExpanded = _expandedItemTitle == item.title;
       return ExpansionTile(
         key: PageStorageKey(item.title), // Helps preserve scroll state
-        leading: Icon(item.icon, size: 15),
-        title: Text(item.title, style: TextStyle(fontSize: 15)),
+        leading: Icon(item.icon, size: 8),
+        title: Text(item.title, style: TextStyle(fontSize: 10)),
         initiallyExpanded: isExpanded,
         // This callback handles the accordion logic
+        // ...existing code...
         onExpansionChanged: (bool expanded) {
-          setState(() {
-            // If the tile is expanded, store its title.
-            // If it's collapsed, clear the stored title (if it was this one).
-            _expandedItemTitle = expanded ? item.title : null;
+          Future.microtask(() {
+            if (mounted) {
+              setState(() {
+                _expandedItemTitle = expanded ? item.title : null;
+              });
+            }
           });
         },
+        // ...existing code...
         children: item.children!
             .map(
               (child) => ListTile(
                 contentPadding: const EdgeInsets.only(
                   left: 48.0,
                 ), // Indent sub-items
-                leading: Icon(child.icon, size: 15),
-                title: Text(child.title, style: TextStyle(fontSize: 15)),
+                leading: Icon(child.icon, size: 10),
+                title: Text(child.title, style: TextStyle(fontSize: 10)),
                 onTap: () => _handleNavigation(context, child.link),
               ),
             )
@@ -192,8 +269,8 @@ class __AdminMenuListState extends State<_AdminMenuList> {
     } else {
       // Build a simple ListTile for items without children
       return ListTile(
-        leading: Icon(item.icon, size: 15),
-        title: Text(item.title, style: TextStyle(fontSize: 15)),
+        leading: Icon(item.icon, size: 10),
+        title: Text(item.title, style: TextStyle(fontSize: 10)),
         onTap: () => _handleNavigation(context, item.link),
       );
     }

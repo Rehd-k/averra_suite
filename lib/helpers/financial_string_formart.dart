@@ -16,5 +16,12 @@ String capitalizeFirstLetter(String input) {
   if (input.isEmpty) {
     return input;
   }
-  return input[0].toUpperCase() + input.substring(1);
+  List<String> inputArr = input.split(" ");
+  if (inputArr.length > 1) {
+    String newStr =
+        '${inputArr[0][0].toUpperCase() + inputArr[0].substring(1)} ${inputArr[1][0].toUpperCase() + inputArr[1].substring(1)}';
+    return newStr;
+  } else {
+    return input[0].toUpperCase() + input.substring(1);
+  }
 }

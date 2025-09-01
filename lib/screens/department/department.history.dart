@@ -1,19 +1,28 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:averra_suite/helpers/financial_string_formart.dart';
 import 'package:averra_suite/service/toast.service.dart';
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../service/api.service.dart';
+import '../../service/date_range_helper.dart';
+import 'department.request.dart';
 
 class RequestModel {
+  final String id;
   final DateTime date;
   final List<Product> products;
   final String from;
+  final String fromId;
+  final String toId;
   final String to;
   final String initiator;
   final String completer;
 
   RequestModel({
+    required this.fromId,
+    required this.toId,
+    required this.id,
     required this.date,
     required this.products,
     required this.from,
@@ -24,14 +33,17 @@ class RequestModel {
 
   factory RequestModel.fromJson(Map<String, dynamic> json) {
     return RequestModel(
-      date: DateTime.parse(json['date']),
+      id: json['_id'],
+      date: DateTime.parse(json['createdAt']),
       products: (json['products'] as List)
           .map((p) => Product.fromJson(p))
           .toList(),
       from: json['from'],
       to: json['to'],
       initiator: json['initiator'],
-      completer: json['completer'],
+      completer: json['completer'] ?? '',
+      fromId: json['fromId'],
+      toId: json['toId'],
     );
   }
 }
@@ -53,14 +65,14 @@ class Product {
 }
 
 @RoutePage()
-class StoreHistory extends StatefulWidget {
-  const StoreHistory({super.key});
+class DepartmentHistory extends StatefulWidget {
+  const DepartmentHistory({super.key});
 
   @override
-  StoreHistoryState createState() => StoreHistoryState();
+  DepartmentHistoryState createState() => DepartmentHistoryState();
 }
 
-class StoreHistoryState extends State<StoreHistory> {
+class DepartmentHistoryState extends State<DepartmentHistory> {
   ApiService apiService = ApiService();
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
@@ -69,20 +81,30 @@ class StoreHistoryState extends State<StoreHistory> {
   String to = '';
   final List<RequestModel> _requests = [];
   int _currentPage = 0;
+  static const int _limit = 10;
   bool _isLoading = false;
   bool _hasMore = true;
   final ScrollController _scrollController = ScrollController();
 
-  fetchRequests(int page) async {
+  Future<Map<String, dynamic>> fetchRequests(int page) async {
     final response = await apiService.get(
-      '/store-history?filter={"from" : {"\$regex" : "${from.toLowerCase()}"}, "to" : {"\$regex" : "${to.toLowerCase()}"}}&skip=$page&sort={"createdAt":-1}&startDate=$startDate&endDate=$endDate',
+      'department-history?filter={"from" : {"\$regex" : "${from.toLowerCase()}"}, "to" : {"\$regex" : "${to.toLowerCase()}"}}&skip=$page&sort={"createdAt":-1}&startDate=$startDate&endDate=$endDate',
     );
-    var {'history': history, 'totalDocuments': totalDocuments} = response.data;
-    final data = history;
+
+    final data = response.data;
+    final history = data['history'] as List<dynamic>;
+    final totalDocuments = data['totalDocuments'] as int;
     return {
-      'data': (data).map((json) => RequestModel.fromJson(json)).toList(),
+      'data': history.map((json) => RequestModel.fromJson(json)).toList(),
       'totalDocuments': totalDocuments,
     };
+  }
+
+  void sendProducts(RequestModel data) async {
+    await apiService.post(
+      'department/move-stock?senderId=${data.fromId}&receiverId=${data.toId}',
+      {'body': data.products},
+    );
   }
 
   Future<void> _loadMore() async {
@@ -91,18 +113,17 @@ class StoreHistoryState extends State<StoreHistory> {
 
     try {
       final newRequests = await fetchRequests(_currentPage);
-
+      final List<RequestModel> newData = newRequests['data'];
+      final int totalDocuments = newRequests['totalDocuments'];
       setState(() {
-        _requests.addAll(newRequests['data']);
+        _requests.addAll(newData);
         _currentPage++;
         _isLoading = false;
         _hasMore =
-            newRequests.length ==
-            newRequests['totalDocuments']; // Stop if fewer than limit
+            newData.length == _limit && _requests.length < totalDocuments;
       });
     } catch (e) {
       setState(() => _isLoading = false);
-
       showToast(
         'Error:',
         description: '$e',
@@ -110,6 +131,26 @@ class StoreHistoryState extends State<StoreHistory> {
         duretion: 5,
       );
     }
+  }
+
+  handleRangeChange(String select, DateTime picked) async {
+    if (select == 'from') {
+      setState(() {
+        startDate = picked;
+      });
+    } else if (select == 'to') {
+      setState(() {
+        endDate = picked;
+      });
+    }
+  }
+
+  handleDateReset() {
+    setState(() {
+      startDate = DateTime.now();
+      endDate = DateTime.now();
+      // getSales();
+    });
   }
 
   @override
@@ -134,12 +175,37 @@ class StoreHistoryState extends State<StoreHistory> {
 
   @override
   Widget build(BuildContext context) {
+    // Determine crossAxisCount based on screen width
+    final screenWidth = MediaQuery.of(context).size.width;
+    final crossAxisCount = screenWidth > 600 ? 2 : 1;
     return Scaffold(
-      appBar: AppBar(title: const Text('Request History'), actions: []),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text('Request History'),
+        actions: [
+          IconButton.filledTonal(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (BuildContext context) {
+                  return DepartmentRequest();
+                },
+              );
+            },
+            icon: Icon(Icons.request_quote),
+          ),
+        ],
+      ),
       body: _requests.isEmpty && !_isLoading
           ? const Center(child: Text('No requests found'))
-          : ListView.builder(
+          : GridView.builder(
               controller: _scrollController,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: 8.0,
+                mainAxisSpacing: 8.0,
+                childAspectRatio: 1.2,
+              ),
               itemCount: _requests.length + (_isLoading ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == _requests.length) {
@@ -181,6 +247,28 @@ class StoreHistoryState extends State<StoreHistory> {
                 );
               },
             ),
+
+      // Column(
+      //   children: [
+      //     // Fixed filter row
+      //     Padding(
+      //       padding: const EdgeInsets.all(8.0),
+      //       child: Row(
+      //         children: [
+      //           DateRangeHolder(
+      //             fromDate: startDate,
+      //             toDate: endDate,
+      //             handleRangeChange: handleRangeChange,
+      //             handleDateReset: handleDateReset,
+      //           ),
+      //           // Add other filters here if needed (e.g., TextField for 'from'/'to')
+      //         ],
+      //       ),
+      //     ),
+      //     // Scrollable grid
+
+      //   ],
+      // ),
     );
   }
 }

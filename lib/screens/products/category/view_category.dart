@@ -249,7 +249,7 @@ class CategoryDataSource extends DataTableSource {
       cells: [
         DataCell(Text(category['title'])),
         DataCell(Text(category['description'])),
-        DataCell(Text(category['user'])),
+        DataCell(Text(category['initiator'])),
         DataCell(Text(formatDate(category['createdAt']))),
         DataCell(
           Column(

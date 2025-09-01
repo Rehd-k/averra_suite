@@ -18,22 +18,18 @@ class AddCategoryState extends State<AddCategory> {
 
   final descriptionController = TextEditingController();
 
-  final userController = TextEditingController();
-
   @override
   void dispose() {
     descriptionController.dispose();
     nameController.dispose();
-    userController.dispose();
     super.dispose();
   }
 
   Future<void> handleSubmit(BuildContext context) async {
     try {
-      final dynamic response = await apiService.post('/category', {
+      final dynamic response = await apiService.post('category', {
         'title': nameController.text,
         'description': descriptionController.text,
-        'user': userController.text,
       });
 
       if (response.statusCode! >= 200 && response.statusCode! <= 300) {

@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../components/inputs/customer_finder.dart';
-import '../../components/inputs/product_finder.dart';
 import '../../helpers/financial_string_formart.dart';
 import 'package:toastification/toastification.dart';
 
+import '../../components/inputs/customer_finder.dart';
+import '../../components/inputs/product_finder.dart';
 import '../../service/api.service.dart';
 import '../../service/invoice.pdf.dart';
 
@@ -33,7 +33,7 @@ class AddInvoiceState extends State<AddInvoice> {
   DateTime dueDate = DateTime.now();
 
   String referenceNumber = 'INV-001';
-  String? isRecurring = 'none';
+  String? store = '';
   String? selectedTemplate;
   List<Map> selectedProducts = [];
   String? discountType = '';
@@ -42,21 +42,25 @@ class AddInvoiceState extends State<AddInvoice> {
   ApiService apiService = ApiService(); // Assuming you have an ApiService class
   List filteredProducts = [];
   Map? selectedName;
-  bool isBankLoading = true;
+  bool isLoading = true;
   List<dynamic> banks = [];
+  List<dynamic> stores = [];
   Map? bank;
+  dynamic selectedStore;
+  List<dynamic> productsFromStore = [];
+  bool loadingProducts = false;
 
   Future<List<Map>> _fetchProducts(String query) async {
-    final response = await apiService.get(
-      'products?filter={"isAvailable" : true, "title": {"\$regex": "$query"}}&sort={"title": 1}&limit=20&skip=0&select=" title price quantity type cartonAmount "',
-    );
-    var {"products": products, "totalDocuments": totalDocuments} =
-        response.data;
-    if (response.statusCode == 200) {
-      return List<Map>.from(products);
-    } else {
-      throw Exception('Failed to load names');
+    // Search through productsFromStore titles and return matching objects
+    List<Map> matches = [];
+    for (var product in productsFromStore) {
+      if (product['title'].toString().toLowerCase().contains(
+        query.toLowerCase(),
+      )) {
+        matches.add(product);
+      }
     }
+    return List<Map>.from(matches);
   }
 
   Future<List<Map>> _fetchNames(String query) async {
@@ -70,13 +74,60 @@ class AddInvoiceState extends State<AddInvoice> {
     }
   }
 
+  num _handleCaculateTotal(
+    int quantity,
+    int cartonQuantity,
+    int cartonPrice,
+    int unitPrice,
+    String type,
+    bool sellUnits,
+  ) {
+    if (!sellUnits) {
+      return quantity * cartonPrice;
+      // if (quantity < cartonQuantity) {
+
+      // } else {
+      //   if (quantity % cartonQuantity == 0) {
+      //     return ((quantity / cartonQuantity) * cartonPrice);
+      //   } else {
+      //     num units = ((quantity % cartonQuantity) * unitPrice);
+      //     num cartons = ((quantity ~/ cartonQuantity) * cartonPrice);
+      //     print('cartons : $cartons,units : $units');
+      //     return units + cartons;
+      //   }
+      // }
+    } else {
+      return quantity * unitPrice;
+    }
+  }
+
   void updateQuantity(int index, int? newQuantity) {
     setState(() {
       if (newQuantity! <= selectedProducts[index]['remaining']) {
         selectedProducts[index]['quantity'] = newQuantity;
-        selectedProducts[index]['total'] =
-            selectedProducts[index]['quantity'] *
-            selectedProducts[index]['price'];
+        selectedProducts[index]['total'] = _handleCaculateTotal(
+          newQuantity,
+          selectedProducts[index]['servingSize'] ?? 0,
+          selectedProducts[index]['servingPrice'] ?? 0,
+          selectedProducts[index]['price'],
+          selectedProducts[index]['type'],
+          selectedProducts[index]['sellUnits'],
+        );
+
+        /**
+         * in order to make this work the way its expected 
+         * the quantity coming in would be devided by the cartonQuantity 
+         * if...
+         * 1) its less than the carton amount, then it multiplies by unit price 
+         * 2) its more than the carton amount and divisible by cartonQuantity without any remender
+         *    it is devided and the result is multiplied by the carton price 
+         * 3) if its more perfectly divisible, it gets the diviable whole number
+         *    multiple that by the carton amount, then it gets the remender, divides that by the unit price
+         *    and adds the result 
+         */
+        // selectedProducts[index]['quantity'] *
+        //     selectedProducts[index]['price'];
+
         quantityControllers[index].text = newQuantity.toString();
       } else {
         toastification.show(
@@ -88,6 +139,9 @@ class AddInvoiceState extends State<AddInvoice> {
       }
 
       if (newQuantity == 0) {
+        selectedProducts[index]['quantity'] =
+            selectedProducts[index]['quantity'] +
+            selectedProducts[index]['remaining'];
         selectedProducts.removeAt(index);
         quantityControllers.removeAt(index);
       }
@@ -121,7 +175,7 @@ class AddInvoiceState extends State<AddInvoice> {
       'issuedDate': issueDate.toIso8601String(),
       'dueDate': dueDate.toIso8601String(),
       'invoiceNumber': referenceNumber.toLowerCase(),
-      'recurring': isRecurring,
+      'from': store,
       'items': selectedProducts,
       'discount': _calculateDiscount(),
       'totalAmount': _calculateDueAmount(),
@@ -160,7 +214,7 @@ class AddInvoiceState extends State<AddInvoice> {
   @override
   void initState() {
     super.initState();
-    updateBankList();
+    doInitalDBCall();
 
     quantityControllers = List.generate(
       selectedProducts.length,
@@ -174,18 +228,35 @@ class AddInvoiceState extends State<AddInvoice> {
         'INV-${DateTime.now().millisecondsSinceEpoch.toString().padLeft(10, '0').substring(0, 10)}';
   }
 
-  Future updateBankList() async {
+  void doInitalDBCall() async {
     setState(() {
-      isBankLoading = true;
+      isLoading = true;
     });
-    var dbbanks = await apiService.get('banks?skip=${banks.length}');
+    var result = await Future.wait([
+      apiService.get('store?type=dispensary'),
+      apiService.get('bank'),
+    ]);
     setState(() {
-      banks = dbbanks.data;
-      if (banks.isNotEmpty) {
-        bank = banks[0];
-      }
-      isBankLoading = false;
+      stores = result[0].data;
+      banks = result[1].data;
+      isLoading = false;
     });
+  }
+
+  void getStoreValues() async {
+    if (store != '') {
+      setState(() {
+        loadingProducts = true;
+      });
+      var result = await apiService.get('store/$store');
+      setState(() {
+        selectedStore = result.data;
+        productsFromStore = result.data['products'];
+        selectedProducts = [];
+      });
+    } else {
+      selectedStore = null;
+    }
   }
 
   _onFieldUnfocus(int index, String value) {
@@ -196,6 +267,7 @@ class AddInvoiceState extends State<AddInvoice> {
       newQty = selectedProducts[index]['remaining'];
     }
     if (newQty != selectedProducts[index]['quantity']) {
+      // review this check everythig about this function , its updating price only once and thats weird
       updateQuantity(index, newQty);
     } else {
       // To update the text if user enters invalid value
@@ -237,13 +309,18 @@ class AddInvoiceState extends State<AddInvoice> {
               (product) => product['_id'] == suggestion['_id'],
             );
             if (existingIndex != -1) {
+              suggestion['quantity'] =
+                  suggestion['quantity'] + suggestion['remaining'];
               selectedProducts.removeAt(existingIndex);
               quantityControllers.removeAt(existingIndex);
               focusNodes.removeAt(existingIndex);
             } else {
+              suggestion['servingPrice'] = suggestion['servingPrice'];
               suggestion['quantity'] = 1;
-              suggestion['total'] =
-                  suggestion['quantity'] * suggestion['price'];
+              suggestion['total'] = suggestion['sellUnits'] == true
+                  ? suggestion['quantity'] * suggestion['price']
+                  : suggestion['quantity'] * suggestion['servingPrice'];
+
               selectedProducts.add(suggestion);
               quantityControllers.add(
                 TextEditingController(text: suggestion['quantity'].toString()),
@@ -259,6 +336,7 @@ class AddInvoiceState extends State<AddInvoice> {
               });
               focusNodes.add(node);
             }
+            // selectedProducts.add(suggestion);
             productController.clear();
           })
         : toastification.show(
@@ -292,18 +370,6 @@ class AddInvoiceState extends State<AddInvoice> {
             : const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Row(
-              children: [
-                Text(
-                  'Create Invoice',
-                  style: TextStyle(
-                    fontSize: smallScreen ? 20 : 30,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ],
-            ),
             // First Card
             Card(
               child: Padding(
@@ -398,53 +464,45 @@ class AddInvoiceState extends State<AddInvoice> {
                               ),
                             ),
 
-                            // Recurring Dropdown
+                            // Stores Dropdown
                             SizedBox(
                               width: isWide
                                   ? constraints.maxWidth / 3
                                   : constraints.maxWidth,
-                              child: DropdownButtonFormField<String>(
-                                decoration: const InputDecoration(
-                                  labelText: 'Recurring',
-                                ),
-                                value: isRecurring,
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: 'none',
-                                    child: Text('None'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'daily',
-                                    child: Text('Daily'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'weekly',
-                                    child: Text('Weekly'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'monthly',
-                                    child: Text('Monthly'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'quarterly',
-                                    child: Text('Quarterly'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'bi-yearly',
-                                    child: Text('Bi-Yearly'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'yearly',
-                                    child: Text('Yearly'),
-                                  ),
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    isRecurring = value;
-                                    selectedTemplate = value;
-                                  });
-                                },
-                              ),
+                              child: isLoading
+                                  ? Center(child: CircularProgressIndicator())
+                                  : DropdownButtonFormField<String>(
+                                      value: store,
+                                      decoration: InputDecoration(
+                                        labelText: 'From',
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      onChanged: (String? newValue) {
+                                        setState(() {
+                                          store = newValue!;
+                                          getStoreValues();
+                                        });
+                                      },
+                                      items:
+                                          [
+                                            {'title': '', '_id': ''},
+                                            ...stores,
+                                          ].map<DropdownMenuItem<String>>((
+                                            value,
+                                          ) {
+                                            return DropdownMenuItem<String>(
+                                              value: value['_id'],
+                                              child: Text(
+                                                capitalizeFirstLetter(
+                                                  value['title'],
+                                                ),
+                                              ),
+                                            );
+                                          }).toList(),
+                                      validator: (value) => value == ''
+                                          ? 'Please select an option'
+                                          : null,
+                                    ),
                             ),
 
                             // Bank Dropdown
@@ -452,7 +510,7 @@ class AddInvoiceState extends State<AddInvoice> {
                               width: isWide
                                   ? constraints.maxWidth / 3.5
                                   : constraints.maxWidth,
-                              child: isBankLoading
+                              child: isLoading
                                   ? Center(child: CircularProgressIndicator())
                                   : DropdownButtonFormField<String>(
                                       value: bank?['accountNumber'],
@@ -488,12 +546,16 @@ class AddInvoiceState extends State<AddInvoice> {
                             // Products Dropdown
                             SizedBox(
                               width: constraints.maxWidth,
-                              child: buildProductInput(
-                                productController,
-                                onchange,
-                                _fetchProducts,
-                                selectProduct,
-                              ),
+                              child: selectedStore != null
+                                  ? buildProductInput(
+                                      productController,
+                                      onchange,
+                                      _fetchProducts,
+                                      selectProduct,
+                                    )
+                                  : Center(
+                                      child: Text('Select Point To Take From'),
+                                    ),
                             ),
                           ],
                         );
@@ -524,17 +586,16 @@ class AddInvoiceState extends State<AddInvoice> {
                               final product = entry.value;
                               return DataRow(
                                 cells: [
-                                  DataCell(Text(product['title'])),
+                                  DataCell(
+                                    Text(
+                                      capitalizeFirstLetter(product['title']),
+                                    ),
+                                  ),
                                   DataCell(
                                     Row(
                                       children: [
                                         IconButton(
-                                          icon: Icon(
-                                            Icons.remove,
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
-                                          ),
+                                          icon: Icon(Icons.remove, size: 10),
                                           onPressed: () {
                                             updateQuantity(
                                               index,
@@ -570,12 +631,7 @@ class AddInvoiceState extends State<AddInvoice> {
                                           ),
                                         ),
                                         IconButton(
-                                          icon: Icon(
-                                            Icons.add,
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
-                                          ),
+                                          icon: Icon(Icons.add, size: 10),
                                           onPressed: () {
                                             updateQuantity(
                                               index,
@@ -588,11 +644,17 @@ class AddInvoiceState extends State<AddInvoice> {
                                   ),
                                   DataCell(
                                     Text(
-                                      product['price']
-                                          .toString()
-                                          .formatToFinancial(
-                                            isMoneySymbol: true,
-                                          ),
+                                      product['sellUnits'] == true
+                                          ? product['price']
+                                                .toString()
+                                                .formatToFinancial(
+                                                  isMoneySymbol: true,
+                                                )
+                                          : product['servingPrice']
+                                                .toString()
+                                                .formatToFinancial(
+                                                  isMoneySymbol: true,
+                                                ),
                                     ),
                                   ),
                                   DataCell(
@@ -606,12 +668,7 @@ class AddInvoiceState extends State<AddInvoice> {
                                   ),
                                   DataCell(
                                     IconButton(
-                                      icon: Icon(
-                                        Icons.delete,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSecondary,
-                                      ),
+                                      icon: Icon(Icons.delete, size: 10),
                                       onPressed: () {
                                         setState(
                                           () =>
@@ -722,19 +779,19 @@ class AddInvoiceState extends State<AddInvoice> {
 
             // const SizedBox(height: 10),
             // Grand Total
-            Row(
-              children: [
-                const Text('Grand Total: '),
-                const Spacer(),
-                Text(
-                  _calculateGrandTotal().toString().formatToFinancial(
-                    isMoneySymbol: true,
-                  ),
-                ),
-              ],
-            ),
+            // Row(
+            //   children: [
+            //     const Text('Grand Total: '),
+            //     const Spacer(),
+            //     Text(
+            //       _calculateGrandTotal().toString().formatToFinancial(
+            //         isMoneySymbol: true,
+            //       ),
+            //     ),
+            //   ],
+            // ),
 
-            const SizedBox(height: 10),
+            // const SizedBox(height: 10),
 
             // Received Amount
             Row(
@@ -839,7 +896,7 @@ class AddInvoiceState extends State<AddInvoice> {
                               setState(() => discountType = value),
                         ),
                       ),
-
+                      SizedBox(width: 5),
                       // Discount Value
                       Expanded(
                         child: TextFormField(

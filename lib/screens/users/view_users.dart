@@ -1,3 +1,4 @@
+import 'package:averra_suite/helpers/financial_string_formart.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -254,7 +255,7 @@ class ViewUsersState extends State<ViewUsers> {
                   });
                 },
               ),
-              DataColumn2(label: Text('Branch'), size: ColumnSize.L),
+              // DataColumn2(label: Text('Branch'), size: ColumnSize.L),
               DataColumn2(label: Text('Actions')),
             ],
             source: UserDataSource(
@@ -319,17 +320,12 @@ class UserDataSource extends DataTableSource {
     final user = users[index];
     return DataRow(
       cells: [
-        DataCell(Text(user['firstName'])),
-        DataCell(Text(user['lastName'])),
-        DataCell(Text(user['username'])),
-        DataCell(Text(user['role'])),
+        DataCell(Text(capitalizeFirstLetter(user['firstName']))),
+        DataCell(Text(capitalizeFirstLetter(user['lastName']))),
+        DataCell(Text(capitalizeFirstLetter(user['username']))),
+        DataCell(Text(capitalizeFirstLetter(user['role']))),
         DataCell(Text(formatDate(user['createdAt']))),
-        DataCell(Text(user['initiator'])),
-        user['location'] == null
-            ? DataCell(
-                Text('Location Deleted', style: TextStyle(color: Colors.red)),
-              )
-            : DataCell(Text(user['location']['name'])),
+        DataCell(Text(capitalizeFirstLetter(user['initiator']))),
         DataCell(
           PopupMenuButton<int>(
             padding: const EdgeInsets.all(1),

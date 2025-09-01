@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import '../../components/finance_card.dart';
 
 @RoutePage()
-class StoreDashboard extends StatefulWidget {
-  const StoreDashboard({super.key});
+class DepartmentDashboard extends StatefulWidget {
+  const DepartmentDashboard({super.key});
 
   @override
   DashboardState createState() => DashboardState();
 }
 
-class DashboardState extends State<StoreDashboard> {
+class DashboardState extends State<DepartmentDashboard> {
   @override
   Widget build(BuildContext context) {
     final isBigScreen = MediaQuery.of(context).size.width > 1200;

@@ -72,11 +72,19 @@ class ApiService {
     );
   }
 
-  Future<Response> get(String endpoint) async {
+  Future<Response> get(
+    String endpoint, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
     try {
-      var result = await _dio.get(endpoint);
+      var result = await _dio.get(endpoint, queryParameters: queryParameters);
       if (result.statusCode! >= 400) {
-        throw result.data['message'];
+        throw DioException(
+          requestOptions: result.requestOptions,
+          response: result,
+          error: result.data,
+          message: result.data['message'],
+        );
       } else {
         return result;
       }
@@ -88,8 +96,14 @@ class ApiService {
   Future post(String endpoint, Map<String, dynamic> data) async {
     try {
       var result = await _dio.post(endpoint, data: data);
+
       if (result.statusCode! >= 400) {
-        throw result.data['message'];
+        throw DioException(
+          requestOptions: result.requestOptions,
+          response: result,
+          error: result.data,
+          message: result.data['message'],
+        );
       } else {
         return result;
       }
@@ -102,7 +116,12 @@ class ApiService {
     try {
       var result = await _dio.put(endpoint, data: data);
       if (result.statusCode! >= 400) {
-        throw result.data['message'];
+        throw DioException(
+          requestOptions: result.requestOptions,
+          response: result,
+          error: result.data,
+          message: result.data['message'],
+        );
       } else {
         return result;
       }
@@ -115,7 +134,12 @@ class ApiService {
     try {
       var result = await _dio.patch(endpoint, data: data);
       if (result.statusCode! >= 400) {
-        throw result.data['message'];
+        throw DioException(
+          requestOptions: result.requestOptions,
+          response: result,
+          error: result.data,
+          message: result.data['message'],
+        );
       } else {
         return result;
       }
@@ -128,7 +152,12 @@ class ApiService {
     try {
       var result = await _dio.delete(endpoint);
       if (result.statusCode! >= 400) {
-        throw result.data['message'];
+        throw DioException(
+          requestOptions: result.requestOptions,
+          response: result,
+          error: result.data,
+          message: result.data['message'],
+        );
       } else {
         return result;
       }
@@ -166,6 +195,13 @@ class ApiService {
             response: error.response,
           );
         case 400:
+          _showToast(
+            'Bad Request',
+            ToastificationType.error,
+            description: error.message,
+            duration: 5,
+          );
+          return NotFoundException(error.message!, response: error.response);
         case 404:
           _showToast(
             'Not Found',
@@ -206,13 +242,14 @@ class ApiService {
     String title,
     ToastificationType type, {
     String? description,
+    int? duration,
   }) {
     toastification.show(
       title: Text(title),
       description: description != null ? Text(description) : null,
       type: type,
       style: ToastificationStyle.flat,
-      autoCloseDuration: const Duration(seconds: 3),
+      autoCloseDuration: Duration(seconds: duration ?? 3),
       alignment: Alignment.topRight,
       animationBuilder: (context, animation, alignment, child) {
         return FadeTransition(opacity: animation, child: child);

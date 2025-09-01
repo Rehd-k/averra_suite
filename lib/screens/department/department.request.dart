@@ -1,30 +1,31 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/helpers/financial_string_formart.dart';
-import 'package:averra_suite/service/toast.service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:toastification/toastification.dart';
 
-import '../../../../service/api.service.dart';
+import '../../service/api.service.dart';
+import '../../service/toast.service.dart';
+import '../../service/token.service.dart';
 
-@RoutePage()
-class SendProducts extends StatefulWidget {
-  const SendProducts({super.key});
+class DepartmentRequest extends StatefulWidget {
+  const DepartmentRequest({super.key});
 
   @override
-  SendProductsState createState() => SendProductsState();
+  DepartmentRequestState createState() => DepartmentRequestState();
 }
 
-class SendProductsState extends State<SendProducts> {
+class DepartmentRequestState extends State<DepartmentRequest> {
   final ApiService apiService = ApiService();
+  final JwtService jwtService = JwtService();
   List<FocusNode> focusNodes = [];
   List<FocusNode> priceFocusNodes = [];
   List<TextEditingController> quantityControllers = [];
   List<TextEditingController> priceControllers = [];
 
-  late String storePoint = '';
-  late Map storeFront = {};
-  late List storeFronts = [];
+  late String departmentPoint = '';
+  late Map departmentFront = {};
+  late List departmentFronts = [];
+  late List toDepartmentFronts = [];
   late List products = [];
   List<Map> selectedProducts = [];
 
@@ -34,24 +35,20 @@ class SendProductsState extends State<SendProducts> {
   String fromPointName = '';
 
   void doSearch(String query) {
-    getProductsFromStore(query);
+    getProductsFromDepartment();
   }
 
-  void getProductsFromStore(query) async {
+  void getProductsFromDepartment() async {
+    setState(() {
+      departmentFront = {};
+      products = [];
+    });
     try {
       if (fromPoint.isNotEmpty) {
-        var result = await apiService.get('store/$fromPoint');
+        var result = await apiService.get('department/$fromPoint');
 
         setState(() {
-          storeFront = result.data;
-          products = result.data['products'];
-          loading = false;
-        });
-      } else {
-        var result = await apiService.get(
-          'products?filter={"isAvailable" : true, "title": {"\$regex": "$query"}}&sort={"title": 1}&limit=20&skip=0&select=" title price quantity type cartonAmount "',
-        );
-        setState(() {
+          departmentFront = result.data;
           products = result.data['products'];
           loading = false;
         });
@@ -61,10 +58,18 @@ class SendProductsState extends State<SendProducts> {
     }
   }
 
-  void getStores() async {
-    var res = await apiService.get('store?active=${true}');
+  void getDepartments() async {
+    var toDepartments = [];
+    var result = await apiService.get('department?active=${true}');
+
+    for (var element in result.data) {
+      if (element['access'].contains(jwtService.decodedToken?['role'])) {
+        toDepartments.add(element);
+      }
+    }
     setState(() {
-      storeFronts = res.data;
+      departmentFronts = result.data;
+      toDepartmentFronts = toDepartments;
       loading = false;
     });
   }
@@ -76,15 +81,15 @@ class SendProductsState extends State<SendProducts> {
   }
 
   void selectFrom(value) async {
-    String res = storeFronts.firstWhere(
-      (store) => store['_id'] == value,
+    String res = departmentFronts.firstWhere(
+      (department) => department['_id'] == value,
       orElse: () => {'title': 'Unknown'}, // fallback in case no match
     )['title'];
     setState(() {
       fromPointName = res;
       fromPoint = value;
     });
-    getProductsFromStore('');
+    getProductsFromDepartment();
   }
 
   void updateQuantity(int index, int? newQuantity) {
@@ -109,7 +114,6 @@ class SendProductsState extends State<SendProducts> {
   }
 
   void _onFieldUnfocus(int index, String value) {
-    debugPrint('$index, $value');
     int? newQty = int.tryParse(value);
     if (newQty == null || newQty < 1) {
       newQty = 1;
@@ -148,7 +152,7 @@ class SendProductsState extends State<SendProducts> {
     suggestion['quantity'] > 0
         ? setState(() {
             final existingIndex = selectedProducts.indexWhere(
-              (product) => product['_id'] == suggestion['_id'],
+              (product) => product['productId'] == suggestion['productId'],
             );
 
             if (existingIndex != -1) {
@@ -161,7 +165,7 @@ class SendProductsState extends State<SendProducts> {
             } else {
               // add product
               suggestion['toSend'] = 1;
-              suggestion['product'] = suggestion['product']['_id'];
+              suggestion['product'] = suggestion['product']['productId'];
               selectedProducts.add(suggestion);
 
               quantityControllers.add(
@@ -219,9 +223,23 @@ class SendProductsState extends State<SendProducts> {
       );
       return;
     }
+
+    var dataToSend = {
+      'from': departmentFronts.firstWhere(
+        (department) => department['_id'] == fromPoint,
+        orElse: () => {'title': 'Unknown'}, // fallback in case no match
+      )['title'],
+      'to': departmentFronts.firstWhere(
+        (department) => department['_id'] == toPoint,
+        orElse: () => {'title': 'Unknown'}, // fallback in case no match
+      )['title'],
+      'fromId': fromPoint,
+      'toId': toPoint,
+      'products': selectedProducts,
+    };
     await apiService.post(
-      'store/move-stock?senderId=$fromPoint&receiverId=$toPoint',
-      {'body': selectedProducts},
+      'department-history?senderId=$fromPoint&receiverId=$toPoint',
+      dataToSend,
     );
 
     setState(() {
@@ -237,7 +255,7 @@ class SendProductsState extends State<SendProducts> {
 
   @override
   void initState() {
-    getStores();
+    getDepartments();
     super.initState();
   }
 
@@ -257,7 +275,7 @@ class SendProductsState extends State<SendProducts> {
                 child: DropdownButtonFormField<String>(
                   value: fromPoint,
                   decoration: InputDecoration(
-                    labelText: 'From (Select Store)',
+                    labelText: 'From (Select Department)',
                     border: OutlineInputBorder(),
                   ),
                   onChanged: (String? newValue) {
@@ -266,7 +284,7 @@ class SendProductsState extends State<SendProducts> {
                   items:
                       [
                         {'title': '', '_id': ''},
-                        ...storeFronts,
+                        ...departmentFronts,
                       ].map<DropdownMenuItem<String>>((value) {
                         return DropdownMenuItem<String>(
                           value: value['_id'],
@@ -294,7 +312,7 @@ class SendProductsState extends State<SendProducts> {
                   items:
                       [
                         {'title': '', '_id': ''},
-                        ...storeFronts,
+                        ...toDepartmentFronts,
                       ].map<DropdownMenuItem<String>>((value) {
                         return DropdownMenuItem<String>(
                           value: value['_id'],
@@ -332,7 +350,7 @@ class SendProductsState extends State<SendProducts> {
                   onPressed: () {
                     handleSubmit();
                   },
-                  child: Text('Done'),
+                  child: Text('Send Request'),
                 ),
               ),
             ],
@@ -345,14 +363,14 @@ class SendProductsState extends State<SendProducts> {
           Expanded(
             child: Center(child: Text('No Products at the $fromPointName')),
           ),
-        if (products.isNotEmpty)
+        if (products.isNotEmpty && fromPoint.isNotEmpty)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
               columnSpacing: 133,
               columns: [
                 DataColumn(label: Text('Product Title')),
-                DataColumn(label: Text('Quantity At Store')),
+                DataColumn(label: Text('Quantity At Department')),
                 DataColumn(label: Text('Value')),
                 DataColumn(label: Text('Quanity To Send')),
                 DataColumn(label: Text('At Price')),
@@ -360,7 +378,7 @@ class SendProductsState extends State<SendProducts> {
               rows: products.asMap().entries.map((entry) {
                 final product = entry.value;
                 final exists = selectedProducts.any(
-                  (selected) => selected['_id'] == product['_id'],
+                  (selected) => selected['productId'] == product['productId'],
                 );
                 return DataRow(
                   cells: [
@@ -393,13 +411,15 @@ class SendProductsState extends State<SendProducts> {
                                           focusNodes[selectedProducts
                                               .indexWhere(
                                                 (p) =>
-                                                    p['_id'] == product['_id'],
+                                                    p['productId'] ==
+                                                    product['productId'],
                                               )],
                                       controller:
                                           quantityControllers[selectedProducts
                                               .indexWhere(
                                                 (p) =>
-                                                    p['_id'] == product['_id'],
+                                                    p['productId'] ==
+                                                    product['productId'],
                                               )],
                                       textAlign: TextAlign.center,
                                       keyboardType: TextInputType.number,
@@ -445,12 +465,16 @@ class SendProductsState extends State<SendProducts> {
                               child: TextFormField(
                                 focusNode:
                                     priceFocusNodes[selectedProducts.indexWhere(
-                                      (p) => p['_id'] == product['_id'],
+                                      (p) =>
+                                          p['productId'] ==
+                                          product['productId'],
                                     )],
                                 controller:
                                     priceControllers[selectedProducts
                                         .indexWhere(
-                                          (p) => p['_id'] == product['_id'],
+                                          (p) =>
+                                              p['productId'] ==
+                                              product['productId'],
                                         )],
                                 textAlign: TextAlign.center,
                                 keyboardType: TextInputType.number,

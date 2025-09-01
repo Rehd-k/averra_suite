@@ -5,8 +5,8 @@ import 'package:flutter/gestures.dart'; // Required for dragStartBehavior
 import 'big_table_source.dart'; // For date/number formatting (add intl package to pubspec.yaml)
 
 /// Signature for the callback when row selection changes.
-typedef SelectionChangedCallback = void Function(
-    List<TableDataModel> selectedRows);
+typedef SelectionChangedCallback =
+    void Function(List<TableDataModel> selectedRows);
 
 //--- Reusable StatefulWidget ---
 
@@ -45,6 +45,7 @@ class ReusableAsyncPaginatedDataTable extends StatefulWidget {
   final Widget? empty;
   final Function? handleShowDetails;
   final Function(dynamic rowData)? doDamagedGoods;
+  final Function? doReturnGoods;
 
   const ReusableAsyncPaginatedDataTable({
     super.key,
@@ -67,7 +68,7 @@ class ReusableAsyncPaginatedDataTable extends StatefulWidget {
       PaginatedDataTable.defaultRowsPerPage,
       PaginatedDataTable.defaultRowsPerPage * 2,
       PaginatedDataTable.defaultRowsPerPage * 5,
-      PaginatedDataTable.defaultRowsPerPage * 10
+      PaginatedDataTable.defaultRowsPerPage * 10,
     ],
     this.onRowsPerPageChanged,
     this.dragStartBehavior = DragStartBehavior.start,
@@ -84,6 +85,7 @@ class ReusableAsyncPaginatedDataTable extends StatefulWidget {
     this.empty,
     this.doDamagedGoods,
     this.handleShowDetails,
+    this.doReturnGoods,
   });
 
   @override
@@ -112,18 +114,21 @@ class _ReusableAsyncPaginatedDataTableState
 
   void _initDataSource() {
     _dataSource = MyAsyncDataSource(
-        fetchDataCallback: widget.fetchDataCallback,
-        onSelectionChanged: widget.onSelectionChanged,
-        columnDefinitions: widget.columnDefinitions, // Pass definitions
-        initialSortField: _currentSortField,
-        initialSortAscending: _currentSortAscending,
-        doDamagedGoods: (rowData) {
-          widget.doDamagedGoods!(rowData);
-        },
-        context: context,
-        handleShowDetails: widget.handleShowDetails
-        // onShowDetails: (rowData) { /* Handle action if needed */ },
-        );
+      fetchDataCallback: widget.fetchDataCallback,
+      onSelectionChanged: widget.onSelectionChanged,
+      columnDefinitions: widget.columnDefinitions, // Pass definitions
+      initialSortField: _currentSortField,
+      initialSortAscending: _currentSortAscending,
+      doDamagedGoods: (rowData) {
+        widget.doDamagedGoods!(rowData);
+      },
+      doReturnGoods: (rowData) {
+        widget.doReturnGoods!(rowData);
+      },
+      context: context,
+      handleShowDetails: widget.handleShowDetails,
+      // onShowDetails: (rowData) { /* Handle action if needed */ },
+    );
   }
 
   // Generate DataColumn objects from definitions
@@ -205,8 +210,9 @@ class _ReusableAsyncPaginatedDataTableState
     // Find the index of the currently sorted column based on the field name
     int? currentSortColumnIndex;
     if (_currentSortField != null) {
-      currentSortColumnIndex = widget.columnDefinitions
-          .indexWhere((def) => def.field == _currentSortField);
+      currentSortColumnIndex = widget.columnDefinitions.indexWhere(
+        (def) => def.field == _currentSortField,
+      );
       if (currentSortColumnIndex == -1) {
         currentSortColumnIndex = null; // Field not found in current definitions
       }
@@ -214,7 +220,6 @@ class _ReusableAsyncPaginatedDataTableState
 
     return AsyncPaginatedDataTable2(
       // --- Pass through parameters ---
-
       key: widget.key,
       header: widget.header,
       actions: widget.actions,
@@ -260,10 +265,8 @@ class _ReusableAsyncPaginatedDataTableState
         ),
       ),
       loading: _Loading(),
-      errorBuilder: (e) => _ErrorAndRetry(
-        e.toString(),
-        () => _dataSource.refreshDatasource(),
-      ),
+      errorBuilder: (e) =>
+          _ErrorAndRetry(e.toString(), () => _dataSource.refreshDatasource()),
 
       // --- Core Logic ---
       source: _dataSource,
@@ -279,35 +282,34 @@ class _ErrorAndRetry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Center(
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: Colors.red,
+    child: Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.red,
+      ),
+      padding: const EdgeInsets.all(10),
+      height: 100,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Oops! $errorMessage',
+            style: const TextStyle(color: Colors.white),
           ),
-          padding: const EdgeInsets.all(10),
-          height: 100,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Oops! $errorMessage',
-                  style: const TextStyle(color: Colors.white)),
-              TextButton(
-                onPressed: retry,
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.refresh,
-                      color: Colors.white,
-                    ),
-                    Text('Retry', style: TextStyle(color: Colors.white))
-                  ],
-                ),
-              )
-            ],
+          TextButton(
+            onPressed: retry,
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.refresh, color: Colors.white),
+                Text('Retry', style: TextStyle(color: Colors.white)),
+              ],
+            ),
           ),
-        ),
-      );
+        ],
+      ),
+    ),
+  );
 }
 
 class _Loading extends StatefulWidget {
@@ -337,9 +339,12 @@ class __LoadingState extends State<_Loading> {
                 strokeWidth: 2,
                 color: Theme.of(context).colorScheme.onPrimary,
               ),
-              Text('Loading..',
-                  style:
-                      TextStyle(color: Theme.of(context).colorScheme.onPrimary))
+              Text(
+                'Loading..',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ),
             ],
           ),
         ),

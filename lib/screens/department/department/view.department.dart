@@ -3,26 +3,26 @@ import 'package:intl/intl.dart';
 
 import '../../../helpers/financial_string_formart.dart';
 
-class ViewStores extends StatelessWidget {
-  final List filteredStores;
+class ViewDepartments extends StatelessWidget {
+  final List filteredDepartments;
   final TextEditingController searchController;
   final bool isLoading;
 
   final String sortBy;
   final bool ascending;
-  final Function filterStore;
+  final Function filterDepartment;
   final Function getFilteredAndSortedRows;
-  final Function deleteStore;
-  const ViewStores({
+  final Function deleteDepartment;
+  const ViewDepartments({
     super.key,
     required this.searchController,
     required this.isLoading,
     required this.sortBy,
     required this.ascending,
     required this.getFilteredAndSortedRows,
-    required this.deleteStore,
-    required this.filteredStores,
-    required this.filterStore,
+    required this.deleteDepartment,
+    required this.filteredDepartments,
+    required this.filterDepartment,
   });
 
   @override
@@ -43,27 +43,27 @@ class ViewStores extends StatelessWidget {
           DataColumn(label: Text('Created At')),
           DataColumn(label: Text('Actions')),
         ],
-        rows: filteredStores.map<DataRow>((store) {
+        rows: filteredDepartments.map<DataRow>((department) {
           return DataRow(
             cells: [
-              DataCell(Text(capitalizeFirstLetter(store['title'] ?? ''))),
-              DataCell(Text(store['description'] ?? '')),
-              DataCell(Text(capitalizeFirstLetter(store['type'] ?? ''))),
-              DataCell(Text(store['initiator'] ?? '')),
-              DataCell(Text(formatDate(store['createdAt']))),
+              DataCell(Text(capitalizeFirstLetter(department['title'] ?? ''))),
+              DataCell(Text(department['description'] ?? '')),
+              DataCell(Text(capitalizeFirstLetter(department['type'] ?? ''))),
+              DataCell(Text(department['initiator'] ?? '')),
+              DataCell(Text(formatDate(department['createdAt']))),
               DataCell(
                 Row(
                   children: [
                     IconButton(
                       icon: Icon(Icons.edit_attributes),
                       onPressed: () {
-                        deleteStore(store['_id']);
+                        deleteDepartment(department['_id']);
                       },
                     ),
                     IconButton(
                       icon: Icon(Icons.delete_forever_outlined),
                       onPressed: () {
-                        deleteStore(store['_id']);
+                        deleteDepartment(department['_id']);
                       },
                     ),
                   ],

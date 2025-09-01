@@ -8,6 +8,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
+import '../../helpers/financial_string_formart.dart';
 import '../../service/api.service.dart';
 import 'cart_section.dart';
 import 'product_grid.dart';
@@ -39,6 +40,8 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
   String searchFeild = 'title';
   List<dynamic> localproducts = [];
   bool _scannerActive = false;
+  String storeId = '';
+  List stores = [];
 
   late final _pagingController = PagingController<int, dynamic>(
     getNextPageKey: (state) => ProductService().checkAndFetchProducts(
@@ -47,6 +50,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
       localproducts.length,
     ),
     fetchPage: (pageKey) => ProductService().fetchProducts(
+      storeId: storeId,
       pageKey: pageKey,
       query: _searchQuery,
       doProductUpdate: voidDoApiCheck,
@@ -247,6 +251,15 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
       _scannerFocusNode.requestFocus();
     });
     getCartsFromStorage();
+    getStores();
+  }
+
+  void getStores() async {
+    var result = await apiService.get('store?type=dispensary');
+    setState(() {
+      stores = result.data;
+      isLoading = false;
+    });
   }
 
   void _onSearchChanged() async {
@@ -283,6 +296,39 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
       child: Scaffold(
         appBar: AppBar(
           actions: [
+            SizedBox(
+              width: 200,
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : DropdownButtonFormField<String>(
+                      value: storeId,
+                      decoration: InputDecoration(
+                        labelText: 'From',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          storeId = newValue!;
+                        });
+                        _onSearchChanged();
+                      },
+                      items:
+                          [
+                            {'title': '', '_id': ''},
+                            ...stores,
+                          ].map<DropdownMenuItem<String>>((value) {
+                            return DropdownMenuItem<String>(
+                              value: value['_id'],
+                              child: Text(
+                                capitalizeFirstLetter(value['title']),
+                              ),
+                            );
+                          }).toList(),
+                      validator: (value) =>
+                          value == '' ? 'Please select an option' : null,
+                    ),
+            ),
+            SizedBox(width: 10),
             ElevatedButton.icon(
               icon: Icon(_scannerActive ? Icons.search : Icons.barcode_reader),
               label: Text(
@@ -409,11 +455,13 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
                         ],
                       ),
                     ),
-                    ProductGrid(
-                      pagingController: _pagingController,
-                      smallScreen: smallScreen,
-                      addToCart: addToCart,
-                    ),
+                    storeId == '' && isLoading
+                        ? Center(child: Text('Select Dispensary to Sell From'))
+                        : ProductGrid(
+                            pagingController: _pagingController,
+                            smallScreen: smallScreen,
+                            addToCart: addToCart,
+                          ),
                   ],
                 ),
               ),

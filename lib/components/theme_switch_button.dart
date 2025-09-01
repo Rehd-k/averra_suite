@@ -18,6 +18,7 @@ class ThemeSwitchButton extends StatelessWidget {
         themeProvider.isDarkMode
             ? Icons.wb_sunny_outlined
             : Icons.nightlight_round,
+        size: 10,
       ),
       tooltip: 'Toggle Theme',
       onPressed: () {

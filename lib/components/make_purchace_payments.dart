@@ -15,6 +15,7 @@ class MakePurchacePayments extends StatefulWidget {
 
 class MakePurchacePaymentsState extends State<MakePurchacePayments> {
   final ApiService apiService = ApiService();
+  final _formKey = GlobalKey<FormState>();
   late List banks = [];
   bool isLoading = true;
   String selectedBank = '';
@@ -64,13 +65,17 @@ class MakePurchacePaymentsState extends State<MakePurchacePayments> {
     var payment = {
       'title': 'Purchase Payment',
       'paymentFor': purchaseInfo['_id'],
-      'amount': int.tryParse(amountController.text) ?? 0,
-      'paymentMethod': selectedPaymentMethod,
+      'cash': selectedPaymentMethod == 'cash'
+          ? int.tryParse(amountController.text) ?? 0
+          : 0,
+      'bank': selectedPaymentMethod == 'bank'
+          ? int.tryParse(amountController.text) ?? 0
+          : 0,
       'moneyFrom': selectedBank,
       'transactionDate': selectedPaymentDate.toIso8601String(),
     };
     try {
-      await apiService.post('outward-payments', payment);
+      await apiService.post('purchases/make-payment', payment);
       toastification.show(
         title: Text('Success, Payment Posted'),
         description: null,
@@ -123,142 +128,170 @@ class MakePurchacePaymentsState extends State<MakePurchacePayments> {
           SizedBox(width: 10),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            SizedBox(height: 20),
-            !isLoading
-                ? Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField(
-                          decoration: InputDecoration(
-                            labelText: 'Select Payment Methord',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(5.0),
+      body: Form(
+        key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              SizedBox(height: 20),
+              !isLoading
+                  ? Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField(
+                            decoration: InputDecoration(
+                              labelText: 'Select Payment Methord',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(5.0),
+                                ),
+                                borderSide: BorderSide(color: Colors.blue),
                               ),
-                              borderSide: BorderSide(color: Colors.blue),
-                            ),
-                            labelStyle: TextStyle(
-                              color: Theme.of(context).hintColor,
-                              fontSize: 15,
-                            ),
-                          ),
-                          value: selectedPaymentMethod,
-                          items: [
-                            DropdownMenuItem(
-                              value: 'cash',
-                              child: Text('Cash'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'transfer',
-                              child: Text('Transafer'),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            setState(() {
-                              selectedPaymentMethod = value.toString();
-                            });
-                          },
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: DropdownButtonFormField(
-                          value: selectedBank.isEmpty ? null : selectedBank,
-                          decoration: InputDecoration(
-                            labelText: 'Select Bank',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(5.0),
+                              labelStyle: TextStyle(
+                                color: Theme.of(context).hintColor,
+                                fontSize: 15,
                               ),
-                              borderSide: BorderSide(color: Colors.blue),
                             ),
-                            labelStyle: TextStyle(
-                              color: Theme.of(context).hintColor,
-                              fontSize: 15,
-                            ),
-                          ),
-                          items: banks
-                              .where((c) => c.isNotEmpty)
-                              .map<DropdownMenuItem<String>>((bank) {
-                                return DropdownMenuItem<String>(
-                                  value: bank['accountNumber'],
-                                  child: Text(bank['name']),
-                                );
-                              })
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedBank = value ?? '';
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  )
-                : CircularProgressIndicator(),
-            SizedBox(height: 10),
+                            value: selectedPaymentMethod,
+                            items: [
+                              DropdownMenuItem(
+                                value: 'cash',
+                                child: Text('Cash'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'bank',
+                                child: Text('Bank'),
+                              ),
+                            ],
 
-            TextFormField(
-              keyboardType: TextInputType.number,
-              inputFormatters: <TextInputFormatter>[
-                FilteringTextInputFormatter.digitsOnly,
-                TextInputFormatter.withFunction((oldValue, newValue) {
-                  final intValue = int.tryParse(newValue.text) ?? 0;
-                  final maxValue = purchaseInfo['debt'] is int
-                      ? purchaseInfo['debt']
-                      : int.tryParse(purchaseInfo['debt'].toString()) ?? 0;
-                  if (intValue < 0) {
-                    return oldValue;
+                            onChanged: (value) {
+                              setState(() {
+                                selectedPaymentMethod = value.toString();
+                              });
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        if (selectedPaymentMethod == 'bank')
+                          Expanded(
+                            child: DropdownButtonFormField(
+                              value: selectedBank.isEmpty ? null : selectedBank,
+                              decoration: InputDecoration(
+                                labelText: 'Select Bank',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(5.0),
+                                  ),
+                                  borderSide: BorderSide(color: Colors.blue),
+                                ),
+                                labelStyle: TextStyle(
+                                  color: Theme.of(context).hintColor,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              items:
+                                  [
+                                        {
+                                          '_id': '',
+                                          'name': 'No Selection',
+                                          'accountNumber': '',
+                                        },
+                                        ...banks,
+                                      ]
+                                      .where((c) => c.isNotEmpty)
+                                      .map<DropdownMenuItem<String>>((bank) {
+                                        return DropdownMenuItem<String>(
+                                          value: bank['accountNumber'],
+                                          child: Text(bank['name']),
+                                        );
+                                      })
+                                      .toList(),
+                              validator: (value) =>
+                                  value == '' && selectedPaymentMethod == 'bank'
+                                  ? 'Please select an option'
+                                  : null,
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedBank = value ?? '';
+                                });
+                              },
+                            ),
+                          ),
+                      ],
+                    )
+                  : CircularProgressIndicator(),
+              SizedBox(height: 10),
+
+              TextFormField(
+                keyboardType: TextInputType.number,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.digitsOnly,
+                  TextInputFormatter.withFunction((oldValue, newValue) {
+                    final intValue = int.tryParse(newValue.text) ?? 0;
+                    final maxValue = purchaseInfo['debt'] is int
+                        ? purchaseInfo['debt']
+                        : int.tryParse(purchaseInfo['debt'].toString()) ?? 0;
+                    if (intValue < 0) {
+                      return oldValue;
+                    }
+                    if (intValue > maxValue) {
+                      return oldValue;
+                    }
+                    return newValue;
+                  }),
+                ],
+                controller: amountController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the a value';
                   }
-                  if (intValue > maxValue) {
-                    return oldValue;
+                  if (int.parse(value) < 1) {
+                    return 'Enter A Value';
                   }
-                  return newValue;
-                }),
-              ],
-              controller: amountController,
-              decoration: InputDecoration(
-                labelText: 'Amount',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(color: Colors.blue),
+                  return null;
+                },
+                decoration: InputDecoration(
+                  labelText: 'Amount',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                    borderSide: BorderSide(color: Colors.blue),
+                  ),
+                  labelStyle: TextStyle(
+                    color: Theme.of(context).hintColor,
+                    fontSize: 15,
+                  ),
+                  helperText: 'Max: ${purchaseInfo['debt']}',
                 ),
-                labelStyle: TextStyle(
-                  color: Theme.of(context).hintColor,
-                  fontSize: 15,
-                ),
-                helperText: 'Max: ${purchaseInfo['debt']}',
               ),
-            ),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                ElevatedButton(
-                  onPressed: () => _selectDeliveryDate(context),
-                  child: const Text('Select Delivery Date'),
-                ),
-                Text("${selectedPaymentDate.toLocal()}".split(' ')[0]),
-              ],
-            ),
-            SizedBox(height: 20),
-            OutlinedButton(
-              onPressed: () {
-                createPayment();
-              },
-              style: OutlinedButton.styleFrom(
-                minimumSize: Size(
-                  double.infinity,
-                  50,
-                ), // Set minimum width to fill parent, and a desired height
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  ElevatedButton(
+                    onPressed: () => _selectDeliveryDate(context),
+                    child: const Text('Select Transaction Date'),
+                  ),
+                  Text("${selectedPaymentDate.toLocal()}".split(' ')[0]),
+                ],
               ),
-              child: Text('Submit'),
-            ),
-          ],
+              SizedBox(height: 20),
+              OutlinedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    createPayment();
+                  }
+                },
+                style: OutlinedButton.styleFrom(
+                  minimumSize: Size(
+                    double.infinity,
+                    50,
+                  ), // Set minimum width to fill parent, and a desired height
+                ),
+                child: Text('Submit'),
+              ),
+            ],
+          ),
         ),
       ),
     );

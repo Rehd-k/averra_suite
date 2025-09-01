@@ -166,9 +166,11 @@ class ProductsIndexState extends State<ProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Responsive: adjust layout for mini/mobile screens
+    double width = MediaQuery.sizeOf(context).width;
+    bool smallScreen = width <= 1200;
 
     return Scaffold(
+      appBar: AppBar(automaticallyImplyLeading: false, actions: []),
       body: KeyboardListener(
         focusNode: _scannerFocusNode,
         onKeyEvent: (event) async {
@@ -186,7 +188,7 @@ class ProductsIndexState extends State<ProductsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            header(context),
+            header(context, smallScreen),
             Expanded(
               flex: 1,
               child: ViewProducts(
@@ -238,36 +240,150 @@ class ProductsIndexState extends State<ProductsScreen> {
                     onChanged: (v) {},
                   ),
                   SizedBox(width: 4),
-                  JwtService().decodedToken!['role'] != 'cashier'
-                      ? IconButton(
-                          onPressed: () {
-                            handleShowModal(barcodeHolder);
-                          },
-                          tooltip: 'Add New Product',
-                          icon: Icon(Icons.add_box_outlined),
-                        )
-                      : SizedBox(),
-                  IconButton(
-                    onPressed: () {
-                      createExcelFile();
-                    },
-                    tooltip: 'Extract to Excel',
-                    icon: Icon(Icons.dataset_outlined),
-                  ),
+                  if (!smallScreen)
+                    if (JwtService().decodedToken!['role'] != 'cashier')
+                      IconButton(
+                        onPressed: () {
+                          handleShowModal(barcodeHolder);
+                        },
+                        tooltip: 'Add New Product',
+                        icon: Icon(Icons.add_box_outlined),
+                      ),
 
-                  IconButton(
-                    onPressed: () {},
-                    tooltip: 'Print Result',
-                    icon: Icon(Icons.print_outlined),
-                  ),
+                  if (!smallScreen)
+                    IconButton(
+                      onPressed: () {
+                        createExcelFile();
+                      },
+                      tooltip: 'Extract to Excel',
+                      icon: Icon(Icons.dataset_outlined),
+                    ),
 
-                  IconButton(
-                    onPressed: () {
-                      context.router.push(SendProducts());
-                    },
-                    tooltip: 'Send Products',
-                    icon: Icon(Icons.send_to_mobile),
-                  ),
+                  if (!smallScreen)
+                    IconButton(
+                      onPressed: () {},
+                      tooltip: 'Print Result',
+                      icon: Icon(Icons.print_outlined),
+                    ),
+
+                  if (!smallScreen)
+                    IconButton(
+                      onPressed: () {
+                        context.router.push(SendProducts());
+                      },
+                      tooltip: 'Send Products',
+                      icon: Icon(Icons.send_outlined),
+                    ),
+
+                  if (smallScreen)
+                    PopupMenuButton<int>(
+                      padding: const EdgeInsets.all(1),
+                      icon: Icon(
+                        Icons.more_vert_outlined,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      itemBuilder: (context) {
+                        return [
+                          PopupMenuItem(
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.add,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withAlpha(180),
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  "Add Product",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withAlpha(180),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            onTap: () => {handleShowModal(barcodeHolder)},
+                          ),
+                          PopupMenuItem(
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.edit_note_outlined,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withAlpha(180),
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  "Extract To Excel",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withAlpha(180),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            onTap: () => {createExcelFile()},
+                          ),
+                          PopupMenuItem(
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.upload_file_outlined,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withAlpha(180),
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  "Print Table",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withAlpha(180),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            onTap: () async {},
+                          ),
+                          PopupMenuItem(
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.show_chart_outlined,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withAlpha(180),
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  "Send Product",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withAlpha(180),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            onTap: () => context.router.push(SendProducts()),
+                          ),
+                        ];
+                      },
+                      elevation: 2,
+                    ),
                 ],
 
                 tableHeader: IconButton(
@@ -285,7 +401,7 @@ class ProductsIndexState extends State<ProductsScreen> {
     );
   }
 
-  Padding header(BuildContext context) {
+  Padding header(BuildContext context, bool smallScreen) {
     return Padding(
       padding: EdgeInsetsGeometry.all(10),
       child: Column(
@@ -314,7 +430,7 @@ class ProductsIndexState extends State<ProductsScreen> {
                 ),
               ),
 
-              SizedBox(width: 10),
+              SizedBox(width: smallScreen ? 5 : 10),
               Expanded(
                 flex: 4,
                 child: TextField(
@@ -340,7 +456,6 @@ class ProductsIndexState extends State<ProductsScreen> {
           Row(
             children: [
               Expanded(
-                flex: 4,
                 child: DropdownMenu<String>(
                   width: double.infinity,
                   initialSelection: selectedCategory.isEmpty
@@ -363,15 +478,17 @@ class ProductsIndexState extends State<ProductsScreen> {
                   hintText: 'Select Category',
                 ),
               ),
-              SizedBox(width: 10),
-              ElevatedButton.icon(
-                icon: Icon(
-                  _scannerActive ? Icons.search : Icons.barcode_reader,
+              SizedBox(width: smallScreen ? 5 : 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  icon: Icon(
+                    _scannerActive ? Icons.search : Icons.barcode_reader,
+                  ),
+                  label: Text(
+                    _scannerActive ? "Switch to Search" : "Switch to Scanner",
+                  ),
+                  onPressed: _toggleFocus,
                 ),
-                label: Text(
-                  _scannerActive ? "Switch to Search" : "Switch to Scanner",
-                ),
-                onPressed: _toggleFocus,
               ),
             ],
           ),

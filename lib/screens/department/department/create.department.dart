@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_multi_select_items/flutter_multi_select_items.dart';
 
-class CreateStore extends StatelessWidget {
+class CreateDepartment extends StatelessWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController title;
   final TextEditingController description;
@@ -12,7 +12,7 @@ class CreateStore extends StatelessWidget {
   final Function setType;
   final Map settings;
   final Function addOrRemoveAccess;
-  const CreateStore({
+  const CreateDepartment({
     super.key,
     required this.formKey,
     required this.title,
@@ -85,14 +85,14 @@ class CreateStore extends StatelessWidget {
                 onChanged: (String? newValue) {
                   setType(newValue);
                 },
-                items: ['Store', 'Dispensary'].map<DropdownMenuItem<String>>((
-                  String value,
-                ) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
+                items: ['Department', 'Dispensary']
+                    .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    })
+                    .toList(),
                 validator: (value) =>
                     value == null ? 'Please select an option' : null,
               ),

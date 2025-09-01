@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:toastification/toastification.dart';
 
+import '../../helpers/financial_string_formart.dart';
 import '../../service/api.service.dart';
 
 class AddProducts extends StatefulWidget {
@@ -40,7 +41,9 @@ class AddProductsState extends State<AddProducts> {
 
   final imageUrlController = TextEditingController();
 
-  var isAvailableController = true;
+  bool isAvailableController = true;
+
+  bool sellUnits = true;
 
   final typeQuantityController = TextEditingController();
 
@@ -97,6 +100,7 @@ class AddProductsState extends State<AddProducts> {
         'unit': unitController.text,
         'barcode': barcodeController.text,
         'isAvailable': isAvailableController,
+        'sellUnits': sellUnits,
         'cartonAmount': int.tryParse(typeQuantityController.text),
         'cartonPrice': int.tryParse(cartonPriceController.text),
         'type': servingSize,
@@ -183,6 +187,7 @@ class AddProductsState extends State<AddProducts> {
                 isAvailableController = true;
                 isUnit = true;
                 servingSize = '';
+                sellUnits = true;
               });
             },
           ),
@@ -318,7 +323,8 @@ class AddProductsState extends State<AddProducts> {
                         ],
                         controller: typeQuantityController,
                         decoration: InputDecoration(
-                          labelText: ' ${servingSize.toUpperCase()} Quantity *',
+                          labelText:
+                              'Quantity in ${capitalizeFirstLetter(servingSize)} *',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.all(
                               Radius.circular(5.0),
@@ -352,7 +358,8 @@ class AddProductsState extends State<AddProducts> {
                         ],
                         controller: cartonPriceController,
                         decoration: InputDecoration(
-                          labelText: ' ${servingSize.toUpperCase()} Price *',
+                          labelText:
+                              '${capitalizeFirstLetter(servingSize)} Selling Price *',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.all(
                               Radius.circular(5.0),
@@ -385,7 +392,7 @@ class AddProductsState extends State<AddProducts> {
                       ],
                       controller: priceController,
                       decoration: InputDecoration(
-                        labelText: 'Selling Price *',
+                        labelText: 'Unit Selling Price *',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                           borderSide: BorderSide(color: Colors.blue),
@@ -528,33 +535,91 @@ class AddProductsState extends State<AddProducts> {
                       ),
                     ),
                     SizedBox(height: 10),
-                    Row(children: [Text('Is Available ')]),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('True'),
-                      leading: Radio<bool>(
-                        value: true,
-                        groupValue: isAvailableController,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            isAvailableController = value!;
-                          });
-                        },
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(flex: 5, child: Text('Is Available ')),
+
+                        Expanded(
+                          flex: 1,
+                          child: Column(
+                            children: [
+                              ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                title: const Text('True'),
+                                leading: Radio<bool>(
+                                  value: true,
+                                  groupValue: isAvailableController,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      isAvailableController = value!;
+                                    });
+                                  },
+                                ),
+                              ),
+                              ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                title: const Text('False'),
+                                leading: Radio<bool>(
+                                  value: false,
+                                  groupValue: isAvailableController,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      isAvailableController = value!;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('False'),
-                      leading: Radio<bool>(
-                        value: false,
-                        groupValue: isAvailableController,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            isAvailableController = value!;
-                          });
-                        },
+
+                    SizedBox(height: 10),
+                    Divider(),
+                    if (!isUnit)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Expanded(flex: 5, child: Text('Sell In Units ')),
+
+                          Expanded(
+                            flex: 1,
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: const Text('True'),
+                                  leading: Radio<bool>(
+                                    value: true,
+                                    groupValue: sellUnits,
+                                    onChanged: (bool? value) {
+                                      setState(() {
+                                        sellUnits = value!;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: const Text('False'),
+                                  leading: Radio<bool>(
+                                    value: false,
+                                    groupValue: sellUnits,
+                                    onChanged: (bool? value) {
+                                      setState(() {
+                                        sellUnits = value!;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
+
                     ElevatedButton(
                       onPressed: () {
                         handleSubmit(context);

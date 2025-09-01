@@ -2,12 +2,13 @@ import 'package:averra_suite/helpers/financial_string_formart.dart';
 import 'package:flutter/material.dart';
 
 class FinanceCard extends StatelessWidget {
-  final int amount;
+  final num amount;
   final String title;
   final Icon icon;
   final bool isFinancial;
   final double fontSize;
   final Color? color;
+  final bool? largeScreen;
 
   const FinanceCard({
     super.key,
@@ -17,14 +18,38 @@ class FinanceCard extends StatelessWidget {
     required this.isFinancial,
     required this.fontSize,
     this.color,
+    this.largeScreen,
   });
 
   @override
   Widget build(BuildContext context) {
+    double varticalPadding;
+    double horizontalPadding;
+    double height;
+    double textSize;
+    if (largeScreen == null) {
+      varticalPadding = 16.0;
+      horizontalPadding = 20;
+      height = 60;
+      textSize = 14;
+    } else if (largeScreen == true) {
+      varticalPadding = 16.0;
+      horizontalPadding = 20;
+      height = 60;
+      textSize = 14;
+    } else {
+      varticalPadding = 0.0;
+      horizontalPadding = 5;
+      height = 30;
+      textSize = 10;
+    }
     return Card(
       color: color,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20),
+        padding: EdgeInsets.symmetric(
+          vertical: varticalPadding,
+          horizontal: horizontalPadding,
+        ),
         child: Row(
           children: [
             Expanded(
@@ -37,7 +62,10 @@ class FinanceCard extends StatelessWidget {
                         amount.toString().formatToFinancial(
                           isMoneySymbol: isFinancial,
                         ),
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: textSize,
+                        ),
                       ),
                     ],
                   ),
@@ -60,7 +88,7 @@ class FinanceCard extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.all(10),
                 child: Container(
-                  height: 60,
+                  height: height,
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primary,
                     borderRadius: BorderRadius.circular(5),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:averra_suite/app_router.gr.dart';
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
@@ -172,7 +173,7 @@ class ViewInvoicesState extends State<ViewInvoices> {
         customer: item['customer'],
         issueDate: item['issuedDate'],
         dueDate: item['dueDate'],
-        recurringCycle: item['recurring'],
+        recurringCycle: item['from'],
         total: item['totalAmount'],
         amountPaid: (item['transactionId'] as List<dynamic>?)?.join(', ') ?? '',
         status: item['status'],
@@ -316,7 +317,6 @@ class ViewInvoicesState extends State<ViewInvoices> {
         padding: EdgeInsets.all(isSmallScreen ? 2 : 16),
         child: Column(
           children: [
-            SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -330,7 +330,7 @@ class ViewInvoicesState extends State<ViewInvoices> {
                 ),
                 OutlinedButton.icon(
                   onPressed: () {
-                    context.router.pushPath('/create_invoice');
+                    context.router.push(AddInvoice());
                   },
                   label: const Text('Add Invoice'),
                   icon: const Icon(Icons.add),

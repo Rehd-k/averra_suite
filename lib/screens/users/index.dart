@@ -26,7 +26,7 @@ class UserManagementScreenState extends State<UserManagementScreen> {
     bool smallScreen = width <= 1200;
     return Scaffold(
       floatingActionButton: smallScreen
-          ? FloatingActionButton(
+          ? FloatingActionButton.small(
               onPressed: () {
                 showModalBottomSheet(
                   context: context,
@@ -40,13 +40,6 @@ class UserManagementScreenState extends State<UserManagementScreen> {
               child: Icon(Icons.add_outlined),
             )
           : null,
-      appBar: AppBar(
-        actions: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.add_box_outlined)),
-
-          IconButton(onPressed: () {}, icon: Icon(Icons.live_help_outlined)),
-        ],
-      ),
 
       body: Padding(
         padding: const EdgeInsets.only(top: 10),

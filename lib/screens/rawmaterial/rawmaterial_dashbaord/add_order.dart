@@ -8,14 +8,16 @@ import '../../../service/toast.service.dart';
 import '../../supplier/add_supplier.dart';
 
 class AddOrder extends StatefulWidget {
-  final String productId;
+  final String rawmaterialId;
+  final num servingSize;
+  final String unit;
   final VoidCallback getUpDate;
-  final String type;
   const AddOrder({
     super.key,
-    required this.productId,
+    required this.rawmaterialId,
     required this.getUpDate,
-    required this.type,
+    required this.servingSize,
+    required this.unit,
   });
 
   @override
@@ -26,17 +28,9 @@ class AddOrderState extends State<AddOrder> {
   final apiService = ApiService();
   final _formKey = GlobalKey<FormState>();
 
-  final quanitityController = TextEditingController();
+  final quanitityController = TextEditingController(text: '0');
 
-  final searvingController = TextEditingController(text: '0');
-
-  final unitsController = TextEditingController(text: '0');
-
-  final searvingPriceController = TextEditingController();
-
-  final unitsPriceController = TextEditingController();
-
-  final priceController = TextEditingController();
+  final costController = TextEditingController();
 
   final discountController = TextEditingController();
 
@@ -44,20 +38,16 @@ class AddOrderState extends State<AddOrder> {
 
   final notesController = TextEditingController();
 
-  final initiatorController = TextEditingController();
-
   final cashController = TextEditingController()..text = '0';
 
   final bankController = TextEditingController()..text = '0';
-
-  final cartonPrice = TextEditingController();
 
   DateTime selectedExpiryDate = DateTime.now();
   DateTime selectedDeliveryDate = DateTime.now();
   DateTime selectedPurchaseDate = DateTime.now();
 
   late List suppliers = [];
-  late List stores = [];
+  late List department = [];
   late List banks = [];
   String toPoint = '';
   late Map<String, dynamic> product;
@@ -70,22 +60,17 @@ class AddOrderState extends State<AddOrder> {
   bool isLoading = false;
   late String type;
   String bank = '';
+  num unitCost = 0;
 
   @override
   void dispose() {
     quanitityController.dispose();
-    searvingController.dispose();
-    unitsController.dispose();
-    searvingPriceController.dispose();
-    unitsPriceController.dispose();
-    priceController.dispose();
+    costController.dispose();
     discountController.dispose();
     paidController.dispose();
     notesController.dispose();
-    initiatorController.dispose();
     cashController.dispose();
     bankController.dispose();
-    cartonPrice.dispose();
     super.dispose();
   }
 
@@ -203,12 +188,11 @@ class AddOrderState extends State<AddOrder> {
     showToast('loading...', ToastificationType.info);
 
     var formData = {
-      'productId': widget.productId,
+      'rawmaterialId': widget.rawmaterialId,
       'quantity': totalQunaity,
-      'price': getUnitPrice(),
+      'unitCost': unitCost,
+      'cost': int.tryParse(costController.text) ?? 0,
       'total': total + (int.tryParse(discountController.text) ?? 0),
-      'cartonPrice': int.tryParse(searvingPriceController.text) ?? 0,
-      'cartonQuanity': int.tryParse(searvingController.text) ?? 0,
       'totalPayable': total,
       'purchaseDate': selectedPurchaseDate.toString(),
       'status': status,
@@ -226,7 +210,7 @@ class AddOrderState extends State<AddOrder> {
       'moneyFrom': bank,
     };
     try {
-      final dynamic response = await apiService.post('purchases', formData);
+      final dynamic response = await apiService.post('rm-purchases', formData);
       if (response.statusCode! >= 200 && response.statusCode! <= 300) {
         widget.getUpDate();
         showToast('Success', ToastificationType.success);
@@ -243,17 +227,6 @@ class AddOrderState extends State<AddOrder> {
     }
   }
 
-  num getUnitPrice() {
-    num unitprice = int.tryParse(unitsPriceController.text) ?? 0;
-    num cartonPrice = int.tryParse(searvingPriceController.text) ?? 0;
-    if (unitprice > 0) {
-      return unitprice;
-    } else if (cartonPrice > 0) {
-      return cartonPrice ~/ product['cartonAmount'];
-    }
-    return 0;
-  }
-
   Future updateSupplierList() async {
     setState(() {
       isLoading = true;
@@ -266,35 +239,32 @@ class AddOrderState extends State<AddOrder> {
   }
 
   void calculateTotal() {
-    num searvingQunt = num.tryParse(searvingController.text) ?? 0;
-    num unitQunt = num.tryParse(unitsController.text) ?? 0;
-    num searvingPrice = num.tryParse(searvingPriceController.text) ?? 0;
-    num unitPrice = num.tryParse(unitsPriceController.text) ?? 0;
-
-    num totalQunt;
-    if (type == 'unit') {
-      totalQunt = unitQunt;
-    } else {
-      totalQunt = (searvingQunt * product['cartonAmount']) + unitQunt;
+    num enteredQuanity = num.tryParse(quanitityController.text) ?? 0;
+    num totalquanity = enteredQuanity * widget.servingSize;
+    num unitprice = 0;
+    num cost = num.tryParse(costController.text) ?? 0;
+    num totalPrice = cost;
+    if (totalquanity > 0) {
+      unitprice = cost ~/ totalquanity == 0 ? 1 : totalquanity;
     }
-    num totalPrice = (searvingQunt * searvingPrice) + (unitQunt * unitPrice);
 
     var discount = num.tryParse(discountController.text) ?? 0;
     setState(() {
+      unitCost = unitprice;
+      totalQunaity = totalquanity;
       total = totalPrice - discount;
-      totalQunaity = totalQunt;
     });
   }
 
   void doInitalDBCall() async {
     var result = await Future.wait([
-      apiService.get('store'),
+      apiService.get('department'),
       apiService.get('supplier'),
-      apiService.get('products/findone/${widget.productId}'),
+      apiService.get('rawmaterial/${widget.rawmaterialId}'),
       apiService.get('bank'),
     ]);
     setState(() {
-      stores = result[0].data;
+      department = result[0].data;
       suppliers = result[1].data;
       product = result[2].data;
       banks = result[3].data;
@@ -311,7 +281,6 @@ class AddOrderState extends State<AddOrder> {
 
   @override
   void initState() {
-    type = widget.type;
     doInitalDBCall();
     super.initState();
   }
@@ -319,49 +288,17 @@ class AddOrderState extends State<AddOrder> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> formFields = [
-      if (widget.type != 'unit')
-        TextFormField(
-          keyboardType: TextInputType.number,
-          inputFormatters: <TextInputFormatter>[
-            FilteringTextInputFormatter.digitsOnly,
-          ],
-          controller: searvingController,
-          onChanged: (_) {
-            calculateTotal();
-          },
-          decoration: InputDecoration(
-            labelText: '${capitalizeFirstLetter(widget.type)}s *',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(5.0)),
-              borderSide: BorderSide(color: Colors.blue),
-            ),
-            labelStyle: TextStyle(
-              color: Theme.of(context).hintColor,
-              fontSize: 15,
-            ),
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter the Quantity';
-            }
-            if (totalQunaity < 1) {
-              return 'Quantity cannot be less than 1';
-            }
-            return null;
-          },
-        ),
-
       TextFormField(
         keyboardType: TextInputType.number,
         inputFormatters: <TextInputFormatter>[
           FilteringTextInputFormatter.digitsOnly,
         ],
-        controller: unitsController,
+        controller: quanitityController,
         onChanged: (_) {
           calculateTotal();
         },
         decoration: InputDecoration(
-          labelText: 'Units *',
+          labelText: 'Quanity',
           border: OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(5.0)),
             borderSide: BorderSide(color: Colors.blue),
@@ -371,60 +308,19 @@ class AddOrderState extends State<AddOrder> {
             fontSize: 15,
           ),
         ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter the Quantity';
-          }
-          if (totalQunaity < 1) {
-            return 'Quantity cannot be less than 1';
-          }
-          return null;
-        },
       ),
-      if (widget.type != 'unit')
-        TextFormField(
-          keyboardType: TextInputType.number,
-          inputFormatters: <TextInputFormatter>[
-            FilteringTextInputFormatter.digitsOnly,
-          ],
-          controller: searvingPriceController,
-          onChanged: (_) {
-            calculateTotal();
-          },
-          decoration: InputDecoration(
-            hintText: "Put 0 if it's free",
-            hintStyle: TextStyle(color: Colors.lightBlueAccent, fontSize: 10),
-            labelText: 'Single ${capitalizeFirstLetter(widget.type)} Price *',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(5.0)),
-              borderSide: BorderSide(color: Colors.blue),
-            ),
-            labelStyle: TextStyle(
-              color: Theme.of(context).hintColor,
-              fontSize: 15,
-            ),
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return ' cannot be empty';
-            }
-            return null;
-          },
-        ),
 
       TextFormField(
         keyboardType: TextInputType.number,
         inputFormatters: <TextInputFormatter>[
           FilteringTextInputFormatter.digitsOnly,
         ],
-        controller: unitsPriceController,
+        controller: costController,
         onChanged: (_) {
           calculateTotal();
         },
         decoration: InputDecoration(
-          hintText: "Put 0 if it's free",
-          hintStyle: TextStyle(color: Colors.lightBlueAccent, fontSize: 10),
-          labelText: 'Single Unit Price *',
+          labelText: 'Cost',
           border: OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(5.0)),
             borderSide: BorderSide(color: Colors.blue),
@@ -434,12 +330,6 @@ class AddOrderState extends State<AddOrder> {
             fontSize: 15,
           ),
         ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return ' cannot be empty';
-          }
-          return null;
-        },
       ),
 
       TextFormField(
@@ -478,7 +368,7 @@ class AddOrderState extends State<AddOrder> {
         items:
             [
               {'title': '', '_id': ''},
-              ...stores,
+              ...department,
             ].map<DropdownMenuItem<String>>((value) {
               return DropdownMenuItem<String>(
                 value: value['_id'],
@@ -571,7 +461,7 @@ class AddOrderState extends State<AddOrder> {
                     totalAmount: paidController.text,
                     controller: cashController,
                     paymentMethord: paymentMethord,
-                    priceController: total,
+                    costController: total,
                     calculatePercentage: calculatePercentage,
                     label: 'Cash',
                     banks: banks,
@@ -583,7 +473,7 @@ class AddOrderState extends State<AddOrder> {
                     totalAmount: paidController.text,
                     controller: bankController,
                     paymentMethord: paymentMethord,
-                    priceController: total,
+                    costController: total,
                     calculatePercentage: calculatePercentage,
                     label: 'Bank',
                     banks: banks,
@@ -597,7 +487,7 @@ class AddOrderState extends State<AddOrder> {
                 totalAmount: paidController.text,
                 controller: bankController,
                 paymentMethord: paymentMethord,
-                priceController: total,
+                costController: total,
                 calculatePercentage: calculatePercentage,
                 label: 'Bank',
                 banks: banks,
@@ -609,7 +499,7 @@ class AddOrderState extends State<AddOrder> {
                 totalAmount: paidController.text,
                 controller: cashController,
                 paymentMethord: paymentMethord,
-                priceController: total,
+                costController: total,
                 calculatePercentage: calculatePercentage,
                 label: 'Cash',
                 banks: banks,
@@ -773,7 +663,7 @@ class PriceAmount extends StatelessWidget {
     super.key,
     required this.controller,
     required this.paymentMethord,
-    required this.priceController,
+    required this.costController,
     required this.totalAmount,
     required this.calculatePercentage,
     required this.label,
@@ -784,7 +674,7 @@ class PriceAmount extends StatelessWidget {
 
   final TextEditingController controller;
   final String? paymentMethord;
-  final num priceController;
+  final num costController;
   final String? totalAmount;
   final Function calculatePercentage;
   final String label;
@@ -830,8 +720,8 @@ class PriceAmount extends StatelessWidget {
                   return 'Please enter the $paymentMethord';
                 }
 
-                if (int.parse(value) > priceController) {
-                  return 'That\'s more than the purchase price';
+                if (int.parse(value) > costController) {
+                  return 'That\'s more than the purchase cost';
                 }
               }
 

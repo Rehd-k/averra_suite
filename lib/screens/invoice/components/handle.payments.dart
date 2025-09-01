@@ -11,7 +11,7 @@ class HandlePayments extends StatefulWidget {
   final Map? selectedBank;
   final Map? selectedUser;
   final num discount;
-  final String? invoiceId;
+  final String invoiceId;
   const HandlePayments({
     super.key,
     required this.cart,
