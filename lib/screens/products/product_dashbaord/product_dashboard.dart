@@ -181,7 +181,6 @@ class ProductDashboardState extends State<ProductDashboard> {
   }
 
   handleDamagedGoodsClicked(rowData) async {
-    // print(rowData);
     if (returnedSelection.isEmpty) {
       if (rowData['quantity'] == getSold(rowData['sold'])) {
         doAlerts('This batch have been sold out');

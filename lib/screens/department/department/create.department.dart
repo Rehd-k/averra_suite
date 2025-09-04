@@ -85,14 +85,14 @@ class CreateDepartment extends StatelessWidget {
                 onChanged: (String? newValue) {
                   setType(newValue);
                 },
-                items: ['Department', 'Dispensary']
-                    .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    })
-                    .toList(),
+                items: ['Store', 'Dispensary'].map<DropdownMenuItem<String>>((
+                  String value,
+                ) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
                 validator: (value) =>
                     value == null ? 'Please select an option' : null,
               ),

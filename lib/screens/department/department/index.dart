@@ -31,7 +31,7 @@ class DepartmentIndexState extends State<DepartmentIndex> {
   String sortBy = "title";
   bool ascending = true;
   bool active = true;
-  String type = 'Department';
+  String type = 'Store';
   List<String> access = [];
 
   void updateActive() {
@@ -65,7 +65,7 @@ class DepartmentIndexState extends State<DepartmentIndex> {
       title.clear();
       description.clear();
       setState(() {
-        type = 'Department';
+        type = 'Store';
         active = true;
       });
       getDepartments();

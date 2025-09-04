@@ -36,6 +36,7 @@ Column buildProductInput(
                 child: Text('No suggestions'),
               );
             } else {
+              print(snapshot.data);
               return ListView(
                 shrinkWrap: true,
                 children: snapshot.data!.map((suggestion) {
@@ -65,7 +66,7 @@ Column buildProductInput(
                             : SizedBox(),
                         suggestion['type'] != 'unit'
                             ? Text(
-                                '${(suggestion['quantity'] % suggestion['servingSize']).toString().formatToFinancial(isMoneySymbol: false)} Units',
+                                '${(suggestion['quantity'] % suggestion['cartonAmount']).toString().formatToFinancial(isMoneySymbol: false)} Units',
                                 style: TextStyle(fontSize: 10),
                               )
                             : Text(

@@ -1,22 +1,23 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/helpers/financial_string_formart.dart';
-import 'package:averra_suite/service/toast.service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:toastification/toastification.dart';
 
-import '../../../../service/api.service.dart';
+import '../../service/api.service.dart';
+import '../../service/toast.service.dart';
 
 @RoutePage()
-class SendProducts extends StatefulWidget {
-  const SendProducts({super.key});
+class Wip extends StatefulWidget {
+  const Wip({super.key});
 
   @override
-  SendProductsState createState() => SendProductsState();
+  WipState createState() => WipState();
 }
 
-class SendProductsState extends State<SendProducts> {
+class WipState extends State<Wip> {
   final ApiService apiService = ApiService();
+  TextEditingController controller = TextEditingController();
   List<FocusNode> focusNodes = [];
   List<FocusNode> priceFocusNodes = [];
   List<TextEditingController> quantityControllers = [];
@@ -27,29 +28,35 @@ class SendProductsState extends State<SendProducts> {
   late List departmentFronts = [];
   late List products = [];
   List<Map> selectedProducts = [];
+  late List wipProgress = [];
 
   bool loading = true;
   String toPoint = '';
+  String process = '';
   String fromPoint = '';
   String fromPointName = '';
+  String toPointName = '';
+  bool isWip = false;
 
   void doSearch(String query) {
     getProductsFromDepartment(query);
   }
 
   void getProductsFromDepartment(query) async {
-    try {
-      var result = await apiService.get(
-        'department/$fromPoint?select=finishedGoods',
-      );
+    if (fromPoint != '') {
+      try {
+        var result = await apiService.get(
+          'department/$fromPoint?select=RawGoods',
+        );
+        setState(() {
+          departmentFront = result.data;
+          products = result.data['RawGoods'];
 
-      setState(() {
-        departmentFront = result.data;
-        products = result.data['finishedGoods'];
-        loading = false;
-      });
-    } catch (e) {
-      showToast('Error $e', ToastificationType.error);
+          loading = false;
+        });
+      } catch (e) {
+        showToast('Error $e', ToastificationType.error);
+      }
     }
   }
 
@@ -62,8 +69,14 @@ class SendProductsState extends State<SendProducts> {
   }
 
   void selectTo(value) async {
+    String res = departmentFronts.firstWhere(
+      (department) => department['_id'] == value,
+      orElse: () => {'title': 'Unknown'},
+    )['title'];
+
     setState(() {
       toPoint = value;
+      toPointName = res;
     });
   }
 
@@ -72,6 +85,18 @@ class SendProductsState extends State<SendProducts> {
       (department) => department['_id'] == value,
       orElse: () => {'title': 'Unknown'}, // fallback in case no match
     )['title'];
+
+    if (isWip) {
+      var result = await apiService.get(
+        'work-in-progress?filter={"at" : "$value" }&select=title at',
+      );
+      setState(() {
+        wipProgress = result.data['workInProgress'];
+        fromPointName = res;
+        fromPoint = value;
+      });
+    }
+
     setState(() {
       fromPointName = res;
       fromPoint = value;
@@ -114,11 +139,11 @@ class SendProductsState extends State<SendProducts> {
   void updatePrice(int index, int? newPrice) {
     setState(() {
       if (newPrice != null && newPrice >= 1) {
-        selectedProducts[index]['price'] = newPrice;
+        selectedProducts[index]['unitCost'] = newPrice;
         priceControllers[index].text = newPrice.toString();
       } else {
         toastification.show(
-          title: Text('Invalid price'),
+          title: Text('Invalid cost'),
           type: ToastificationType.info,
           style: ToastificationStyle.flatColored,
           autoCloseDuration: const Duration(seconds: 3),
@@ -130,12 +155,12 @@ class SendProductsState extends State<SendProducts> {
   void _onPriceFieldUnfocus(int index, String value) {
     int? newPrice = int.tryParse(value);
     if (newPrice == null || newPrice < 1) {
-      newPrice = selectedProducts[index]['price']; // fallback to old value
+      newPrice = selectedProducts[index]['cost']; // fallback to old value
     }
     updatePrice(index, newPrice);
   }
 
-  void selectProduct(Map<String, dynamic> suggestion) {
+  void selectProduct(suggestion) {
     suggestion['quantity'] > 0
         ? setState(() {
             final existingIndex = selectedProducts.indexWhere(
@@ -152,14 +177,14 @@ class SendProductsState extends State<SendProducts> {
             } else {
               // add product
               suggestion['toSend'] = 1;
-              suggestion['product'] = suggestion['product'];
+              // suggestion['product'] = suggestion['product'];
               selectedProducts.add(suggestion);
 
               quantityControllers.add(
                 TextEditingController(text: suggestion['toSend'].toString()),
               );
               priceControllers.add(
-                TextEditingController(text: suggestion['price'].toString()),
+                TextEditingController(text: suggestion['unitCost'].toString()),
               );
 
               // Quantity focus node
@@ -195,7 +220,7 @@ class SendProductsState extends State<SendProducts> {
       showToast(
         'lol, stop',
         ToastificationType.warning,
-        description: 'Select A Point to Send To',
+        description: 'Select A Department to Send To',
         duretion: 5,
       );
       return;
@@ -210,8 +235,13 @@ class SendProductsState extends State<SendProducts> {
       );
       return;
     }
+    selectedProducts.map((item) {
+      final cost = item['toSend'] * item['unitCost'];
+      item['cost'] = cost;
+      return item;
+    }).toList();
     await apiService.post(
-      'department/move-stock?senderId=$fromPoint&receiverId=$toPoint&from=finishedGoods',
+      'department/move-stock?senderId=$fromPoint&receiverId=$toPoint&from=RawGoods',
       {'body': selectedProducts},
     );
 
@@ -226,6 +256,42 @@ class SendProductsState extends State<SendProducts> {
     showToast('Done', ToastificationType.success);
   }
 
+  void handleIsWIP(bool loadWip) async {
+    setState(() {
+      toPoint = '';
+      fromPoint = '';
+      isWip = loadWip;
+    });
+  }
+
+  void sendToWorkInProgress(title) async {
+    selectedProducts.map((item) {
+      item['quantity'] = item['toSend'];
+      final cost = item['toSend'] * item['unitCost'];
+      item['cost'] = cost;
+      return item;
+    }).toList();
+
+    var newWorkInProgress = {
+      'title': title,
+      'at': fromPoint,
+      'rawGoods': selectedProducts,
+    };
+    await apiService.post('work-in-progress', newWorkInProgress);
+
+    setState(() {
+      selectedProducts = [];
+      products = [];
+      toPoint = '';
+      fromPoint = '';
+      fromPointName = '';
+      process = '';
+      controller.text = '';
+    });
+
+    showToast('Done', ToastificationType.success);
+  }
+
   @override
   void initState() {
     getDepartments();
@@ -233,13 +299,74 @@ class SendProductsState extends State<SendProducts> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (loading) {
-      return Center(child: CircularProgressIndicator());
-    }
+  @override
+  void dispose() {
+    controller.dispose();
 
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isSmallScreen = MediaQuery.of(context).size.width < 600;
+    final buttonWidth = isSmallScreen
+        ? MediaQuery.of(context).size.width * 0.8
+        : 400.0;
     return Column(
       children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: SizedBox(
+                  width: buttonWidth,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            handleIsWIP(false);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isWip ? null : Colors.green,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(20),
+                                bottomLeft: Radius.circular(20),
+                              ),
+                            ),
+                          ),
+                          child: const Text("Raw Materials"),
+                        ),
+                      ),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            handleIsWIP(true);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isWip ? Colors.green : null,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(20),
+                                bottomRight: Radius.circular(20),
+                              ),
+                            ),
+                          ),
+                          child: const Text("W.I.P"),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 10),
         Row(
           children: [
             Expanded(
@@ -269,34 +396,62 @@ class SendProductsState extends State<SendProducts> {
                 ),
               ),
             ),
-            SizedBox(width: 20),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: DropdownButtonFormField<String>(
-                  value: toPoint,
-                  decoration: InputDecoration(
-                    labelText: 'To (Select Point)',
-                    border: OutlineInputBorder(),
+            SizedBox(width: isSmallScreen ? 0 : 20),
+            isWip
+                ? Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: DropdownButtonFormField<String>(
+                        value: process,
+                        decoration: InputDecoration(
+                          labelText: 'Select Process',
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (String? newValue) {
+                          selectTo(newValue);
+                        },
+                        items:
+                            [
+                              {'title': '', '_id': ''},
+                              ...wipProgress,
+                            ].map<DropdownMenuItem<String>>((value) {
+                              return DropdownMenuItem<String>(
+                                value: value['_id'],
+                                child: Text(value['title']),
+                              );
+                            }).toList(),
+                        validator: (value) =>
+                            value == null ? 'Please select an option' : null,
+                      ),
+                    ),
+                  )
+                : Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: DropdownButtonFormField<String>(
+                        value: toPoint,
+                        decoration: InputDecoration(
+                          labelText: 'To (Select Department)',
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (String? newValue) {
+                          selectTo(newValue);
+                        },
+                        items:
+                            [
+                              {'title': '', '_id': ''},
+                              ...departmentFronts,
+                            ].map<DropdownMenuItem<String>>((value) {
+                              return DropdownMenuItem<String>(
+                                value: value['_id'],
+                                child: Text(value['title']),
+                              );
+                            }).toList(),
+                        validator: (value) =>
+                            value == null ? 'Please select an option' : null,
+                      ),
+                    ),
                   ),
-                  onChanged: (String? newValue) {
-                    selectTo(newValue);
-                  },
-                  items:
-                      [
-                        {'title': '', '_id': ''},
-                        ...departmentFronts,
-                      ].map<DropdownMenuItem<String>>((value) {
-                        return DropdownMenuItem<String>(
-                          value: value['_id'],
-                          child: Text(value['title']),
-                        );
-                      }).toList(),
-                  validator: (value) =>
-                      value == null ? 'Please select an option' : null,
-                ),
-              ),
-            ),
           ],
         ),
         Padding(
@@ -312,7 +467,7 @@ class SendProductsState extends State<SendProducts> {
                 ),
               ),
 
-              SizedBox(width: 20),
+              SizedBox(width: isSmallScreen ? 5 : 20),
               Expanded(
                 child: ElevatedButton(
                   style: ButtonStyle(
@@ -321,19 +476,33 @@ class SendProductsState extends State<SendProducts> {
                     ),
                   ),
                   onPressed: () {
-                    handleSubmit();
+                    if (isWip) {
+                      if (process.isEmpty) {
+                        showTextInputDialog(context, controller);
+                      } else {
+                        sendToWorkInProgress(process);
+                      }
+                    } else {
+                      handleSubmit();
+                    }
                   },
-                  child: Text('Done'),
+                  child: Text(
+                    'Send ${toPoint.isEmpty ? '' : 'To ${capitalizeFirstLetter(toPointName)}'}',
+                  ),
                 ),
               ),
             ],
           ),
         ),
         if (fromPoint.isEmpty)
-          Expanded(child: Center(child: Text('Select A Point To Send From'))),
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Center(child: Text('Select A Point To Send From')),
+          ),
 
         if (fromPoint.isNotEmpty && products.isEmpty)
-          Expanded(
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
             child: Center(child: Text('No Products at the $fromPointName')),
           ),
         if (products.isNotEmpty && fromPoint.isNotEmpty)
@@ -346,7 +515,7 @@ class SendProductsState extends State<SendProducts> {
                 DataColumn(label: Text('Quantity At Department')),
                 DataColumn(label: Text('Value')),
                 DataColumn(label: Text('Quanity To Send')),
-                DataColumn(label: Text('At Price')),
+                DataColumn(label: Text('At Cost')),
               ],
               rows: products.asMap().entries.map((entry) {
                 final product = entry.value;
@@ -367,7 +536,7 @@ class SendProductsState extends State<SendProducts> {
                     ),
                     DataCell(
                       Text(
-                        product['price'].toString().formatToFinancial(
+                        product['cost'].toString().formatToFinancial(
                           isMoneySymbol: true,
                         ),
                       ),
@@ -465,9 +634,9 @@ class SendProductsState extends State<SendProducts> {
                               ),
                             )
                           : Text(
-                              product['price'].toString().formatToFinancial(
-                                isMoneySymbol: true,
-                              ),
+                              (product['unitCost'])
+                                  .toString()
+                                  .formatToFinancial(isMoneySymbol: true),
                             ),
                     ),
                   ],
@@ -476,6 +645,34 @@ class SendProductsState extends State<SendProducts> {
             ),
           ),
       ],
+    );
+  }
+
+  Future<String?> showTextInputDialog(BuildContext context, controller) async {
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Create New Process"),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(hintText: "Type something..."),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, null), // cancel
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                sendToWorkInProgress(controller.text);
+                Navigator.pop(context, controller.text); // return text
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
     );
   }
 }

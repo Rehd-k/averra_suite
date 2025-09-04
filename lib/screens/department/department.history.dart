@@ -235,7 +235,7 @@ class DepartmentHistoryState extends State<DepartmentHistory> {
                                 (product) => ListTile(
                                   title: Text(product.title),
                                   subtitle: Text(
-                                    'Quantity: ${product.quantity} | Price: \$${product.price.toStringAsFixed(2)}',
+                                    'Quantity: ${product.quantity} | Price: \$${product.price.toStringAsFixed(2).formatToFinancial(isMoneySymbol: true)}',
                                   ),
                                 ),
                               )

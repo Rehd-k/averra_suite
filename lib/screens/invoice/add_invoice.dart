@@ -92,7 +92,6 @@ class AddInvoiceState extends State<AddInvoice> {
       //   } else {
       //     num units = ((quantity % cartonQuantity) * unitPrice);
       //     num cartons = ((quantity ~/ cartonQuantity) * cartonPrice);
-      //     print('cartons : $cartons,units : $units');
       //     return units + cartons;
       //   }
       // }
@@ -463,7 +462,6 @@ class AddInvoiceState extends State<AddInvoice> {
                                 initialValue: referenceNumber,
                               ),
                             ),
-
                             // Stores Dropdown
                             SizedBox(
                               width: isWide
@@ -504,7 +502,6 @@ class AddInvoiceState extends State<AddInvoice> {
                                           : null,
                                     ),
                             ),
-
                             // Bank Dropdown
                             SizedBox(
                               width: isWide
@@ -535,7 +532,6 @@ class AddInvoiceState extends State<AddInvoice> {
                                       },
                                     ),
                             ),
-
                             // Invoice Template
                             SizedBox(
                               width: isWide

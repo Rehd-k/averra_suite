@@ -39,6 +39,8 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: CustomerRoute.page),
         AutoRoute(page: IndexServingsizeRoute.page),
         AutoRoute(page: RawMaterialDashboard.page),
+        AutoRoute(page: Wip.page),
+        AutoRoute(page: FinishedGoods.page),
       ],
     ),
     AutoRoute(

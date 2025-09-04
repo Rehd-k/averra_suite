@@ -288,7 +288,7 @@ class AddOrderState extends State<AddOrder> {
 
   void doInitalDBCall() async {
     var result = await Future.wait([
-      apiService.get('store'),
+      apiService.get('department'),
       apiService.get('supplier'),
       apiService.get('products/findone/${widget.productId}'),
       apiService.get('bank'),

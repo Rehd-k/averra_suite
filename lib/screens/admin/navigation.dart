@@ -77,7 +77,23 @@ final List<MenuItem> menuData = [
       ),
     ],
   ),
-
+  MenuItem(
+    icon: Icons.work_outline,
+    title: 'Work In Progress',
+    link: Wip(),
+    children: [
+      MenuItem(
+        icon: Icons.local_shipping_outlined,
+        title: 'Handle Raw Material',
+        link: Wip(),
+      ),
+      MenuItem(
+        icon: Icons.local_shipping_outlined,
+        title: 'Handle Finished',
+        link: FinishedGoods(),
+      ),
+    ],
+  ),
   MenuItem(
     icon: Icons.local_shipping_outlined,
     title: 'Suppliers',
