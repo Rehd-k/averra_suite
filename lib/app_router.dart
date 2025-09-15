@@ -13,7 +13,6 @@ class AppRouter extends RootStackRouter {
       children: [
         AutoRoute(page: AdminDashbaord.page),
         AutoRoute(page: UserManagementRoute.page),
-        AutoRoute(page: LocationIndex.page),
         AutoRoute(page: ProductsRoute.page),
         AutoRoute(page: ProductDashboard.page),
         AutoRoute(page: RawMaterialIndex.page),
@@ -41,6 +40,15 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: RawMaterialDashboard.page),
         AutoRoute(page: Wip.page),
         AutoRoute(page: FinishedGoods.page),
+        AutoRoute(page: DepartmentRequest.page),
+        AutoRoute(page: RequisitionIndex.page),
+        AutoRoute(page: CreateRequisition.page),
+        AutoRoute(page: LocationIndex.page),
+        AutoRoute(page: PendingRequisition.page),
+        AutoRoute(page: ExpensesDashbaord.page),
+        AutoRoute(page: ViewExpenses.page),
+        AutoRoute(page: AddExpenseRoute.page),
+        AutoRoute(page: CategoriesRoute.page),
       ],
     ),
     AutoRoute(

@@ -27,14 +27,14 @@ class ProductDashboard extends StatefulWidget {
   final String? productId;
   final String? productName;
   final String type;
-  final String? cartonAmount;
+  final String? servingQuantity;
 
   const ProductDashboard({
     super.key,
     this.productId,
     this.productName,
     required this.type,
-    required this.cartonAmount,
+    required this.servingQuantity,
   });
 
   @override
@@ -66,7 +66,7 @@ class ProductDashboardState extends State<ProductDashboard> {
   Set supplierSet = <String>{};
   dynamic totalSales = 0;
   bool hasError = false;
-  dynamic cartonAmount = 1;
+  dynamic servingQuantity = 1;
 
   String initialSort = 'createdAt';
   int rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
@@ -89,9 +89,9 @@ class ProductDashboardState extends State<ProductDashboard> {
       return;
     }
 
-    if (widget.cartonAmount != null && widget.cartonAmount!.isNotEmpty) {
-      if (int.tryParse(widget.cartonAmount!) != null) {
-        cartonAmount = int.parse(widget.cartonAmount!);
+    if (widget.servingQuantity != null && widget.servingQuantity!.isNotEmpty) {
+      if (int.tryParse(widget.servingQuantity!) != null) {
+        servingQuantity = int.parse(widget.servingQuantity!);
       }
     }
     getAllData();
@@ -684,6 +684,7 @@ class ProductDashboardState extends State<ProductDashboard> {
                                 ],
                               ),
                       ),
+
                 SizedBox(height: 16),
                 SizedBox(
                   height: 600,
@@ -855,7 +856,7 @@ class ProductDashboardState extends State<ProductDashboard> {
             SizedBox(
               width: cardWidth,
               child: FinanceCard(
-                title: 'Quanitity at Store',
+                title: 'Quantity at Store',
                 icon: Icon(
                   Icons.inventory_2_outlined,
                   size: isBigScreen ? 10 : 8,
@@ -908,7 +909,7 @@ class ProductDashboardState extends State<ProductDashboard> {
                 isFinancial: false,
                 amount: widget.type != 'unit'
                     ? (((data['quantity'] ?? 0) - (data['totalSales'] ?? 0)) ~/
-                          cartonAmount)
+                          servingQuantity)
                     : ((data['quantity'] ?? 0) - (data['totalSales'] ?? 0)),
                 fontSize: isBigScreen ? 10 : 5,
                 largeScreen: largeScreen,
@@ -928,7 +929,7 @@ class ProductDashboardState extends State<ProductDashboard> {
                   isFinancial: false,
                   amount:
                       (((data['quantity'] ?? 0) - (data['totalSales'] ?? 0)) %
-                      cartonAmount),
+                      servingQuantity),
                   fontSize: isBigScreen ? 10 : 5,
                   largeScreen: largeScreen,
                   // color: Theme.of(context).colorScheme.surface,

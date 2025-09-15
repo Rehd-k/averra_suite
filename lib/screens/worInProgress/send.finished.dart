@@ -44,7 +44,7 @@ class _SendFinishedState extends State<SendFinished> {
 
   Future<List<Map>> _fetchProducts(String query) async {
     final response = await apiService.get(
-      'products?filter={"isAvailable" : true, "title": {"\$regex": "$query"}}&sort={"title": 1}&limit=20&skip=0&select=" title price quantity type sellUnits cartonAmount "',
+      'products?filter={"isAvailable" : true, "title": {"\$regex": "$query"}}&sort={"title": 1}&limit=20&skip=0&select=" title price quantity type sellUnits servingQuantity "',
     );
     var {"products": products, "totalDocuments": totalDocuments} =
         response.data;
@@ -74,8 +74,6 @@ class _SendFinishedState extends State<SendFinished> {
       'quantity': num.parse(amountController.text),
       'price': getUnitPrice(),
       'total': totalCost,
-      'cartonPrice': 0,
-      'cartonQuanity': 0,
       'totalPayable': totalCost,
       'purchaseDate': DateTime.now().toIso8601String(),
       'status': 'Delivered',
@@ -93,18 +91,15 @@ class _SendFinishedState extends State<SendFinished> {
       'createdAt': DateTime.now().toIso8601String(),
       'moneyFrom': '',
     };
-
-    print(data);
-
     await apiService.post('purchases', data);
     await apiService.delete('work-in-progress/${widget.itemId}');
     widget.updateList('');
     showToast('Done', ToastificationType.info);
+    // ignore: use_build_context_synchronously
     Navigator.of(context).pop();
   }
 
   getUnitPrice() {
-    print('$totalCost, ${amountController.text}');
     return totalCost ~/ num.parse(amountController.text);
   }
 
@@ -116,7 +111,6 @@ class _SendFinishedState extends State<SendFinished> {
 
   @override
   Widget build(BuildContext context) {
-    print(selectedProduct);
     return Scaffold(
       appBar: AppBar(),
       body: LayoutBuilder(
@@ -130,7 +124,7 @@ class _SendFinishedState extends State<SendFinished> {
               children: [
                 SizedBox(
                   width: isWide
-                      ? constraints.maxWidth / 3
+                      ? constraints.maxWidth / 2
                       : constraints.maxWidth,
                   child: TextField(
                     keyboardType: TextInputType.number,
@@ -144,6 +138,21 @@ class _SendFinishedState extends State<SendFinished> {
                     ),
                   ),
                 ),
+                if (isWide)
+                  SizedBox(
+                    width: isWide
+                        ? constraints.maxWidth / 3
+                        : constraints.maxWidth,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        if (selectedProduct != null &&
+                            (int.tryParse(amountController.text) ?? 0) > 0) {
+                          sendToStock();
+                        }
+                      },
+                      child: const Text("Send"),
+                    ),
+                  ),
                 SizedBox(
                   width: isWide ? constraints.maxWidth : constraints.maxWidth,
                   child: selectedProduct == null
@@ -161,23 +170,25 @@ class _SendFinishedState extends State<SendFinished> {
                           },
                         ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: constraints.maxWidth / 2,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          if (selectedProduct != null &&
-                              (int.tryParse(amountController.text) ?? 0) > 0) {
-                            sendToStock();
-                          }
-                        },
-                        child: const Text("Send"),
+                if (!isWide)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: constraints.maxWidth / 2,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            if (selectedProduct != null &&
+                                (int.tryParse(amountController.text) ?? 0) >
+                                    0) {
+                              sendToStock();
+                            }
+                          },
+                          child: const Text("Send"),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
               ],
             ),
           );

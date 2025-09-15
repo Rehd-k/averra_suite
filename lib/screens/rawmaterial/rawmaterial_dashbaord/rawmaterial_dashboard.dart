@@ -140,7 +140,6 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
   }
 
   handleDamagedGoodsClicked(rowData) async {
-    // print(rowData);
     if (returnedSelection.isEmpty) {
       if (rowData['quantity'] == getSold(rowData['sold'])) {
         doAlerts('This batch have been sold out');
@@ -734,7 +733,7 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
             SizedBox(
               width: cardWidth,
               child: FinanceCard(
-                title: 'Quanitity at Store',
+                title: 'Quantity at Store',
                 icon: Icon(
                   Icons.inventory_2_outlined,
                   size: isBigScreen ? 10 : 5,

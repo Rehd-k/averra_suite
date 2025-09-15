@@ -19,19 +19,19 @@ class Product {
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      id: json['productId'],
+      id: json['product']['_id'],
 
-      title: json['title'],
+      title: json['product']['title'],
 
-      price: json['sellUnits']
-          ? (json['price'] as num).toDouble()
-          : (json['servingPrice'] as num).toDouble(),
+      price: json['product']['sellUnits']
+          ? (json['product']['price'] as num).toDouble()
+          : (json['product']['servingPrice'] as num).toDouble(),
 
-      quantity: json['sellUnits']
-          ? json['quantity']
-          : json['quantity'] ~/ json['servingSize'],
+      quantity: json['product']['sellUnits']
+          ? json['product']['quantity']
+          : json['product']['quantity'] ~/ json['product']['servingSize'],
 
-      cost: json['cost'] ?? 0,
+      cost: json['product']['cost'] ?? 0,
     );
   }
 }
@@ -41,7 +41,7 @@ class ProductService {
   ApiService apiService = ApiService();
 
   FutureOr<List<dynamic>> fetchProducts({
-    required String storeId,
+    required String departmentId,
     required int pageKey,
     required searchFeild,
     required Function addToCart,
@@ -51,20 +51,22 @@ class ProductService {
     int skip = pageKey * pageSize;
 
     String barcodeThing =
-        'products?filter={"isAvailable" : true, "barcode":  "$query"}&sort={"title": 1}&limit=$pageSize&skip=$skip&select=" title price quantity isAvailable type cartonAmount "';
+        'department/for-sell?filter={"isAvailable" : true, "barcode":  "$query"}&sort={"title": 1}&limit=$pageSize&skip=$skip&select=" title price quantity isAvailable type servingQuantity "';
 
     String queryThing =
-        'store/for-sell/$storeId?searchQuery=$query&limit=$pageSize&skip=$skip';
+        'department/for-sell/$departmentId?searchQuery=$query&limit=$pageSize&skip=$skip';
 
     final response = await apiService.get(
       searchFeild == 'title' ? queryThing : barcodeThing,
     );
-    final {"products": products, "totalDocuments": totalDocuments} =
-        response.data;
+
+    var result = response.data;
 
     if (response.statusCode == 200) {
-      var prod = products.map((json) => Product.fromJson(json)).toList();
-      doProductUpdate(prod, totalDocuments);
+      var prod = result['finishedGoods']
+          .map((json) => Product.fromJson(json))
+          .toList();
+      doProductUpdate(prod, result['total']);
 
       if (searchFeild == 'barcode' && prod.isNotEmpty) {
         addToCart(prod[0]);

@@ -7,6 +7,7 @@ import 'package:toastification/toastification.dart';
 import '../../service/api.service.dart';
 import '../../service/toast.service.dart';
 import 'send.finished.dart';
+import 'show.products.dart';
 
 @RoutePage()
 class FinishedGoods extends StatefulWidget {
@@ -73,7 +74,6 @@ class FinishedGoodsState extends State<FinishedGoods> {
       (department) => department['_id'] == id,
       orElse: () => {'totalCost': 0},
     )['totalCost'];
-    print(res);
     await apiService.get(
       'work-in-progress/handle-other-cost?id=$id&title=${titleController.text}&cost=${int.tryParse(costController.text) ?? 0}&removeId=$removeId&totalCost=$res',
     );
@@ -147,145 +147,142 @@ class FinishedGoodsState extends State<FinishedGoods> {
                   ),
                   itemCount: workInProgress.length,
                   itemBuilder: (context, index) {
-                    print('stuff');
                     final item = workInProgress[index];
-                    return Card(
-                      margin: const EdgeInsets.all(8.0),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      capitalizeFirstLetter(
-                                        item['title'] ?? 'No Title',
-                                      ),
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          item['totalCost']
-                                              .toString()
-                                              .formatToFinancial(
-                                                isMoneySymbol: true,
-                                              ),
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-
-                                        IconButton(
-                                          onPressed: () =>
-                                              getProductsFromDepartment(''),
-                                          icon: Icon(Icons.refresh_outlined),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-
-                                Divider(),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Materials :'),
-                                    Text('${item['rawGoods'].length}'),
-                                  ],
-                                ),
-                                SizedBox(height: 10),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Other Costs :'),
-                                    Text('${item['otherCosts'].length}'),
-                                  ],
-                                ),
-                              ],
+                    return GestureDetector(
+                      onDoubleTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled:
+                              true, // allows full screen height if needed
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(20),
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                ElevatedButton(
-                                  onPressed: () {
-                                    print('stuff and stuff plent');
-                                    showTextInputDialog(
-                                      context,
-                                      titleController,
-                                      costController,
-                                      isSmallScreen,
-                                      item['_id'],
-                                    );
-                                  },
-                                  child: const Text("Add Cost"),
-                                ),
-                                OutlinedButton(
-                                  onPressed: () {
-                                    Navigator.of(context).push<void>(
-                                      MaterialPageRoute<void>(
-                                        builder: (BuildContext context) =>
-                                            SendFinished(
-                                              totalCost: item['totalCost'],
-                                              department: item['at'],
-                                              itemId: item['_id'],
-                                              updateList:
-                                                  getProductsFromDepartment,
+                          ),
+                          builder: (context) => DraggableScrollableSheet(
+                            expand: false,
+                            builder: (context, scrollController) {
+                              return ShowProducts(
+                                products: item['rawGoods'],
+                                otherCosts: item['otherCosts'],
+                                scrollController: scrollController,
+                                handleAddCost: handleAddCost,
+                                id: item['_id'],
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      child: Card(
+                        margin: const EdgeInsets.all(8.0),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        capitalizeFirstLetter(
+                                          item['title'] ?? 'No Title',
+                                        ),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            item['totalCost']
+                                                .toString()
+                                                .formatToFinancial(
+                                                  isMoneySymbol: true,
+                                                ),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
                                             ),
+                                          ),
+
+                                          IconButton(
+                                            onPressed: () {
+                                              getProductsFromDepartment('');
+                                            },
+                                            icon: Icon(Icons.refresh_outlined),
+                                          ),
+                                        ],
                                       ),
-                                    );
-                                  },
-                                  child: const Text("Finished"),
-                                ),
-                              ],
-                            ),
-                          ],
+                                    ],
+                                  ),
+
+                                  Divider(),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('Materials :'),
+                                      Text('${item['rawGoods'].length}'),
+                                    ],
+                                  ),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('Other Costs :'),
+                                      Text('${item['otherCosts'].length}'),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      showTextInputDialog(
+                                        context,
+                                        titleController,
+                                        costController,
+                                        isSmallScreen,
+                                        item['_id'],
+                                      );
+                                    },
+                                    child: const Text("Add Cost"),
+                                  ),
+                                  OutlinedButton(
+                                    onPressed: () {
+                                      Navigator.of(context).push<void>(
+                                        MaterialPageRoute<void>(
+                                          builder: (BuildContext context) =>
+                                              SendFinished(
+                                                totalCost: item['totalCost'],
+                                                department: item['at'],
+                                                itemId: item['_id'],
+                                                updateList:
+                                                    getProductsFromDepartment,
+                                              ),
+                                        ),
+                                      );
+                                    },
+                                    child: const Text("Finished"),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
-                    // GestureDetector(
-                    //   onDoubleTap: () {
-                    //     print('stuff and stuff');
-                    //     showModalBottomSheet(
-                    //       context: context,
-                    //       isScrollControlled:
-                    //           true, // allows full screen height if needed
-                    //       shape: const RoundedRectangleBorder(
-                    //         borderRadius: BorderRadius.vertical(
-                    //           top: Radius.circular(20),
-                    //         ),
-                    //       ),
-                    //       builder: (context) => DraggableScrollableSheet(
-                    //         expand: false,
-                    //         builder: (context, scrollController) {
-                    //           return ShowProducts(
-                    //             products: item['rawGoods'],
-                    //             otherCosts: item['otherCosts'],
-                    //             scrollController: scrollController,
-                    //             handleAddCost: handleAddCost,
-                    //             id: item['_id'],
-                    //           );
-                    //         },
-                    //       ),
-                    //     );
-                    //   },
-                    //   child:
-
-                    // );
                   },
                 ),
         ),
@@ -350,6 +347,7 @@ class FinishedGoodsState extends State<FinishedGoods> {
                 num cost = int.tryParse(costController.text) ?? 0;
                 if (cost > 0 && titleController.text.isNotEmpty) {
                   await handleAddCost(id, '');
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
                 }
                 // return text

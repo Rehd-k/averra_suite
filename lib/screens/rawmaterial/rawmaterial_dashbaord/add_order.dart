@@ -28,7 +28,7 @@ class AddOrderState extends State<AddOrder> {
   final apiService = ApiService();
   final _formKey = GlobalKey<FormState>();
 
-  final quanitityController = TextEditingController(text: '0');
+  final quantityController = TextEditingController(text: '0');
 
   final costController = TextEditingController();
 
@@ -64,7 +64,7 @@ class AddOrderState extends State<AddOrder> {
 
   @override
   void dispose() {
-    quanitityController.dispose();
+    quantityController.dispose();
     costController.dispose();
     discountController.dispose();
     paidController.dispose();
@@ -239,19 +239,19 @@ class AddOrderState extends State<AddOrder> {
   }
 
   void calculateTotal() {
-    num enteredQuanity = num.tryParse(quanitityController.text) ?? 0;
-    num totalquanity = enteredQuanity * widget.servingSize;
+    num enteredQuantity = num.tryParse(quantityController.text) ?? 0;
+    num totalquantity = enteredQuantity * widget.servingSize;
     num unitprice = 0;
     num cost = num.tryParse(costController.text) ?? 0;
     num totalPrice = cost;
-    if (totalquanity > 0) {
-      unitprice = cost ~/ totalquanity == 0 ? 1 : totalquanity;
+    if (totalquantity > 0) {
+      unitprice = cost ~/ totalquantity == 0 ? 1 : totalquantity;
     }
 
     var discount = num.tryParse(discountController.text) ?? 0;
     setState(() {
       unitCost = unitprice;
-      totalQunaity = totalquanity;
+      totalQunaity = totalquantity;
       total = totalPrice - discount;
     });
   }
@@ -293,12 +293,12 @@ class AddOrderState extends State<AddOrder> {
         inputFormatters: <TextInputFormatter>[
           FilteringTextInputFormatter.digitsOnly,
         ],
-        controller: quanitityController,
+        controller: quantityController,
         onChanged: (_) {
           calculateTotal();
         },
         decoration: InputDecoration(
-          labelText: 'Quanity',
+          labelText: 'Quantity',
           border: OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(5.0)),
             borderSide: BorderSide(color: Colors.blue),
@@ -330,6 +330,15 @@ class AddOrderState extends State<AddOrder> {
             fontSize: 15,
           ),
         ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Cost Cannot be Empty';
+          }
+          if (int.parse(value) < 1) {
+            return 'Must Be Greater Than 0';
+          }
+          return null;
+        },
       ),
 
       TextFormField(

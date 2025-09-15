@@ -282,31 +282,22 @@ class ViewInvoicesState extends State<ViewInvoices> {
   }
 
   Future<void> _updateInvoice(String id, transaction) async {
-    try {
-      final response = await apiService.put(
-        'invoice/update/${jsonEncoder.convert({'_id': id})}',
-        transaction,
-      );
+    await apiService.put(
+      'invoice/update/${jsonEncoder.convert({'_id': id})}',
+      transaction,
+    );
 
-      if (response.statusCode == 200) {
-        setState(() {
-          _invoices = _invoices.map((invoice) {
-            if (invoice.id == id) {
-              return invoice.copyWith(
-                status: 'paid',
-                transactionId: transaction['transactionId'],
-              );
-            }
-            return invoice;
-          }).toList();
-        });
-        debugPrint('Invoice updated successfully.');
-      } else {
-        debugPrint('Failed to update invoice: ${response.data}');
-      }
-    } catch (e) {
-      debugPrint('Error updating invoice: $e');
-    }
+    setState(() {
+      _invoices = _invoices.map((invoice) {
+        if (invoice.id == id) {
+          return invoice.copyWith(
+            status: 'paid',
+            transactionId: transaction['transactionId'],
+          );
+        }
+        return invoice;
+      }).toList();
+    });
   }
 
   @override

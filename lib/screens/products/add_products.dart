@@ -51,19 +51,19 @@ class AddProductsState extends State<AddProducts> {
 
   final userController = TextEditingController();
 
-  final cartonPriceController = TextEditingController();
+  final servingPriceController = TextEditingController();
 
   final StringBuffer buffer = StringBuffer();
 
   final ApiService apiServices = ApiService();
 
-  bool isUnit = true;
-
   int quantity = 0;
 
-  String servingSize = 'unit';
+  String servingSize = '';
 
   List<String> categories = [''];
+
+  List<String> servingSizes = [''];
 
   @override
   void dispose() {
@@ -81,7 +81,7 @@ class AddProductsState extends State<AddProducts> {
     imageUrlController.dispose();
     typeQuantityController.dispose();
     soldController.dispose();
-    cartonPriceController.dispose();
+    servingPriceController.dispose();
 
     super.dispose();
   }
@@ -101,8 +101,8 @@ class AddProductsState extends State<AddProducts> {
         'barcode': barcodeController.text,
         'isAvailable': isAvailableController,
         'sellUnits': sellUnits,
-        'cartonAmount': int.tryParse(typeQuantityController.text),
-        'cartonPrice': int.tryParse(cartonPriceController.text),
+        'servingQuantity': int.tryParse(typeQuantityController.text),
+        'servingPrice': int.tryParse(servingPriceController.text),
         'type': servingSize,
       });
 
@@ -125,21 +125,21 @@ class AddProductsState extends State<AddProducts> {
   void initState() {
     barcodeController.text = widget.barcode ?? '';
     super.initState();
-    fetchCategories();
+    fetchDbData();
   }
 
-  Future<void> fetchCategories() async {
-    try {
-      final response = await apiServices.get('/category?sort={"title" : "1"}');
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-        setState(() {
-          categories.addAll(data.map((e) => e['title'].toString()).toList());
-        });
-      }
-    } catch (e) {
-      // Handle error or show a message
-    }
+  Future<void> fetchDbData() async {
+    final response = await Future.wait([
+      apiServices.get('category?sort={"title" : "1"}'),
+      apiServices.get('servingsize?sort={"title" : "1"}'),
+    ]);
+
+    final List<dynamic> cat = response[0].data;
+    final List<dynamic> serving = response[1].data;
+    setState(() {
+      categories.addAll(cat.map((e) => e['title'].toString()).toList());
+      servingSizes.addAll(serving.map((e) => e['title'].toString()).toList());
+    });
   }
 
   doShowToast(String toastMessage, ToastificationType type) {
@@ -182,10 +182,9 @@ class AddProductsState extends State<AddProducts> {
               barcodeController.clear();
               imageUrlController.clear();
               soldController.clear();
-              cartonPriceController.clear();
+              servingPriceController.clear();
               setState(() {
                 isAvailableController = true;
-                isUnit = true;
                 servingSize = '';
                 sellUnits = true;
               });
@@ -279,7 +278,7 @@ class AddProductsState extends State<AddProducts> {
                     ),
                     SizedBox(height: 10),
                     DropdownButtonFormField<String>(
-                      value: isUnit ? 'unit' : 'carton',
+                      value: servingSize,
                       decoration: InputDecoration(
                         labelText: 'Product Type',
                         border: OutlineInputBorder(
@@ -291,20 +290,21 @@ class AddProductsState extends State<AddProducts> {
                           fontSize: 15,
                         ),
                       ),
-                      items: ['unit', 'carton', 'portion', 'kg', 'crate']
+                      items: servingSizes
                           .map(
                             (type) => DropdownMenuItem<String>(
                               value: type,
                               child: Text(
-                                type[0].toUpperCase() + type.substring(1),
+                                type == ''
+                                    ? ''
+                                    : type[0].toUpperCase() + type.substring(1),
                               ),
                             ),
                           )
                           .toList(),
                       onChanged: (value) {
                         setState(() {
-                          servingSize = value ?? '';
-                          isUnit = value == 'unit';
+                          servingSize = value!;
                         });
                       },
                       validator: (value) {
@@ -315,7 +315,7 @@ class AddProductsState extends State<AddProducts> {
                       },
                     ),
                     SizedBox(height: 10),
-                    if (!isUnit)
+                    if (servingSize != 'unit')
                       TextFormField(
                         keyboardType: TextInputType.number,
                         inputFormatters: <TextInputFormatter>[
@@ -337,26 +337,26 @@ class AddProductsState extends State<AddProducts> {
                           ),
                         ),
                         validator: (value) {
-                          if (!isUnit && (value == null || value.isEmpty)) {
+                          if (value == null || value.isEmpty) {
                             return 'Please enter $servingSize Quantity';
                           }
-                          if (!isUnit && int.tryParse(value ?? '') == null) {
+                          if (int.tryParse(value) == null) {
                             return '$servingSize Quantity must be a number';
                           }
-                          if (!isUnit && int.parse(value!) < 1) {
+                          if (int.parse(value) < 1) {
                             return '$servingSize Quantity cannot be less than 1';
                           }
                           return null;
                         },
                       ),
-                    if (!isUnit) SizedBox(height: 10),
-                    if (!isUnit)
+                    if (servingSize != 'unit') SizedBox(height: 10),
+                    if (servingSize != 'unit')
                       TextFormField(
                         keyboardType: TextInputType.number,
                         inputFormatters: <TextInputFormatter>[
                           FilteringTextInputFormatter.digitsOnly,
                         ],
-                        controller: cartonPriceController,
+                        controller: servingPriceController,
                         decoration: InputDecoration(
                           labelText:
                               '${capitalizeFirstLetter(servingSize)} Selling Price *',
@@ -372,19 +372,19 @@ class AddProductsState extends State<AddProducts> {
                           ),
                         ),
                         validator: (value) {
-                          if (!isUnit && (value == null || value.isEmpty)) {
+                          if ((value == null || value.isEmpty)) {
                             return 'Please enter $servingSize Price';
                           }
-                          if (!isUnit && int.tryParse(value ?? '') == null) {
+                          if (int.tryParse(value) == null) {
                             return '$servingSize Price must be a number';
                           }
-                          if (!isUnit && int.parse(value!) < 1) {
+                          if (int.parse(value) < 1) {
                             return '$servingSize Quantity cannot be less than 1';
                           }
                           return null;
                         },
                       ),
-                    if (!isUnit) SizedBox(height: 10),
+                    if (servingSize != 'unit') SizedBox(height: 10),
                     TextFormField(
                       keyboardType: TextInputType.number,
                       inputFormatters: <TextInputFormatter>[
@@ -578,7 +578,7 @@ class AddProductsState extends State<AddProducts> {
 
                     SizedBox(height: 10),
                     Divider(),
-                    if (!isUnit)
+                    if (servingSize != 'unit')
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [

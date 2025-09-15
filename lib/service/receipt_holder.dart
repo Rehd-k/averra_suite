@@ -13,7 +13,7 @@ generateReceipt(
   PaperSize paper,
   CapabilityProfile profile,
   Map saleData,
-  Map? storeDetails,
+  Map? departmentDetails,
 ) async {
   final generator = Generator(paper, profile);
   List<int> bytes = [];
@@ -24,21 +24,21 @@ generateReceipt(
   final imgi.Image? image = imgi.decodeImage(pngbytes);
 
   bytes += generator.image(image!);
-  if (storeDetails != null) {
+  if (departmentDetails != null) {
     bytes += generator.text(
-      storeDetails['firm_name'],
+      departmentDetails['firm_name'],
       styles: const PosStyles(align: PosAlign.center),
     );
     bytes += generator.text(
-      storeDetails['location'],
+      departmentDetails['location'],
       styles: const PosStyles(align: PosAlign.center),
     );
     bytes += generator.text(
-      'Phone: ${storeDetails['manager']}',
+      'Phone: ${departmentDetails['manager']}',
       styles: const PosStyles(align: PosAlign.center),
     );
     bytes += generator.text(
-      'Email: ${storeDetails['manager'] ?? '---------'}',
+      'Email: ${departmentDetails['manager'] ?? '---------'}',
       styles: const PosStyles(align: PosAlign.center),
     );
     bytes += generator.hr();

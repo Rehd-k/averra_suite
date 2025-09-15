@@ -26,7 +26,7 @@ class AddOrderState extends State<AddOrder> {
   final apiService = ApiService();
   final _formKey = GlobalKey<FormState>();
 
-  final quanitityController = TextEditingController();
+  final quantityController = TextEditingController();
 
   final searvingController = TextEditingController(text: '0');
 
@@ -50,14 +50,14 @@ class AddOrderState extends State<AddOrder> {
 
   final bankController = TextEditingController()..text = '0';
 
-  final cartonPrice = TextEditingController();
+  final servingPrice = TextEditingController();
 
   DateTime selectedExpiryDate = DateTime.now();
   DateTime selectedDeliveryDate = DateTime.now();
   DateTime selectedPurchaseDate = DateTime.now();
 
   late List suppliers = [];
-  late List stores = [];
+  late List departments = [];
   late List banks = [];
   String toPoint = '';
   late Map<String, dynamic> product;
@@ -73,7 +73,7 @@ class AddOrderState extends State<AddOrder> {
 
   @override
   void dispose() {
-    quanitityController.dispose();
+    quantityController.dispose();
     searvingController.dispose();
     unitsController.dispose();
     searvingPriceController.dispose();
@@ -85,7 +85,7 @@ class AddOrderState extends State<AddOrder> {
     initiatorController.dispose();
     cashController.dispose();
     bankController.dispose();
-    cartonPrice.dispose();
+    servingPrice.dispose();
     super.dispose();
   }
 
@@ -207,8 +207,8 @@ class AddOrderState extends State<AddOrder> {
       'quantity': totalQunaity,
       'price': getUnitPrice(),
       'total': total + (int.tryParse(discountController.text) ?? 0),
-      'cartonPrice': int.tryParse(searvingPriceController.text) ?? 0,
-      'cartonQuanity': int.tryParse(searvingController.text) ?? 0,
+      'servingPrice': int.tryParse(searvingPriceController.text) ?? 0,
+      'servingQuantity': int.tryParse(searvingController.text) ?? 0,
       'totalPayable': total,
       'purchaseDate': selectedPurchaseDate.toString(),
       'status': status,
@@ -245,11 +245,11 @@ class AddOrderState extends State<AddOrder> {
 
   num getUnitPrice() {
     num unitprice = int.tryParse(unitsPriceController.text) ?? 0;
-    num cartonPrice = int.tryParse(searvingPriceController.text) ?? 0;
+    num servingPrice = int.tryParse(searvingPriceController.text) ?? 0;
     if (unitprice > 0) {
       return unitprice;
-    } else if (cartonPrice > 0) {
-      return cartonPrice ~/ product['cartonAmount'];
+    } else if (servingPrice > 0) {
+      return servingPrice ~/ product['servingQuantity'];
     }
     return 0;
   }
@@ -275,7 +275,7 @@ class AddOrderState extends State<AddOrder> {
     if (type == 'unit') {
       totalQunt = unitQunt;
     } else {
-      totalQunt = (searvingQunt * product['cartonAmount']) + unitQunt;
+      totalQunt = (searvingQunt * product['servingQuantity']) + unitQunt;
     }
     num totalPrice = (searvingQunt * searvingPrice) + (unitQunt * unitPrice);
 
@@ -294,7 +294,7 @@ class AddOrderState extends State<AddOrder> {
       apiService.get('bank'),
     ]);
     setState(() {
-      stores = result[0].data;
+      departments = result[0].data;
       suppliers = result[1].data;
       product = result[2].data;
       banks = result[3].data;
@@ -478,7 +478,7 @@ class AddOrderState extends State<AddOrder> {
         items:
             [
               {'title': '', '_id': ''},
-              ...stores,
+              ...departments,
             ].map<DropdownMenuItem<String>>((value) {
               return DropdownMenuItem<String>(
                 value: value['_id'],

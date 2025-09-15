@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 extension FinancialFormat on String {
   String mathFunc(Match match) => '${match[1]},';
 
@@ -24,4 +26,13 @@ String capitalizeFirstLetter(String input) {
   } else {
     return input[0].toUpperCase() + input.substring(1);
   }
+}
+
+String formatBackendTime(String jsTime) {
+  // Parse the JS backend time
+  final dateTime = DateTime.parse(jsTime).toLocal();
+
+  // Format: 12-hour time, day month year
+  final formatter = DateFormat('hh:mm a, dd MMM yyyy');
+  return formatter.format(dateTime);
 }

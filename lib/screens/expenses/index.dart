@@ -1,9 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
-import 'add_expneses.dart';
-import 'view_expenses.dart';
-
 @RoutePage()
 class Expenses extends StatefulWidget {
   const Expenses({super.key});
@@ -13,13 +10,6 @@ class Expenses extends StatefulWidget {
 }
 
 class ExpensesState extends State<Expenses> {
-  final GlobalKey<ViewExpensesState> viewExpenseKey =
-      GlobalKey<ViewExpensesState>();
-
-  void updateExpenses() {
-    viewExpenseKey.currentState?.updateExpenseList();
-  }
-
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.sizeOf(context).width;
@@ -29,20 +19,13 @@ class ExpensesState extends State<Expenses> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          smallScreen
-              ? SizedBox.shrink()
-              : Expanded(
-                  flex: 1,
-                  child: AddExpenses(updateExpenses: updateExpenses),
-                ),
+          // smallScreen
+          //     ? SizedBox.shrink()
+          //     : Expanded(
+          //         flex: 1,
+          //         // child: AddExpenses(updateExpenses: updateExpenses),
+          //       ),
           SizedBox(width: smallScreen ? 0 : 20),
-          Expanded(
-            flex: 2,
-            child: ViewExpenses(
-              key: viewExpenseKey,
-              updateExpense: updateExpenses,
-            ),
-          ),
         ],
       ),
     );

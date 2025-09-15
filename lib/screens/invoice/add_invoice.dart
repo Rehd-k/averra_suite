@@ -33,7 +33,7 @@ class AddInvoiceState extends State<AddInvoice> {
   DateTime dueDate = DateTime.now();
 
   String referenceNumber = 'INV-001';
-  String? store = '';
+  String? department = '';
   String? selectedTemplate;
   List<Map> selectedProducts = [];
   String? discountType = '';
@@ -44,7 +44,7 @@ class AddInvoiceState extends State<AddInvoice> {
   Map? selectedName;
   bool isLoading = true;
   List<dynamic> banks = [];
-  List<dynamic> stores = [];
+  List<dynamic> departments = [];
   Map? bank;
   dynamic selectedStore;
   List<dynamic> productsFromStore = [];
@@ -54,7 +54,7 @@ class AddInvoiceState extends State<AddInvoice> {
     // Search through productsFromStore titles and return matching objects
     List<Map> matches = [];
     for (var product in productsFromStore) {
-      if (product['title'].toString().toLowerCase().contains(
+      if (product['productId']['title'].toString().toLowerCase().contains(
         query.toLowerCase(),
       )) {
         matches.add(product);
@@ -76,22 +76,22 @@ class AddInvoiceState extends State<AddInvoice> {
 
   num _handleCaculateTotal(
     int quantity,
-    int cartonQuantity,
-    int cartonPrice,
+    int servingQuantity,
+    int servingPrice,
     int unitPrice,
     String type,
     bool sellUnits,
   ) {
     if (!sellUnits) {
-      return quantity * cartonPrice;
-      // if (quantity < cartonQuantity) {
+      return quantity * servingPrice;
+      // if (quantity < servingQuantity) {
 
       // } else {
-      //   if (quantity % cartonQuantity == 0) {
-      //     return ((quantity / cartonQuantity) * cartonPrice);
+      //   if (quantity % servingQuantity == 0) {
+      //     return ((quantity / servingQuantity) * servingPrice);
       //   } else {
       //     num units = ((quantity % cartonQuantity) * unitPrice);
-      //     num cartons = ((quantity ~/ cartonQuantity) * cartonPrice);
+      //     num cartons = ((quantity ~/ servingQuantity) * servingPrice);
       //     return units + cartons;
       //   }
       // }
@@ -115,13 +115,13 @@ class AddInvoiceState extends State<AddInvoice> {
 
         /**
          * in order to make this work the way its expected 
-         * the quantity coming in would be devided by the cartonQuantity 
+         * the quantity coming in would be devided by the serving Quantity 
          * if...
-         * 1) its less than the carton amount, then it multiplies by unit price 
-         * 2) its more than the carton amount and divisible by cartonQuantity without any remender
-         *    it is devided and the result is multiplied by the carton price 
+         * 1) its less than the serving quantity, then it multiplies by unit price 
+         * 2) its more than the serving quantity and divisible by serving without any remender
+         *    it is devided and the result is multiplied by the serving price 
          * 3) if its more perfectly divisible, it gets the diviable whole number
-         *    multiple that by the carton amount, then it gets the remender, divides that by the unit price
+         *    multiple that by the serving amount, then it gets the remender, divides that by the unit price
          *    and adds the result 
          */
         // selectedProducts[index]['quantity'] *
@@ -174,7 +174,7 @@ class AddInvoiceState extends State<AddInvoice> {
       'issuedDate': issueDate.toIso8601String(),
       'dueDate': dueDate.toIso8601String(),
       'invoiceNumber': referenceNumber.toLowerCase(),
-      'from': store,
+      'from': department,
       'items': selectedProducts,
       'discount': _calculateDiscount(),
       'totalAmount': _calculateDueAmount(),
@@ -190,6 +190,9 @@ class AddInvoiceState extends State<AddInvoice> {
     var response = await apiService.post('invoice', info);
     if (response.statusCode! >= 200 && response.statusCode! <= 300) {
       shouldShare == 'share' ? sharePdf(response) : null;
+      setState(() {
+        quantityControllers = [];
+      });
       toastification.show(
         title: Text('Invoice Created Successfully'),
         type: ToastificationType.success,
@@ -232,25 +235,27 @@ class AddInvoiceState extends State<AddInvoice> {
       isLoading = true;
     });
     var result = await Future.wait([
-      apiService.get('store?type=dispensary'),
+      apiService.get('department?type=dispensary'),
       apiService.get('bank'),
     ]);
     setState(() {
-      stores = result[0].data;
+      departments = result[0].data;
       banks = result[1].data;
       isLoading = false;
     });
   }
 
   void getStoreValues() async {
-    if (store != '') {
+    if (department != '') {
       setState(() {
         loadingProducts = true;
       });
-      var result = await apiService.get('store/$store');
+      var result = await apiService.get(
+        'department/$department?select=finishedGoods',
+      );
       setState(() {
         selectedStore = result.data;
-        productsFromStore = result.data['products'];
+        productsFromStore = result.data['finishedGoods'];
         selectedProducts = [];
       });
     } else {
@@ -314,11 +319,13 @@ class AddInvoiceState extends State<AddInvoice> {
               quantityControllers.removeAt(existingIndex);
               focusNodes.removeAt(existingIndex);
             } else {
-              suggestion['servingPrice'] = suggestion['servingPrice'];
+              suggestion['productId']['servingPrice'] =
+                  suggestion['productId']['servingPrice'];
               suggestion['quantity'] = 1;
-              suggestion['total'] = suggestion['sellUnits'] == true
-                  ? suggestion['quantity'] * suggestion['price']
-                  : suggestion['quantity'] * suggestion['servingPrice'];
+              suggestion['total'] = suggestion['productId']['sellUnits'] == true
+                  ? suggestion['quantity'] * suggestion['productId']['price']
+                  : suggestion['quantity'] *
+                        suggestion['productId']['servingPrice'];
 
               selectedProducts.add(suggestion);
               quantityControllers.add(
@@ -470,21 +477,21 @@ class AddInvoiceState extends State<AddInvoice> {
                               child: isLoading
                                   ? Center(child: CircularProgressIndicator())
                                   : DropdownButtonFormField<String>(
-                                      value: store,
+                                      value: department,
                                       decoration: InputDecoration(
-                                        labelText: 'From',
+                                        labelText: 'Department',
                                         border: OutlineInputBorder(),
                                       ),
                                       onChanged: (String? newValue) {
                                         setState(() {
-                                          store = newValue!;
+                                          department = newValue!;
                                           getStoreValues();
                                         });
                                       },
                                       items:
                                           [
                                             {'title': '', '_id': ''},
-                                            ...stores,
+                                            ...departments,
                                           ].map<DropdownMenuItem<String>>((
                                             value,
                                           ) {
@@ -549,9 +556,7 @@ class AddInvoiceState extends State<AddInvoice> {
                                       _fetchProducts,
                                       selectProduct,
                                     )
-                                  : Center(
-                                      child: Text('Select Point To Take From'),
-                                    ),
+                                  : Center(child: Text('Select Department')),
                             ),
                           ],
                         );
@@ -584,7 +589,9 @@ class AddInvoiceState extends State<AddInvoice> {
                                 cells: [
                                   DataCell(
                                     Text(
-                                      capitalizeFirstLetter(product['title']),
+                                      capitalizeFirstLetter(
+                                        product['productId']['title'],
+                                      ),
                                     ),
                                   ),
                                   DataCell(

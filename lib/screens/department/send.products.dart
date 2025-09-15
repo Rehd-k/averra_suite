@@ -42,7 +42,6 @@ class SendProductsState extends State<SendProducts> {
       var result = await apiService.get(
         'department/$fromPoint?select=finishedGoods',
       );
-
       setState(() {
         departmentFront = result.data;
         products = result.data['finishedGoods'];
@@ -152,9 +151,8 @@ class SendProductsState extends State<SendProducts> {
             } else {
               // add product
               suggestion['toSend'] = 1;
-              suggestion['product'] = suggestion['product'];
+              suggestion['product'] = suggestion['productId']['_id'];
               selectedProducts.add(suggestion);
-
               quantityControllers.add(
                 TextEditingController(text: suggestion['toSend'].toString()),
               );
@@ -195,7 +193,7 @@ class SendProductsState extends State<SendProducts> {
       showToast(
         'lol, stop',
         ToastificationType.warning,
-        description: 'Select A Point to Send To',
+        description: 'Select A Department to Send To',
         duretion: 5,
       );
       return;
@@ -205,7 +203,7 @@ class SendProductsState extends State<SendProducts> {
       showToast(
         'lol, stop',
         ToastificationType.warning,
-        description: 'You can\'t send to a point you are sending from',
+        description: 'You can\'t send to a Department you are sending from',
         duretion: 5,
       );
       return;
@@ -221,6 +219,10 @@ class SendProductsState extends State<SendProducts> {
       toPoint = '';
       fromPoint = '';
       fromPointName = '';
+      focusNodes = [];
+      priceFocusNodes = [];
+      quantityControllers = [];
+      priceControllers = [];
     });
 
     showToast('Done', ToastificationType.success);
@@ -234,6 +236,8 @@ class SendProductsState extends State<SendProducts> {
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.sizeOf(context).width;
+    bool smallScreen = width <= 1200;
     if (loading) {
       return Center(child: CircularProgressIndicator());
     }
@@ -337,142 +341,158 @@ class SendProductsState extends State<SendProducts> {
             child: Center(child: Text('No Products at the $fromPointName')),
           ),
         if (products.isNotEmpty && fromPoint.isNotEmpty)
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columnSpacing: 133,
-              columns: [
-                DataColumn(label: Text('Product Title')),
-                DataColumn(label: Text('Quantity At Department')),
-                DataColumn(label: Text('Value')),
-                DataColumn(label: Text('Quanity To Send')),
-                DataColumn(label: Text('At Price')),
-              ],
-              rows: products.asMap().entries.map((entry) {
-                final product = entry.value;
-                final exists = selectedProducts.any(
-                  (selected) => selected['_id'] == product['_id'],
-                );
-                return DataRow(
-                  cells: [
-                    DataCell(Text(capitalizeFirstLetter(product['title']))),
-                    DataCell(
-                      Center(
-                        child: Text(
-                          product['quantity'].toString().formatToFinancial(
-                            isMoneySymbol: false,
+          Expanded(
+            child: SingleChildScrollView(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columnSpacing: smallScreen ? 100 : 183,
+                  columns: [
+                    DataColumn(label: Text('Product Title')),
+                    DataColumn(label: Text('Quantity At Department')),
+                    DataColumn(label: Text('Value')),
+                    DataColumn(label: Text('Quantity To Send')),
+                    // DataColumn(label: Text('At Price')),
+                  ],
+                  rows: products.asMap().entries.map((entry) {
+                    final product = entry.value;
+                    final exists = selectedProducts.any(
+                      (selected) => selected['_id'] == product['_id'],
+                    );
+                    return DataRow(
+                      cells: [
+                        DataCell(
+                          Text(
+                            capitalizeFirstLetter(
+                              product['productId']['title'],
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    DataCell(
-                      Text(
-                        product['price'].toString().formatToFinancial(
-                          isMoneySymbol: true,
+                        DataCell(
+                          Center(
+                            child: Text(
+                              product['quantity'].toString().formatToFinancial(
+                                isMoneySymbol: false,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    DataCell(
-                      exists
-                          ? Row(
-                              children: [
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 2.0,
-                                    ),
-                                    child: TextFormField(
-                                      focusNode:
-                                          focusNodes[selectedProducts
-                                              .indexWhere(
-                                                (p) =>
-                                                    p['_id'] == product['_id'],
-                                              )],
-                                      controller:
-                                          quantityControllers[selectedProducts
-                                              .indexWhere(
-                                                (p) =>
-                                                    p['_id'] == product['_id'],
-                                              )],
-                                      textAlign: TextAlign.center,
-                                      keyboardType: TextInputType.number,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.digitsOnly,
-                                      ],
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            width: 0,
-                                            style: BorderStyle.none,
-                                          ),
+                        DataCell(
+                          Text(
+                            product['productId']['price']
+                                .toString()
+                                .formatToFinancial(isMoneySymbol: true),
+                          ),
+                        ),
+                        DataCell(
+                          exists
+                              ? Row(
+                                  children: [
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 2.0,
                                         ),
-                                        isDense: true,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          vertical: 8,
+                                        child: TextFormField(
+                                          focusNode:
+                                              focusNodes[selectedProducts
+                                                  .indexWhere(
+                                                    (p) =>
+                                                        p['_id'] ==
+                                                        product['_id'],
+                                                  )],
+                                          controller:
+                                              quantityControllers[selectedProducts
+                                                  .indexWhere(
+                                                    (p) =>
+                                                        p['_id'] ==
+                                                        product['_id'],
+                                                  )],
+                                          textAlign: TextAlign.center,
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly,
+                                          ],
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                width: 0,
+                                                style: BorderStyle.none,
+                                              ),
+                                            ),
+                                            isDense: true,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                  vertical: 8,
+                                                ),
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                                IconButton(
+                                    IconButton(
+                                      onPressed: () {
+                                        selectProduct(product);
+                                      },
+                                      icon: Icon(Icons.remove_circle),
+                                    ),
+                                  ],
+                                )
+                              : IconButton(
                                   onPressed: () {
                                     selectProduct(product);
                                   },
-                                  icon: Icon(Icons.remove_circle),
+                                  icon: Icon(Icons.edit),
                                 ),
-                              ],
-                            )
-                          : IconButton(
-                              onPressed: () {
-                                selectProduct(product);
-                              },
-                              icon: Icon(Icons.edit),
-                            ),
-                    ),
-                    DataCell(
-                      exists
-                          ? Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 2.0,
-                              ),
-                              child: TextFormField(
-                                focusNode:
-                                    priceFocusNodes[selectedProducts.indexWhere(
-                                      (p) => p['_id'] == product['_id'],
-                                    )],
-                                controller:
-                                    priceControllers[selectedProducts
-                                        .indexWhere(
-                                          (p) => p['_id'] == product['_id'],
-                                        )],
-                                textAlign: TextAlign.center,
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      width: 0,
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(
-                                    vertical: 8,
-                                  ),
-                                ),
-                              ),
-                            )
-                          : Text(
-                              product['price'].toString().formatToFinancial(
-                                isMoneySymbol: true,
-                              ),
-                            ),
-                    ),
-                  ],
-                );
-              }).toList(),
+                        ),
+
+                        // DataCell(
+                        //   exists
+                        //       ? Padding(
+                        //           padding: const EdgeInsets.symmetric(
+                        //             vertical: 2.0,
+                        //           ),
+                        //           child: TextFormField(
+                        //             focusNode:
+                        //                 priceFocusNodes[selectedProducts
+                        //                     .indexWhere(
+                        //                       (p) => p['_id'] == product['_id'],
+                        //                     )],
+                        //             controller:
+                        //                 priceControllers[selectedProducts
+                        //                     .indexWhere(
+                        //                       (p) => p['_id'] == product['_id'],
+                        //                     )],
+                        //             textAlign: TextAlign.center,
+                        //             keyboardType: TextInputType.number,
+                        //             inputFormatters: [
+                        //               FilteringTextInputFormatter.digitsOnly,
+                        //             ],
+                        //             decoration: InputDecoration(
+                        //               border: OutlineInputBorder(
+                        //                 borderSide: BorderSide(
+                        //                   width: 0,
+                        //                   style: BorderStyle.none,
+                        //                 ),
+                        //               ),
+                        //               isDense: true,
+                        //               contentPadding: EdgeInsets.symmetric(
+                        //                 vertical: 8,
+                        //               ),
+                        //             ),
+                        //           ),
+                        //         )
+                        //       : Text(
+                        //           product['price'].toString().formatToFinancial(
+                        //             isMoneySymbol: true,
+                        //           ),
+                        //         ),
+                        // ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
             ),
           ),
       ],

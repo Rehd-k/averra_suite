@@ -50,6 +50,7 @@ final List<MenuItem> menuData = [
     title: 'Customers',
     link: CustomerRoute(),
   ),
+  MenuItem(icon: Icons.settings, title: 'Branches', link: LocationIndex()),
   MenuItem(
     icon: Icons.point_of_sale_outlined,
     title: 'Goods',
@@ -95,20 +96,72 @@ final List<MenuItem> menuData = [
     ],
   ),
   MenuItem(
+    icon: Icons.settings,
+    title: 'Requisition',
+    link: Settings(),
+    children: [
+      MenuItem(
+        icon: Icons.settings,
+        title: 'Create',
+        link: CreateRequisition(),
+      ),
+      MenuItem(
+        icon: Icons.settings,
+        title: 'Show Requisition',
+        link: RequisitionIndex(),
+      ),
+      MenuItem(
+        title: 'Pending Requisition',
+        icon: Icons.pending_actions,
+        link: PendingRequisition(),
+      ),
+    ],
+  ),
+  MenuItem(
     icon: Icons.local_shipping_outlined,
     title: 'Suppliers',
     link: SupplierRoute(),
   ),
+
+  MenuItem(
+    icon: Icons.account_balance_outlined,
+    title: 'Accounts',
+    link: SupplierRoute(),
+    children: [
+      MenuItem(
+        icon: Icons.bookmark_outline,
+        title: 'Petty Cash',
+        link: SupplierRoute(),
+      ),
+      MenuItem(
+        icon: Icons.book_online,
+        title: 'Cash Book',
+        link: SupplierRoute(),
+      ),
+      MenuItem(
+        icon: Icons.request_page_outlined,
+        title: 'Expenses Report',
+        link: SupplierRoute(),
+      ),
+      MenuItem(
+        icon: Icons.data_array_outlined,
+        title: 'Sells Report',
+        link: IncomeReportsRoute(),
+      ),
+      MenuItem(
+        icon: Icons.document_scanner_outlined,
+        title: 'Statement of Profit or Loss',
+        link: SupplierRoute(),
+      ),
+    ],
+  ),
+
   MenuItem(
     icon: Icons.sell_outlined,
     title: 'Make Sell',
     link: MakeSaleRoute(),
   ),
-  MenuItem(
-    icon: Icons.data_array_outlined,
-    title: 'Sells Report',
-    link: IncomeReportsRoute(),
-  ),
+
   MenuItem(
     icon:
         Icons.account_balance_wallet_outlined, // Changed to a more fitting icon
@@ -135,7 +188,16 @@ final List<MenuItem> menuData = [
         title: 'Move Products',
         link: SendProducts(),
       ),
-      MenuItem(icon: Icons.list_alt, title: 'Logs', link: DepartmentHistory()),
+      MenuItem(
+        icon: Icons.request_page_outlined,
+        title: 'Make Request',
+        link: DepartmentRequest(),
+      ),
+      MenuItem(
+        icon: Icons.list_alt,
+        title: 'History',
+        link: DepartmentHistory(),
+      ),
     ],
   ),
   MenuItem(
@@ -152,6 +214,32 @@ final List<MenuItem> menuData = [
     link: AddInvoice(),
   ),
   MenuItem(icon: Icons.settings, title: 'Settings', link: Settings()),
+
+  MenuItem(
+    title: 'Expenses',
+    icon: Icons.pending_actions,
+    link: Expenses(),
+    children: [
+      MenuItem(
+        icon: Icons.dashboard_customize_outlined,
+        title: 'Dashbaord',
+        link: ExpensesDashbaord(),
+      ),
+
+      MenuItem(icon: Icons.add, title: 'Add New', link: AddExpenseRoute()),
+      MenuItem(
+        icon: Icons.category_outlined,
+        title: 'Categories',
+        link: CategoriesRoute(),
+      ),
+
+      MenuItem(
+        icon: Icons.dashboard_customize_outlined,
+        title: 'View Expenses',
+        link: ViewExpenses(),
+      ),
+    ],
+  ),
 ];
 
 @RoutePage()

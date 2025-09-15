@@ -6,7 +6,7 @@ final List<Map<String, dynamic>> columnRmDefinitionMaps = [
   {'name': 'Quantity', 'sortable': true, 'type': 'number', 'field': 'quantity'},
   {'name': 'Measured In', 'sortable': true, 'type': 'text', 'field': 'unit'},
   {
-    'name': 'Quanity Per',
+    'name': 'Quantity Per',
     'sortable': true,
     'type': 'number',
     'field': 'servingSize',

@@ -6,7 +6,7 @@ final columnDefs = [
     'name': 'Serving Size',
     'sortable': true,
     'type': 'money',
-    'field': 'cartonPrice',
+    'field': 'servingPrice',
   },
 
   {'name': 'Total', 'sortable': true, 'type': 'money', 'field': 'total'},

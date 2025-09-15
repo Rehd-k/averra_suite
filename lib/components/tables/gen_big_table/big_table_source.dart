@@ -442,7 +442,7 @@ class MyAsyncDataSource extends AsyncDataTableSource {
                   productId: rowData['_id'],
                   productName: rowData['title'],
                   type: rowData['type'],
-                  cartonAmount: rowData['cartonAmount'].toString(),
+                  servingQuantity: rowData['servingQuantity'].toString(),
                 ),
               );
             } else {

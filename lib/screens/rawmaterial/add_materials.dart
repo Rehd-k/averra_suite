@@ -232,7 +232,6 @@ class AddRawMaterialState extends State<AddRawMaterial> {
                       width: double.infinity,
                       initialSelection: '',
                       controller: servingSizeController,
-
                       requestFocusOnTap: true,
                       label: const Text('Serving Size'),
                       onSelected: (String? size) {

@@ -1,13 +1,17 @@
-import 'package:data_table_2/data_table_2.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:averra_suite/app_router.gr.dart';
+import 'package:averra_suite/helpers/financial_string_formart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
-import '../../helpers/financial_string_formart.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:number_pagination/number_pagination.dart';
+import '../../components/datepill.dart';
+import '../../components/emptylist.dart';
+import '../../components/filter.pill.dart';
+import '../../components/smallinfo.card.dart';
 
 import '../../service/api.service.dart';
 import 'add_expneses.dart';
 
+@RoutePage()
 class ViewExpenses extends StatefulWidget {
   final Function()? updateExpense;
   const ViewExpenses({super.key, this.updateExpense});
@@ -20,12 +24,52 @@ class ViewExpensesState extends State<ViewExpenses> {
   final apiService = ApiService();
   List filteredExpenses = [];
   late List expenses = [];
-  final TextEditingController _searchController = TextEditingController();
   bool isLoading = true;
   int rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
+  int selectedPageNumber = 1;
   String searchQuery = "";
   String sortBy = "name";
+  int totalPages = 0;
   bool ascending = true;
+  DateTime selectedDate = DateTime.now();
+  late List categories = [
+    {'title': 'All'},
+  ];
+  late List statuses = [
+    {'title': 'status'},
+    {'title': 'approved'},
+    {'title': 'pending'},
+  ];
+  String category = 'category';
+  String status = 'status';
+
+  getCategories() async {
+    var result = await apiService.get('expense/category');
+    setState(() {
+      categories.addAll(result.data);
+    });
+  }
+
+  getExpenses() async {
+    var statusBool = status == 'approved'
+        ? true
+        : status == 'pending'
+        ? false
+        : '';
+
+    var dbexpenses = await apiService.get(
+      'expense?filter={"approved" : "$statusBool", "category" : "$category"}&startDate=$selectedDate&endDate=$selectedDate&skip=${selectedPageNumber == 1 ? 0 * 10 : (selectedPageNumber - 1) * 10}&sort={"date" : "asc"}',
+    );
+    setState(() {
+      totalPages = getPageGroup(dbexpenses.data['expensesCount']);
+      expenses = dbexpenses.data['expense'];
+    });
+  }
+
+  int getPageGroup(int totalPages) {
+    if (totalPages <= 0) return 1; // safeguard
+    return ((totalPages - 1) ~/ 10) + 1;
+  }
 
   void filterProducts(String query) {
     setState(() {
@@ -36,31 +80,6 @@ class ViewExpensesState extends State<ViewExpenses> {
         );
       }).toList();
     });
-  }
-
-  Future updateExpenseList() async {
-    setState(() {
-      isLoading = true;
-    });
-    var dbexpenses = await apiService.get('expense?skip=${expenses.length}');
-    setState(() {
-      expenses.addAll(dbexpenses.data);
-      filteredExpenses = List.from(expenses);
-      isLoading = false;
-    });
-  }
-
-  void updateExpenseWhole() async {
-    var dbexpenses = await apiService.get('expense');
-    setState(() {
-      expenses = dbexpenses.data;
-      filteredExpenses = List.from(expenses);
-    });
-  }
-
-  void deleteExpense(String id) async {
-    await apiService.delete('expense/delete/$id');
-    updateExpenseWhole();
   }
 
   Future getExpensesList() async {
@@ -106,242 +125,300 @@ class ViewExpensesState extends State<ViewExpenses> {
     }
   }
 
+  void handleSelectCategory(value) {
+    setState(() {
+      category = value;
+    });
+    getExpenses();
+  }
+
+  void handleSelectStatus(value) {
+    setState(() {
+      status = value;
+    });
+    getExpenses();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(), // The date displayed when the picker opens
+      firstDate: DateTime(2000), // The earliest date a user can select
+      lastDate: DateTime.now(), // The latest date a user can select
+    );
+    if (picked != null) {
+      // Handle the selected date, e.g., update a state variable
+      setState(() {
+        selectedDate = picked;
+      });
+      getExpenses();
+    }
+  }
+
+  handleDelete(id) async {
+    await apiService.delete('expense/$id');
+    getExpenses();
+  }
+
+  handleUpdate(id, update) async {
+    await apiService.patch('expense/$id', update);
+    getExpenses();
+  }
+
+  handlePageChange(pageNumber) {
+    setState(() {
+      selectedPageNumber = pageNumber;
+    });
+    getExpenses();
+  }
+
   @override
   void initState() {
+    getCategories();
+    getExpenses();
     super.initState();
-    getExpensesList();
-    filteredExpenses = List.from(expenses);
   }
 
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.sizeOf(context).width;
     bool smallScreen = width <= 1200;
-    return Column(
+    return Stack(
       children: [
-        smallScreen ? searchBox(smallScreen) : Container(),
-        Expanded(
-          child: PaginatedDataTable2(
-            columnSpacing: 12,
-            horizontalMargin: 12,
-            sortColumnIndex: getColumnIndex(sortBy),
-            sortAscending: ascending,
-            rowsPerPage: rowsPerPage,
-            onRowsPerPageChanged: (value) {
-              setState(() {
-                rowsPerPage = value ?? rowsPerPage;
-              });
-            },
-            empty: Text('No Expenses Recorded'),
-            minWidth: 1500,
-            actions: [],
-            header: smallScreen
-                ? SizedBox(
-                    width: 10,
-                    child: FilledButton.icon(
-                      onPressed: () => showBarModalBottomSheet(
-                        expand: true,
-                        context: context,
-                        backgroundColor: Colors.transparent,
-                        builder: (context) =>
-                            AddExpenses(updateExpenses: widget.updateExpense),
-                      ),
-                      label: Text('Add Expense'),
-                      icon: Icon(Icons.add_box_outlined),
-                    ),
-                  )
-                : Row(children: [searchBox(smallScreen)]),
-            columns: [
-              DataColumn2(
-                label: Text("Category"),
-                size: ColumnSize.L,
-                onSort: (index, ascending) {
-                  setState(() {
-                    sortBy = 'category';
-                    this.ascending = ascending;
-                  });
-                },
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top fixed content
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 14,
               ),
-              DataColumn2(label: Text("description"), size: ColumnSize.L),
-              DataColumn2(label: Text("amount")),
-              DataColumn2(label: Text("amountPaid")),
-              DataColumn2(label: Text("initiator")),
-              DataColumn2(
-                label: Text('Added On'),
-                size: ColumnSize.L,
-                onSort: (index, ascending) {
-                  setState(() {
-                    sortBy = 'createdAt';
-                    this.ascending = ascending;
-                  });
-                },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Expense Transaction', style: TextStyle(fontSize: 10)),
+                  ElevatedButton.icon(
+                    style: ButtonStyle(),
+                    onPressed: () {
+                      context.router.push(AddExpenseRoute());
+                    },
+                    label: Text('New Expense', style: TextStyle(fontSize: 10)),
+                    icon: Icon(Icons.add, size: 10),
+                  ),
+                ],
               ),
-              DataColumn2(label: Text('Actions')),
-            ],
-            source: ExpensesDataSource(
-              deleteExpense: deleteExpense,
-              expenses: getFilteredAndSortedRows(),
-              context: context,
-              updateExpenseData: () {
-                updateExpenseWhole();
-              },
             ),
-            border: TableBorder(
-              horizontalInside: BorderSide.none,
-              verticalInside: BorderSide.none,
+
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  DateRangeButton(
+                    onPressed: () {
+                      _selectDate(context);
+                    },
+                  ),
+                  SizedBox(width: 10),
+                  CategoryDropdown(
+                    pillIcon: Icons.category_outlined,
+                    selected: category,
+                    menuList: categories,
+                    doSelect: handleSelectCategory,
+                  ),
+                  SizedBox(width: 10),
+                  CategoryDropdown(
+                    pillIcon: Icons.pending_actions,
+                    selected: status,
+                    menuList: statuses,
+                    doSelect: handleSelectStatus,
+                  ),
+                ],
+              ),
+            ),
+
+            // Scrollable content
+            Expanded(
+              child: expenses.isEmpty
+                  ? Center(
+                      child: EmptyExpenses(
+                        icon: Icons.receipt_long,
+                        message: "No Expenses Yet",
+                        subMessage:
+                            "Start tracking your spending by adding an expense.",
+                        reload: getExpenses,
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          bottom: 60,
+                        ), // Add padding for pagination
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            // Determine how many cards per row based on screen width
+                            double maxWidth = constraints.maxWidth;
+                            int cardsPerRow;
+
+                            if (maxWidth >= 900) {
+                              cardsPerRow = 3; // large screen
+                            } else if (maxWidth >= 600) {
+                              cardsPerRow = 2; // medium screen
+                            } else {
+                              cardsPerRow = 1; // small screen
+                            }
+
+                            // Card width calculation with spacing
+                            double spacing = 16.0;
+                            double cardWidth =
+                                (maxWidth - (spacing * (cardsPerRow - 1))) /
+                                cardsPerRow;
+
+                            return Wrap(
+                              spacing: spacing,
+                              runSpacing: spacing,
+                              children: expenses
+                                  .map(
+                                    (res) => SizedBox(
+                                      width: cardWidth,
+                                      child: Stack(
+                                        children: [
+                                          SmallinfoCard(
+                                            icon: Icon(Icons.abc_outlined),
+                                            title: capitalizeFirstLetter(
+                                              res['category'],
+                                            ),
+                                            subString: formatBackendTime(
+                                              res['date'],
+                                            ),
+                                            description: res['description'],
+                                            status: res['approved'],
+                                            amount: res['amount'],
+                                            isMoney: true,
+                                          ),
+
+                                          Positioned(
+                                            right: 8,
+                                            top: 8,
+                                            child: Row(
+                                              children: [
+                                                if (!res['approved'])
+                                                  _ActionButton(
+                                                    icon: Icons.edit,
+                                                    color: Colors.grey[600]!,
+                                                    onTap: () {
+                                                      _showEditExpenceSheet(
+                                                        context,
+                                                        res,
+                                                        handleUpdate,
+                                                      );
+                                                    },
+                                                  ),
+                                                const SizedBox(width: 4),
+                                                _ActionButton(
+                                                  icon: Icons.delete,
+                                                  color: Colors.red,
+                                                  onTap: () {
+                                                    _showDeleteConfirmation(
+                                                      context,
+                                                      res['category'],
+                                                      res['_id'],
+                                                      handleDelete,
+                                                    );
+                                                  },
+                                                ),
+                                                _ActionButton(
+                                                  icon: res['approved']
+                                                      ? Icons.close
+                                                      : Icons
+                                                            .check_circle_outline_outlined,
+                                                  color: res['approved']
+                                                      ? Colors.redAccent
+                                                      : Colors.green,
+                                                  onTap: () {
+                                                    handleUpdate(res['_id'], {
+                                                      'approved':
+                                                          !res['approved'],
+                                                    });
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+            ),
+          ],
+        ),
+
+        // Fixed pagination at bottom
+        if (totalPages > 0)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: NumberPagination(
+                onPageChanged: (int pageNumber) {
+                  handlePageChange(pageNumber);
+                },
+                fontSize: 10,
+                buttonRadius: 20,
+                buttonElevation: 3,
+                controlButtonColor: Theme.of(context).colorScheme.primary,
+                unSelectedButtonColor: Theme.of(context).colorScheme.primary,
+                selectedButtonColor: Theme.of(context).cardColor,
+                controlButtonSize: Size(20, 20),
+                numberButtonSize: const Size(20, 20),
+                visiblePagesCount: smallScreen ? 5 : 15,
+                totalPages: totalPages,
+                currentPage: selectedPageNumber,
+                enableInteraction: true,
+              ),
             ),
           ),
-        ),
       ],
     );
   }
-
-  SizedBox searchBox(bool smallScreen) {
-    return SizedBox(
-      width: smallScreen ? double.infinity : 250,
-      child: TextField(
-        controller: _searchController,
-        decoration: InputDecoration(
-          hintText: "Search...",
-          fillColor: Theme.of(context).colorScheme.surface,
-          filled: true,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
-          suffixIcon: IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () => filterProducts(_searchController.text),
-          ),
-        ),
-        onChanged: (query) => {filterProducts(query), searchQuery = query},
-      ),
-    );
-  }
 }
 
-class EditExpense extends StatefulWidget {
-  final Map<String, dynamic> expense;
-  final Function() updateExpenseData;
-
-  const EditExpense({
-    required this.expense,
-    required this.updateExpenseData,
-    super.key,
-  });
-
-  @override
-  EditExpenseState createState() => EditExpenseState();
-}
-
-class EditExpenseState extends State<EditExpense> {
-  final apiService = ApiService();
-  final _formKey = GlobalKey<FormState>();
-  late TextEditingController _categoryController;
-  late TextEditingController _descriptionController;
-  late TextEditingController _amountController;
-  late TextEditingController _amountPaidController;
-
-  @override
-  void initState() {
-    super.initState();
-    _categoryController = TextEditingController(
-      text: widget.expense['category'],
-    );
-    _descriptionController = TextEditingController(
-      text: widget.expense['description'],
-    );
-    _amountController = TextEditingController(
-      text: widget.expense['amount'].toString(),
-    );
-    _amountPaidController = TextEditingController(
-      text: widget.expense['amountPaid'].toString(),
-    );
-  }
-
-  @override
-  void dispose() {
-    _categoryController.dispose();
-    _descriptionController.dispose();
-    _amountController.dispose();
-    _amountPaidController.dispose();
-    super.dispose();
-  }
-
-  void _saveExpense() async {
-    if (_formKey.currentState!.validate()) {
-      await apiService.put('expense/update/${widget.expense['_id']}', {
-        'category': _categoryController.text,
-        'description': _descriptionController.text,
-        'amount': _amountController.text,
-        'amountPaid': _amountPaidController.text,
-      });
-
-      await widget.updateExpenseData();
-
-      // ignore: use_build_context_synchronously
-      Navigator.of(context).pop();
-    }
-  }
+class SearchInput extends StatelessWidget {
+  const SearchInput({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Edit Expense'),
-        actions: [IconButton(icon: Icon(Icons.save), onPressed: _saveExpense)],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _categoryController,
-                decoration: InputDecoration(labelText: 'Category'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a category';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 10),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: InputDecoration(labelText: 'Description'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a description';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 10),
-              TextFormField(
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                controller: _amountController,
-                decoration: InputDecoration(labelText: 'Amount'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter an amount';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 10),
-              TextFormField(
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                controller: _amountPaidController,
-                decoration: InputDecoration(labelText: 'Amount Paid'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the amount paid';
-                  }
-                  return null;
-                },
-              ),
-            ],
+    return SizedBox(
+      width: 200,
+      height: 34, // similar to w-48 in Tailwind
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: "Search...",
+          hintStyle: const TextStyle(fontSize: 10),
+
+          prefixIcon: const Icon(Icons.search, size: 10),
+          filled: true, // bg-gray-100
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30), // pill shape
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide(
+              color: Theme.of(context).colorScheme.primary, // accent color
+              width: 1.5,
+            ),
           ),
         ),
       ),
@@ -349,92 +426,75 @@ class EditExpenseState extends State<EditExpense> {
   }
 }
 
-class ExpensesDataSource extends DataTableSource {
-  final List expenses;
-  final Function() updateExpenseData;
-  BuildContext context;
-  final Function(String) deleteExpense;
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
 
-  String formatDate(String isoDate) {
-    final DateTime parsedDate = DateTime.parse(isoDate);
-    return DateFormat('dd-MM-yyyy').format(parsedDate);
-  }
-
-  void _showEditExpenseBottomSheet(Map<String, dynamic> expense) {
-    showBarModalBottomSheet(
-      context: context,
-      builder: (context) =>
-          EditExpense(expense: expense, updateExpenseData: updateExpenseData),
-    );
-  }
-
-  Color? getRowColor(int amountPaid, int amount) {
-    return amountPaid < amount
-        ? Theme.of(context).colorScheme.error
-        : Theme.of(context).colorScheme.tertiary;
-  }
-
-  ExpensesDataSource({
-    required this.deleteExpense,
-    required this.updateExpenseData,
-    required this.expenses,
-    required this.context,
+  const _ActionButton({
+    required this.icon,
+    required this.color,
+    required this.onTap,
   });
 
   @override
-  DataRow? getRow(int index) {
-    if (index >= expenses.length) return null;
-    final expense = expenses[index];
-    return DataRow(
-      color: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        return getRowColor(expense['amountPaid'], expense['amount']);
-      }),
-      cells: [
-        DataCell(Text(expense['category'])),
-        DataCell(Text(expense['description'])),
-        DataCell(
-          Text(
-            expense['amount'].toString().formatToFinancial(isMoneySymbol: true),
-          ),
-        ),
-        DataCell(
-          Text(
-            expense['amountPaid'].toString().formatToFinancial(
-              isMoneySymbol: true,
-            ),
-          ),
-        ),
-        DataCell(Text(expense['createdBy'])),
-        DataCell(Text(formatDate(expense['createdAt']))),
-        DataCell(
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              IconButton(
-                onPressed: () {
-                  _showEditExpenseBottomSheet(expense);
-                },
-                icon: Icon(Icons.edit_outlined),
-              ),
-              IconButton(
-                onPressed: () {
-                  deleteExpense(expense['_id']);
-                },
-                icon: Icon(Icons.delete_outline),
-              ),
-            ],
-          ),
-        ),
-      ],
+  Widget build(BuildContext context) {
+    return InkResponse(
+      onTap: onTap,
+      radius: 20,
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: Icon(icon, size: 18, color: color),
+      ),
     );
   }
+}
 
-  @override
-  bool get isRowCountApproximate => false;
+void _showEditExpenceSheet(BuildContext context, data, handleUpdate) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    // shape: const RoundedRectangleBorder(
+    //   borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    // ),
+    builder: (context) {
+      return FractionallySizedBox(
+        heightFactor: 0.9,
+        child: AddExpenseScreen(updateInfo: data),
+      );
+    },
+  );
+}
 
-  @override
-  int get rowCount => expenses.length;
-
-  @override
-  int get selectedRowCount => 0;
+void _showDeleteConfirmation(
+  BuildContext context,
+  String categoryName,
+  String id,
+  Function handleDelete,
+) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text("Delete Expense"),
+        content: Text(
+          "Are you sure you want to delete Exepsnes from \"$categoryName\"?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              handleDelete(id);
+              Navigator.pop(context);
+            },
+            child: const Text("Delete"),
+          ),
+        ],
+      );
+    },
+  );
 }

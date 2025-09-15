@@ -124,38 +124,10 @@ class ViewCategoryState extends State<ViewCategory> {
             // empty: Text('No Products Yet'),
             // minWidth: 500,
             actions: [
-              DropdownButton(
-                elevation: 0,
-                hint: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Filter',
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w100),
-                  ),
-                ),
-                borderRadius: BorderRadius.circular(10),
-                icon: Icon(Icons.filter_alt_outlined, size: 10),
-                // value: 'all',
-                items: [
-                  DropdownMenuItem(value: 'all', child: Text('All')),
-                  DropdownMenuItem(
-                    value: 'low stock',
-                    child: Text('Low Stock'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'no   stock',
-                    child: Text('No Stock'),
-                  ),
-                ],
-                onChanged: (v) {},
-              ),
-              FilledButton.icon(
+              IconButton.filledTonal(
                 onPressed: () {},
                 icon: Icon(Icons.exit_to_app, size: 10),
-                label: Text(
-                  'Extract',
-                  style: TextStyle(fontWeight: FontWeight.w100, fontSize: 10),
-                ),
+                tooltip: 'Extract',
               ),
             ],
             header: smallScreen

@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/helpers/financial_string_formart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,7 @@ import '../../service/api.service.dart';
 import '../../service/toast.service.dart';
 import '../../service/token.service.dart';
 
+@RoutePage()
 class DepartmentRequest extends StatefulWidget {
   const DepartmentRequest({super.key});
 
@@ -18,9 +20,7 @@ class DepartmentRequestState extends State<DepartmentRequest> {
   final ApiService apiService = ApiService();
   final JwtService jwtService = JwtService();
   List<FocusNode> focusNodes = [];
-  List<FocusNode> priceFocusNodes = [];
   List<TextEditingController> quantityControllers = [];
-  List<TextEditingController> priceControllers = [];
 
   late String departmentPoint = '';
   late Map departmentFront = {};
@@ -33,6 +33,7 @@ class DepartmentRequestState extends State<DepartmentRequest> {
   String toPoint = '';
   String fromPoint = '';
   String fromPointName = '';
+  String goodsFrom = 'finishedGoods';
 
   void doSearch(String query) {
     getProductsFromDepartment();
@@ -45,11 +46,13 @@ class DepartmentRequestState extends State<DepartmentRequest> {
     });
     try {
       if (fromPoint.isNotEmpty) {
-        var result = await apiService.get('department/$fromPoint');
+        var result = await apiService.get(
+          'department/$fromPoint?select=$goodsFrom',
+        );
 
         setState(() {
           departmentFront = result.data;
-          products = result.data['products'];
+          products = result.data[goodsFrom];
           loading = false;
         });
       }
@@ -124,55 +127,25 @@ class DepartmentRequestState extends State<DepartmentRequest> {
     updateQuantity(index, newQty);
   }
 
-  void updatePrice(int index, int? newPrice) {
-    setState(() {
-      if (newPrice != null && newPrice >= 1) {
-        selectedProducts[index]['price'] = newPrice;
-        priceControllers[index].text = newPrice.toString();
-      } else {
-        toastification.show(
-          title: Text('Invalid price'),
-          type: ToastificationType.info,
-          style: ToastificationStyle.flatColored,
-          autoCloseDuration: const Duration(seconds: 3),
-        );
-      }
-    });
-  }
-
-  void _onPriceFieldUnfocus(int index, String value) {
-    int? newPrice = int.tryParse(value);
-    if (newPrice == null || newPrice < 1) {
-      newPrice = selectedProducts[index]['price']; // fallback to old value
-    }
-    updatePrice(index, newPrice);
-  }
-
   void selectProduct(Map<String, dynamic> suggestion) {
     suggestion['quantity'] > 0
         ? setState(() {
             final existingIndex = selectedProducts.indexWhere(
-              (product) => product['productId'] == suggestion['productId'],
+              (product) => product['_id'] == suggestion['_id'],
             );
 
             if (existingIndex != -1) {
               // remove product
               selectedProducts.removeAt(existingIndex);
               quantityControllers.removeAt(existingIndex);
-              priceControllers.removeAt(existingIndex);
               focusNodes.removeAt(existingIndex);
-              priceFocusNodes.removeAt(existingIndex);
             } else {
               // add product
               suggestion['toSend'] = 1;
-              suggestion['product'] = suggestion['product']['productId'];
+              suggestion['product'] = suggestion['productId']['_id'];
               selectedProducts.add(suggestion);
-
               quantityControllers.add(
                 TextEditingController(text: suggestion['toSend'].toString()),
-              );
-              priceControllers.add(
-                TextEditingController(text: suggestion['price'].toString()),
               );
 
               // Quantity focus node
@@ -186,18 +159,6 @@ class DepartmentRequestState extends State<DepartmentRequest> {
                 }
               });
               focusNodes.add(qtyNode);
-
-              // Price focus node
-              final priceNode = FocusNode();
-              priceNode.addListener(() {
-                if (!priceNode.hasFocus) {
-                  final idx = priceFocusNodes.indexOf(priceNode);
-                  if (idx != -1) {
-                    _onPriceFieldUnfocus(idx, priceControllers[idx].text);
-                  }
-                }
-              });
-              priceFocusNodes.add(priceNode);
             }
           })
         : showToast('Out Of Stock', ToastificationType.info);
@@ -208,7 +169,7 @@ class DepartmentRequestState extends State<DepartmentRequest> {
       showToast(
         'lol, stop',
         ToastificationType.warning,
-        description: 'Select A Point to Send To',
+        description: 'Select A Department to Send To',
         duretion: 5,
       );
       return;
@@ -218,7 +179,7 @@ class DepartmentRequestState extends State<DepartmentRequest> {
       showToast(
         'lol, stop',
         ToastificationType.warning,
-        description: 'You can\'t send to a point you are sending from',
+        description: 'You can\'t send to the Department you are sending from',
         duretion: 5,
       );
       return;
@@ -236,11 +197,12 @@ class DepartmentRequestState extends State<DepartmentRequest> {
       'fromId': fromPoint,
       'toId': toPoint,
       'products': selectedProducts,
+      'section': goodsFrom,
     };
-    await apiService.post(
-      'department-history?senderId=$fromPoint&receiverId=$toPoint',
-      dataToSend,
-    );
+    for (var element in dataToSend['products']) {
+      element['quantity'] = element['toSend'];
+    }
+    await apiService.post('department-history', dataToSend);
 
     setState(() {
       selectedProducts = [];
@@ -248,9 +210,19 @@ class DepartmentRequestState extends State<DepartmentRequest> {
       toPoint = '';
       fromPoint = '';
       fromPointName = '';
+      focusNodes = [];
+      quantityControllers = [];
     });
 
     showToast('Done', ToastificationType.success);
+  }
+
+  void handleGoodsFrom(String loadWip) async {
+    setState(() {
+      toPoint = '';
+      fromPoint = '';
+      goodsFrom = loadWip;
+    });
   }
 
   @override
@@ -261,12 +233,74 @@ class DepartmentRequestState extends State<DepartmentRequest> {
 
   @override
   Widget build(BuildContext context) {
+    final isSmallScreen = MediaQuery.of(context).size.width < 600;
+    final buttonWidth = isSmallScreen
+        ? MediaQuery.of(context).size.width * 0.8
+        : 400.0;
     if (loading) {
       return Center(child: CircularProgressIndicator());
     }
 
     return Column(
+      // mainAxisSize: MainAxisSize.min,
       children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: SizedBox(
+                  width: buttonWidth,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            handleGoodsFrom('RawGoods');
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: goodsFrom == 'RawGoods'
+                                ? Colors.green
+                                : null,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(20),
+                                bottomLeft: Radius.circular(20),
+                              ),
+                            ),
+                          ),
+                          child: const Text("Raw Materials"),
+                        ),
+                      ),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            handleGoodsFrom('finishedGoods');
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: goodsFrom == 'finishedGoods'
+                                ? Colors.green
+                                : null,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(20),
+                                bottomRight: Radius.circular(20),
+                              ),
+                            ),
+                          ),
+                          child: const Text("Finished Goods"),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 10),
         Row(
           children: [
             Expanded(
@@ -303,7 +337,7 @@ class DepartmentRequestState extends State<DepartmentRequest> {
                 child: DropdownButtonFormField<String>(
                   value: toPoint,
                   decoration: InputDecoration(
-                    labelText: 'To (Select Point)',
+                    labelText: 'To (Select Department)',
                     border: OutlineInputBorder(),
                   ),
                   onChanged: (String? newValue) {
@@ -312,7 +346,7 @@ class DepartmentRequestState extends State<DepartmentRequest> {
                   items:
                       [
                         {'title': '', '_id': ''},
-                        ...toDepartmentFronts,
+                        ...departmentFronts,
                       ].map<DropdownMenuItem<String>>((value) {
                         return DropdownMenuItem<String>(
                           value: value['_id'],
@@ -338,7 +372,6 @@ class DepartmentRequestState extends State<DepartmentRequest> {
                   },
                 ),
               ),
-
               SizedBox(width: 20),
               Expanded(
                 child: ElevatedButton(
@@ -363,147 +396,110 @@ class DepartmentRequestState extends State<DepartmentRequest> {
           Expanded(
             child: Center(child: Text('No Products at the $fromPointName')),
           ),
+
         if (products.isNotEmpty && fromPoint.isNotEmpty)
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columnSpacing: 133,
-              columns: [
-                DataColumn(label: Text('Product Title')),
-                DataColumn(label: Text('Quantity At Department')),
-                DataColumn(label: Text('Value')),
-                DataColumn(label: Text('Quanity To Send')),
-                DataColumn(label: Text('At Price')),
-              ],
-              rows: products.asMap().entries.map((entry) {
-                final product = entry.value;
-                final exists = selectedProducts.any(
-                  (selected) => selected['productId'] == product['productId'],
-                );
-                return DataRow(
-                  cells: [
-                    DataCell(Text(product['title'])),
-                    DataCell(
-                      Text(
-                        product['quantity'].toString().formatToFinancial(
-                          isMoneySymbol: false,
+          Expanded(
+            child: SingleChildScrollView(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columnSpacing: isSmallScreen ? 133 : 200,
+                  columns: [
+                    DataColumn(label: Text('Product Title')),
+                    DataColumn(label: Text('Quantity At Department')),
+                    DataColumn(label: Text('Value')),
+                    DataColumn(label: Text('Quantity To Send')),
+                  ],
+                  rows: products.asMap().entries.map((entry) {
+                    final product = entry.value;
+                    final exists = selectedProducts.any(
+                      (selected) =>
+                          selected['productId']['_id'] ==
+                          product['productId']['_id'],
+                    );
+                    return DataRow(
+                      cells: [
+                        DataCell(Text(product['productId']['title'])),
+                        DataCell(
+                          Text(
+                            product['quantity'].toString().formatToFinancial(
+                              isMoneySymbol: false,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    DataCell(
-                      Text(
-                        product['price'].toString().formatToFinancial(
-                          isMoneySymbol: true,
+                        DataCell(
+                          Text(
+                            (product['productId']['price'] ?? product['cost'])
+                                .toString()
+                                .formatToFinancial(isMoneySymbol: true),
+                          ),
                         ),
-                      ),
-                    ),
-                    DataCell(
-                      exists
-                          ? Row(
-                              children: [
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 2.0,
-                                    ),
-                                    child: TextFormField(
-                                      focusNode:
-                                          focusNodes[selectedProducts
-                                              .indexWhere(
-                                                (p) =>
-                                                    p['productId'] ==
-                                                    product['productId'],
-                                              )],
-                                      controller:
-                                          quantityControllers[selectedProducts
-                                              .indexWhere(
-                                                (p) =>
-                                                    p['productId'] ==
-                                                    product['productId'],
-                                              )],
-                                      textAlign: TextAlign.center,
-                                      keyboardType: TextInputType.number,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.digitsOnly,
-                                      ],
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            width: 0,
-                                            style: BorderStyle.none,
-                                          ),
+                        DataCell(
+                          exists
+                              ? Row(
+                                  children: [
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 2.0,
                                         ),
-                                        isDense: true,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          vertical: 8,
+                                        child: TextFormField(
+                                          focusNode:
+                                              focusNodes[selectedProducts
+                                                  .indexWhere(
+                                                    (p) =>
+                                                        p['productId']['_id'] ==
+                                                        product['productId']['_id'],
+                                                  )],
+                                          controller:
+                                              quantityControllers[selectedProducts
+                                                  .indexWhere(
+                                                    (p) =>
+                                                        p['productId']['_id'] ==
+                                                        product['productId']['_id'],
+                                                  )],
+                                          textAlign: TextAlign.center,
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly,
+                                          ],
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                width: 0,
+                                                style: BorderStyle.none,
+                                              ),
+                                            ),
+                                            isDense: true,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                  vertical: 8,
+                                                ),
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                                IconButton(
+                                    IconButton(
+                                      onPressed: () {
+                                        selectProduct(product);
+                                      },
+                                      icon: Icon(Icons.remove_circle),
+                                    ),
+                                  ],
+                                )
+                              : IconButton(
                                   onPressed: () {
                                     selectProduct(product);
                                   },
-                                  icon: Icon(Icons.remove_circle),
+                                  icon: Icon(Icons.edit),
                                 ),
-                              ],
-                            )
-                          : IconButton(
-                              onPressed: () {
-                                selectProduct(product);
-                              },
-                              icon: Icon(Icons.edit),
-                            ),
-                    ),
-                    DataCell(
-                      exists
-                          ? Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 2.0,
-                              ),
-                              child: TextFormField(
-                                focusNode:
-                                    priceFocusNodes[selectedProducts.indexWhere(
-                                      (p) =>
-                                          p['productId'] ==
-                                          product['productId'],
-                                    )],
-                                controller:
-                                    priceControllers[selectedProducts
-                                        .indexWhere(
-                                          (p) =>
-                                              p['productId'] ==
-                                              product['productId'],
-                                        )],
-                                textAlign: TextAlign.center,
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      width: 0,
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(
-                                    vertical: 8,
-                                  ),
-                                ),
-                              ),
-                            )
-                          : Text(
-                              product['price'].toString().formatToFinancial(
-                                isMoneySymbol: true,
-                              ),
-                            ),
-                    ),
-                  ],
-                );
-              }).toList(),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
             ),
           ),
       ],

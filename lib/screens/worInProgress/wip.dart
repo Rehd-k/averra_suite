@@ -51,7 +51,6 @@ class WipState extends State<Wip> {
         setState(() {
           departmentFront = result.data;
           products = result.data['RawGoods'];
-
           loading = false;
         });
       } catch (e) {
@@ -77,6 +76,12 @@ class WipState extends State<Wip> {
     setState(() {
       toPoint = value;
       toPointName = res;
+    });
+  }
+
+  void selectProcess(value) async {
+    setState(() {
+      process = value;
     });
   }
 
@@ -179,7 +184,6 @@ class WipState extends State<Wip> {
               suggestion['toSend'] = 1;
               // suggestion['product'] = suggestion['product'];
               selectedProducts.add(suggestion);
-
               quantityControllers.add(
                 TextEditingController(text: suggestion['toSend'].toString()),
               );
@@ -230,7 +234,7 @@ class WipState extends State<Wip> {
       showToast(
         'lol, stop',
         ToastificationType.warning,
-        description: 'You can\'t send to a point you are sending from',
+        description: 'You can\'t send to a Department you are sending from',
         duretion: 5,
       );
       return;
@@ -251,6 +255,10 @@ class WipState extends State<Wip> {
       toPoint = '';
       fromPoint = '';
       fromPointName = '';
+      focusNodes = [];
+      priceFocusNodes = [];
+      quantityControllers = [];
+      priceControllers = [];
     });
 
     showToast('Done', ToastificationType.success);
@@ -299,10 +307,8 @@ class WipState extends State<Wip> {
   }
 
   @override
-  @override
   void dispose() {
     controller.dispose();
-
     super.dispose();
   }
 
@@ -408,7 +414,7 @@ class WipState extends State<Wip> {
                           border: OutlineInputBorder(),
                         ),
                         onChanged: (String? newValue) {
-                          selectTo(newValue);
+                          selectProcess(newValue);
                         },
                         items:
                             [
@@ -416,7 +422,7 @@ class WipState extends State<Wip> {
                               ...wipProgress,
                             ].map<DropdownMenuItem<String>>((value) {
                               return DropdownMenuItem<String>(
-                                value: value['_id'],
+                                value: value['title'],
                                 child: Text(value['title']),
                               );
                             }).toList(),
@@ -476,14 +482,18 @@ class WipState extends State<Wip> {
                     ),
                   ),
                   onPressed: () {
-                    if (isWip) {
-                      if (process.isEmpty) {
-                        showTextInputDialog(context, controller);
+                    if (fromPoint.isNotEmpty) {
+                      if (isWip) {
+                        if (process.isEmpty) {
+                          showTextInputDialog(context, controller);
+                        } else {
+                          sendToWorkInProgress(process);
+                        }
                       } else {
-                        sendToWorkInProgress(process);
+                        handleSubmit();
                       }
                     } else {
-                      handleSubmit();
+                      showToast('Just Dey Play', ToastificationType.info);
                     }
                   },
                   child: Text(
@@ -514,7 +524,7 @@ class WipState extends State<Wip> {
                 DataColumn(label: Text('Product Title')),
                 DataColumn(label: Text('Quantity At Department')),
                 DataColumn(label: Text('Value')),
-                DataColumn(label: Text('Quanity To Send')),
+                DataColumn(label: Text('Quantity To Send')),
                 DataColumn(label: Text('At Cost')),
               ],
               rows: products.asMap().entries.map((entry) {

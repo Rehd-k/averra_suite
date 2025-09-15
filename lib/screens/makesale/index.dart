@@ -26,10 +26,8 @@ class MakeSaleScreen extends StatefulWidget {
 class MakeSaleIndexState extends State<MakeSaleScreen> {
   ApiService apiService = ApiService();
   Timer? _debounce;
-
   final FocusNode _scannerFocusNode = FocusNode();
   final FocusNode _searchFocusNode = FocusNode();
-
   TextEditingController searchController = TextEditingController();
   final StringBuffer buffer = StringBuffer();
   String _searchQuery = '';
@@ -40,8 +38,8 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
   String searchFeild = 'title';
   List<dynamic> localproducts = [];
   bool _scannerActive = false;
-  String storeId = '';
-  List stores = [];
+  String departmentId = '';
+  List departments = [];
 
   late final _pagingController = PagingController<int, dynamic>(
     getNextPageKey: (state) => ProductService().checkAndFetchProducts(
@@ -50,7 +48,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
       localproducts.length,
     ),
     fetchPage: (pageKey) => ProductService().fetchProducts(
-      storeId: storeId,
+      departmentId: departmentId,
       pageKey: pageKey,
       query: _searchQuery,
       doProductUpdate: voidDoApiCheck,
@@ -91,7 +89,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
     if (product.quantity > 0) {
       setState(() {
         int existingIndex = cart.indexWhere(
-          (item) => item['_id'] == product.id,
+          (item) => item['productId'] == product.id,
         );
         if (existingIndex != -1) {
           if (cart[existingIndex]['quantity'] <
@@ -105,12 +103,13 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
           // Add new product to cart
 
           cart.add({
-            '_id': product.id,
+            'productId': product.id,
             'title': product.title,
             'price': product.price,
             'quantity': 1,
             'total': product.price,
             'cost': product.cost,
+            'from': departmentId,
             'maxQuantity': product.quantity,
           });
           // updateFilteredProductsCount(product.id, product);
@@ -122,13 +121,13 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
   void removeFromCart(String productId) {
     setState(() {
       //  Handle Add Product Qunaity
-      cart.removeWhere((item) => item['_id'] == productId);
+      cart.removeWhere((item) => item['productId'] == productId);
     });
   }
 
   void decrementCartQuantity(String productId) {
     setState(() {
-      int cartIndex = cart.indexWhere((item) => item['_id'] == productId);
+      int cartIndex = cart.indexWhere((item) => item['productId'] == productId);
       if (cartIndex != -1) {
         if (cart[cartIndex]['quantity'] > 1) {
           cart[cartIndex]['quantity']--;
@@ -145,14 +144,12 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
 
   void incrementCartQuantity(String productId) {
     setState(() {
-      int cartIndex = cart.indexWhere((item) => item['_id'] == productId);
+      int cartIndex = cart.indexWhere((item) => item['productId'] == productId);
       if (cartIndex != -1) {
         if (cart[cartIndex]['quantity'] < cart[cartIndex]['maxQuantity']) {
           cart[cartIndex]['quantity']++;
           cart[cartIndex]['total'] =
               cart[cartIndex]['quantity'] * cart[cartIndex]['price'];
-
-          // hadnel Decreace Product Quanity
         }
       }
     });
@@ -160,7 +157,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
 
   void updateCartItemQuantity(String productId, int newQuantity) {
     setState(() {
-      int index = cart.indexWhere((item) => item['_id'] == productId);
+      int index = cart.indexWhere((item) => item['productId'] == productId);
       if (index != -1) {
         // Ensure quantity doesn't exceed available stock
         newQuantity = min(newQuantity, cart[index]['maxQuantity']);
@@ -251,13 +248,13 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
       _scannerFocusNode.requestFocus();
     });
     getCartsFromStorage();
-    getStores();
+    getdepartments();
   }
 
-  void getStores() async {
-    var result = await apiService.get('store?type=dispensary');
+  void getdepartments() async {
+    var result = await apiService.get('department?type=dispensary');
     setState(() {
-      stores = result.data;
+      departments = result.data;
       isLoading = false;
     });
   }
@@ -301,21 +298,23 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
               child: isLoading
                   ? Center(child: CircularProgressIndicator())
                   : DropdownButtonFormField<String>(
-                      value: storeId,
+                      value: departmentId,
                       decoration: InputDecoration(
                         labelText: 'From',
                         border: OutlineInputBorder(),
                       ),
                       onChanged: (String? newValue) {
                         setState(() {
-                          storeId = newValue!;
+                          departmentId = newValue!;
                         });
-                        _onSearchChanged();
+                        if (newValue != '') {
+                          _onSearchChanged();
+                        }
                       },
                       items:
                           [
                             {'title': '', '_id': ''},
-                            ...stores,
+                            ...departments,
                           ].map<DropdownMenuItem<String>>((value) {
                             return DropdownMenuItem<String>(
                               value: value['_id'],
@@ -402,70 +401,76 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Expanded(
-                flex: smallScreen ? 1 : 3,
-                child: Column(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 8.0,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              departmentId != ''
+                  ? Expanded(
+                      flex: smallScreen ? 1 : 3,
+                      child: Column(
                         children: [
-                          Expanded(
-                            child: Text(
-                              '$numberOfProducts Products',
-                              style: Theme.of(context).textTheme.titleMedium,
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 8.0,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    '$numberOfProducts Products',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: TextField(
+                                    autofocus: true,
+                                    controller: searchController,
+                                    onChanged: (value) {
+                                      _onSearchChanged();
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText: 'Search...',
+                                      prefixIcon: Icon(Icons.search),
+                                      suffixIcon: InkWell(
+                                        child: Icon(Icons.close),
+                                        onTap: () {
+                                          _onSearchChanged();
+                                          searchController.text = '';
+                                        },
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      filled: true,
+                                      contentPadding: EdgeInsets.symmetric(
+                                        vertical: 0,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          Expanded(
-                            child: TextField(
-                              autofocus: true,
-                              controller: searchController,
-                              onChanged: (value) {
-                                _onSearchChanged();
-                              },
-                              decoration: InputDecoration(
-                                hintText: 'Search...',
-                                prefixIcon: Icon(Icons.search),
-                                suffixIcon: InkWell(
-                                  child: Icon(Icons.close),
-                                  onTap: () {
-                                    _onSearchChanged();
-                                    searchController.text = '';
-                                  },
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  borderSide: BorderSide.none,
-                                ),
-                                filled: true,
-                                contentPadding: EdgeInsets.symmetric(
-                                  vertical: 0,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    storeId == '' && isLoading
-                        ? Center(child: Text('Select Dispensary to Sell From'))
-                        : ProductGrid(
+                          ProductGrid(
                             pagingController: _pagingController,
                             smallScreen: smallScreen,
                             addToCart: addToCart,
                           ),
-                  ],
-                ),
-              ),
-
+                        ],
+                      ),
+                    )
+                  : Expanded(
+                      flex: smallScreen ? 1 : 3,
+                      child: Center(
+                        child: Text('Select Dispensary to Sell From'),
+                      ),
+                    ),
               // Grid view
               SizedBox(width: 10),
               smallScreen

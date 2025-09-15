@@ -64,11 +64,11 @@ class _EditProductState extends State<EditProduct> {
       _brandController = TextEditingController(text: product['brand']);
 
       _servingSize = TextEditingController(
-        text: product['cartonAmount']?.toString() ?? '0',
+        text: product['servingQuantity']?.toString() ?? '0',
       );
 
       _servingPrice = TextEditingController(
-        text: product['cartonPrice']?.toString() ?? '0',
+        text: product['servingPrice']?.toString() ?? '0',
       );
 
       isLoading = false;
@@ -106,8 +106,8 @@ class _EditProductState extends State<EditProduct> {
         'roq': int.parse(_roqController.text),
         'weight': int.parse(_weightController.text),
         'brand': _brandController.text,
-        'cartonAmount': int.parse(_servingSize.text),
-        'cartonPrice': double.tryParse(_servingPrice.text) ?? 0.0,
+        'servingQuantity': int.parse(_servingSize.text),
+        'servingPrice': double.tryParse(_servingPrice.text) ?? 0.0,
       };
       await apiService.put(
         'products/update/${widget.productId}',

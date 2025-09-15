@@ -11,9 +11,13 @@ class AppTheme {
   AppTheme._();
 
   // Seed colors for generating the color schemes.
-  static const _lightSeedColor =
-      Colors.deepPurple; // A vibrant, light lime green
-  static const _darkSeedColor = Colors.deepOrangeAccent; // A rich, deep purple
+  static const _lightSeedColor = Color.fromARGB(
+    255,
+    255,
+    94,
+    14,
+  ); // A vibrant, light lime green
+  static const _darkSeedColor = Colors.deepPurple; // A rich, deep purple
 
   /// Provides the ThemeData for the light mode.
   static ThemeData get lightTheme {

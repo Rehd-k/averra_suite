@@ -36,37 +36,36 @@ Column buildProductInput(
                 child: Text('No suggestions'),
               );
             } else {
-              print(snapshot.data);
               return ListView(
                 shrinkWrap: true,
                 children: snapshot.data!.map((suggestion) {
-                  dynamic cartonAmout;
-                  if (suggestion['servingSize'] == 0 ||
-                      suggestion['servingSize'] == null) {
-                    cartonAmout = 1;
+                  dynamic servingQuantity;
+                  if (suggestion['productId']['servingSize'] == 0 ||
+                      suggestion['productId']['servingSize'] == null) {
+                    servingQuantity = 1;
                   } else {
-                    cartonAmout = suggestion['servingSize'];
+                    servingQuantity = suggestion['productId']['servingSize'];
                   }
 
                   return ListTile(
                     title: Text(
-                      capitalizeFirstLetter(suggestion['title']),
+                      capitalizeFirstLetter(suggestion['productId']['title']),
                       style: TextStyle(fontSize: 10),
                     ),
                     subtitle: Row(
                       children: [
-                        suggestion['type'] != 'unit'
+                        suggestion['productId']['type'] != 'unit'
                             ? Text(
-                                '${(suggestion['quantity'] ~/ cartonAmout).toString().formatToFinancial(isMoneySymbol: false)} ${capitalizeFirstLetter(suggestion['type'])}s',
+                                '${(suggestion['quantity'] ~/ servingQuantity).toString().formatToFinancial(isMoneySymbol: false)} ${capitalizeFirstLetter(suggestion['productId']['type'])}s',
                                 style: TextStyle(fontSize: 10),
                               )
                             : SizedBox(),
-                        suggestion['type'] != 'unit'
+                        suggestion['productId']['type'] != 'unit'
                             ? SizedBox(width: 10)
                             : SizedBox(),
-                        suggestion['type'] != 'unit'
+                        suggestion['productId']['type'] != 'unit'
                             ? Text(
-                                '${(suggestion['quantity'] % suggestion['cartonAmount']).toString().formatToFinancial(isMoneySymbol: false)} Units',
+                                '${(suggestion['quantity'] % suggestion['productId']['servingQuantity']).toString().formatToFinancial(isMoneySymbol: false)} Units',
                                 style: TextStyle(fontSize: 10),
                               )
                             : Text(
@@ -76,22 +75,23 @@ Column buildProductInput(
                       ],
                     ),
                     trailing: Text(
-                      suggestion['sellUnits']
-                          ? suggestion['price'].toString().formatToFinancial(
-                              isMoneySymbol: true,
-                            )
-                          : suggestion['servingPrice']
+                      suggestion['productId']['sellUnits']
+                          ? suggestion['productId']['price']
+                                .toString()
+                                .formatToFinancial(isMoneySymbol: true)
+                          : suggestion['productId']['servingPrice']
                                 .toString()
                                 .formatToFinancial(isMoneySymbol: true),
                     ),
                     onTap: () {
-                      if (suggestion['sellUnits']) {
+                      if (suggestion['productId']['sellUnits']) {
                         suggestion['remaining'] = suggestion['quantity'];
                       } else {
                         suggestion['remaining'] =
                             (suggestion['quantity'] ~/
-                            suggestion['servingSize']);
-                        suggestion['price'] = suggestion['servingPrice'];
+                            suggestion['productId']['servingSize']);
+                        suggestion['productId']['price'] =
+                            suggestion['productId']['servingPrice'];
                       }
 
                       selectProduct(suggestion);

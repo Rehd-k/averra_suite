@@ -188,7 +188,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       'customer': selectedName?['_id'],
       'charges': selectedCharges,
       'transactionDate': DateTime.now().toString(),
-      'createdAt': DateTime.now().toUtc().toIso8601String(),
       'invoiceId': widget.invoiceId,
     };
     // Capture the context before the async gap
@@ -270,7 +269,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Checkout'),
+        title: Text('Checkout', style: TextStyle(fontSize: 10)),
         leading: IconButton(
           onPressed: () {
             if (widget.invoiceId != null) {
@@ -412,10 +411,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     child: IconButton(
                       tooltip: 'Add new Customer',
                       onPressed: _showAddCustomerBottomSheet,
-                      icon: Icon(
-                        Icons.person_add_alt_1_outlined,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                      icon: Icon(Icons.person_add_alt_1_outlined),
                     ),
                   ),
                 ],
@@ -548,7 +544,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Charges:', style: Theme.of(context).textTheme.titleLarge),
+                Text('Charges:', style: Theme.of(context).textTheme.titleSmall),
                 isChargesLoading
                     ? SizedBox(child: CircularProgressIndicator())
                     : SizedBox(
@@ -613,13 +609,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: Theme.of(context).textTheme.titleLarge),
-        Text(
-          amount.toStringAsFixed(2).formatToFinancial(isMoneySymbol: true),
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            color: Theme.of(context).primaryColor,
-          ),
-        ),
+        Text(label, style: Theme.of(context).textTheme.titleSmall),
+        Text(amount.toStringAsFixed(2).formatToFinancial(isMoneySymbol: true)),
       ],
     );
   }
@@ -628,7 +619,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('Discount:', style: Theme.of(context).textTheme.titleLarge),
+        Text('Discount:', style: Theme.of(context).textTheme.titleSmall),
         SizedBox(
           width: 150,
           child: TextField(
@@ -660,7 +651,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           children: [
             Text(
               'Payment Method',
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context).textTheme.titleSmall,
             ),
             SizedBox(height: 10),
             DropdownButtonFormField<String>(
@@ -740,10 +731,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     _updateAmountPaid();
                   });
                 },
-                icon: Icon(
-                  Icons.remove,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+                icon: Icon(Icons.remove),
               ),
             ],
           ),
