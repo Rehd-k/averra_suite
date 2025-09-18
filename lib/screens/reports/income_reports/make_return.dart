@@ -45,12 +45,13 @@ class MakeReturnState extends State<MakeReturn> {
         existingProduct['quantity'] = _quantity;
       } else {
         _updatedProducts.add({
-          'productId': _selectedProduct['_id'],
+          'productId': _selectedProduct['productId'],
           'title': _selectedProduct['title'],
           'quantity': _quantity,
           'price': _selectedProduct['price'],
           'total': _selectedProduct['price'] * _quantity,
           'batches': _selectedProduct['breakdown'],
+          'from': _selectedProduct['from'],
         });
       }
     });

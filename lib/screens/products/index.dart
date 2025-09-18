@@ -241,7 +241,11 @@ class ProductsIndexState extends State<ProductsScreen> {
                   ),
                   SizedBox(width: 4),
                   if (!smallScreen)
-                    if (JwtService().decodedToken!['role'] != 'cashier')
+                    if ([
+                      'god',
+                      'admin',
+                      'manager',
+                    ].contains(JwtService().decodedToken!['role']))
                       IconButton(
                         onPressed: () {
                           handleShowModal(barcodeHolder);
@@ -264,15 +268,6 @@ class ProductsIndexState extends State<ProductsScreen> {
                       onPressed: () {},
                       tooltip: 'Print Result',
                       icon: Icon(Icons.print_outlined),
-                    ),
-
-                  if (!smallScreen)
-                    IconButton(
-                      onPressed: () {
-                        context.router.push(SendProducts());
-                      },
-                      tooltip: 'Send Products',
-                      icon: Icon(Icons.send_outlined),
                     ),
 
                   if (smallScreen)
@@ -393,6 +388,7 @@ class ProductsIndexState extends State<ProductsScreen> {
                   tooltip: 'Refresh Table',
                   icon: Icon(Icons.refresh_outlined),
                 ),
+                filter: '',
               ),
             ),
           ],

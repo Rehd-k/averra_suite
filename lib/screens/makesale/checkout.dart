@@ -243,14 +243,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   void updateBankByAccountNumber(String accountNumber) {
-    final matchingBank = banks.firstWhere(
-      (bank) => bank['accountNumber'] == accountNumber,
-      orElse: () => null,
-    );
-    if (matchingBank != null) {
-      setState(() {
-        bank = matchingBank;
-      });
+    if (accountNumber.isNotEmpty) {
+      final matchingBank = banks.firstWhere(
+        (bank) => bank['accountNumber'] == accountNumber,
+        orElse: () => null,
+      );
+      if (matchingBank != null) {
+        setState(() {
+          bank = matchingBank;
+        });
+      }
     }
   }
 
@@ -516,7 +518,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                 ),
                 items: [
-                  DropdownMenuItem(value: null, child: Text('Select Bank')),
+                  DropdownMenuItem(value: '', child: Text('Select Bank')),
                   ...banks.map(
                     (bank) => DropdownMenuItem(
                       value: bank['accountNumber'],

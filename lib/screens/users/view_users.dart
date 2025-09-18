@@ -1,10 +1,15 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/helpers/financial_string_formart.dart';
-import 'package:data_table_2/data_table_2.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:number_pagination/number_pagination.dart';
 
+import '../../components/emptylist.dart';
+import '../../components/filter.pill.dart';
 import '../../service/api.service.dart';
+import 'staff.card.dart';
 
+@RoutePage()
 class ViewUsers extends StatefulWidget {
   final Function()? updateUserList;
   const ViewUsers({super.key, this.updateUserList});
@@ -24,6 +29,24 @@ class ViewUsersState extends State<ViewUsers> {
   String sortBy = "firstname";
   bool ascending = true;
   String? selectedValue;
+  int totalPages = 0;
+  int selectedPageNumber = 0;
+  String status = '';
+  String department = '';
+  late List statuses = [
+    {'title': 'status'},
+    {'title': 'approved'},
+    {'title': 'pending'},
+  ];
+
+  late List departments = [
+    {'title': 'department'},
+    {'title': 'HR'},
+    {'title': 'Accounting'},
+    {'title': 'Admin'},
+    {'title': 'Manager'},
+    {'title': 'Supervisor'},
+  ];
 
   @override
   void initState() {
@@ -123,160 +146,164 @@ class ViewUsersState extends State<ViewUsers> {
     });
   }
 
+  handlePageChange(pageNumber) {
+    setState(() {
+      selectedPageNumber = pageNumber;
+    });
+  }
+
+  void handleSelectStatus(value) {
+    setState(() {
+      status = value;
+    });
+  }
+
+  void handleSelectDepartment(value) {
+    setState(() {
+      department = value;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.sizeOf(context).width;
     bool smallScreen = width <= 1200;
-    return Column(
-      children: [
-        smallScreen ? searchBox(smallScreen) : Container(),
-        Expanded(
-          child: PaginatedDataTable2(
-            fixedCornerColor: Theme.of(context).colorScheme.onSecondary,
-            columnSpacing: 12,
-            horizontalMargin: 12,
-            sortColumnIndex: getColumnIndex(sortBy),
-            sortAscending: ascending,
-            rowsPerPage: rowsPerPage,
-            onRowsPerPageChanged: (value) {
-              setState(() {
-                rowsPerPage = value ?? rowsPerPage;
-              });
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Text('Staff Directory'),
+        actions: [
+          ElevatedButton.icon(
+            style: ButtonStyle(),
+            onPressed: () {
+              // AddUser()
+              // context.router.push();
             },
-            empty: Text('No Users Yet'),
-            minWidth: 1000,
-            actions: [
-              SizedBox(
-                width: 150,
-                child: DropdownButton(
-                  value: selectedValue,
-                  focusColor: Colors.transparent,
-                  elevation: 4,
-                  hint: Text(
-                    'Filter',
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w100),
+            label: Text('Add New Staff', style: TextStyle(fontSize: 10)),
+            icon: Icon(Icons.add, size: 10),
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  searchBox(smallScreen),
+                  Row(
+                    children: [
+                      FiltersDropdown(
+                        pillIcon: Icons.pending_actions,
+                        selected: status,
+                        menuList: statuses,
+                        doSelect: handleSelectStatus,
+                      ),
+                      SizedBox(width: 10),
+                      FiltersDropdown(
+                        pillIcon: Icons.departure_board,
+                        selected: department,
+                        menuList: departments,
+                        doSelect: handleSelectDepartment,
+                      ),
+                    ],
                   ),
-                  borderRadius: BorderRadius.circular(10),
-                  icon: Wrap(
-                    direction: Axis.horizontal,
-                    crossAxisAlignment: WrapCrossAlignment.end,
-                    spacing: 5,
-                    runSpacing: 5,
-                    children: [Icon(Icons.filter_alt_outlined, size: 10)],
-                  ),
-                  items: [
-                    DropdownMenuItem(value: 'all', child: Text('All')),
-                    DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                    DropdownMenuItem(value: 'manager', child: Text('Manager')),
-                    DropdownMenuItem(value: 'cashier', child: Text('Cashier')),
-                    DropdownMenuItem(value: 'staff', child: Text('Staff')),
-                  ],
-                  onChanged: (String? v) {
-                    sortUsers(v!);
+                ],
+              ),
+
+              Expanded(
+                child: users.isEmpty
+                    ? Center(
+                        child: EmptyComponent(
+                          icon: Icons.receipt_long,
+                          message: "No Staff Yet",
+                          subMessage:
+                              "Start tracking your spending by adding an expense.",
+                          reload: () {},
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            bottom: 60,
+                          ), // Add padding for pagination
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              // Determine how many cards per row based on screen width
+                              double maxWidth = constraints.maxWidth;
+                              int cardsPerRow;
+
+                              if (maxWidth >= 900) {
+                                cardsPerRow = 4; // large screen
+                              } else if (maxWidth >= 600) {
+                                cardsPerRow = 2; // medium screen
+                              } else {
+                                cardsPerRow = 1; // small screen
+                              }
+
+                              // Card width calculation with spacing
+                              double spacing = 5;
+                              double cardWidth =
+                                  (maxWidth - (spacing * (cardsPerRow - 1))) /
+                                  cardsPerRow;
+
+                              return Wrap(
+                                spacing: spacing,
+                                runSpacing: spacing,
+                                children: [{}, {}, {}, {}, {}, ...users]
+                                    .map(
+                                      (res) => SizedBox(
+                                        width: cardWidth,
+                                        child: Stack(children: [StaffCard()]),
+                                      ),
+                                    )
+                                    .toList(),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+              ),
+            ],
+          ),
+          // Fixed pagination at bottom
+          if (totalPages > 0)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: NumberPagination(
+                  onPageChanged: (int pageNumber) {
+                    handlePageChange(pageNumber);
                   },
+                  fontSize: 10,
+                  buttonRadius: 20,
+                  buttonElevation: 3,
+                  controlButtonColor: Theme.of(context).colorScheme.primary,
+                  unSelectedButtonColor: Theme.of(context).colorScheme.primary,
+                  selectedButtonColor: Theme.of(context).cardColor,
+                  controlButtonSize: Size(20, 20),
+                  numberButtonSize: const Size(20, 20),
+                  visiblePagesCount: smallScreen ? 5 : 15,
+                  totalPages: totalPages,
+                  currentPage: selectedPageNumber,
+                  enableInteraction: true,
                 ),
               ),
-            ],
-            header: smallScreen
-                // ? SizedBox(
-                //     width: 10,
-                //     child: FilledButton.icon(
-                //       onPressed: () => showBarModalBottomSheet(
-                //         expand: true,
-                //         context: context,
-                //         backgroundColor: Colors.transparent,
-                //         builder: (context) =>
-                //             AddUser(updateUserList: widget.updateUserList),
-                //       ),
-                //       label: Text('Add User'),
-                //       icon: Icon(Icons.add_box_outlined),
-                //     ),
-                //   )
-                ? SizedBox()
-                : Row(children: [searchBox(smallScreen)]),
-            columns: [
-              DataColumn2(
-                label: Text("firstName"),
-                size: ColumnSize.L,
-                onSort: (index, ascending) {
-                  setState(() {
-                    sortBy = 'firstName';
-                    this.ascending = ascending;
-                  });
-                },
-              ),
-              DataColumn2(
-                label: Text("lastName"),
-                size: ColumnSize.L,
-                onSort: (index, ascending) {
-                  setState(() {
-                    sortBy = 'lastName';
-                    this.ascending = ascending;
-                  });
-                },
-              ),
-              DataColumn2(
-                label: Text("username"),
-                size: ColumnSize.L,
-                onSort: (index, ascending) {
-                  setState(() {
-                    sortBy = 'username';
-                    this.ascending = ascending;
-                  });
-                },
-              ),
-              DataColumn2(
-                label: Text("Role"),
-                size: ColumnSize.L,
-                onSort: (index, ascending) {
-                  setState(() {
-                    sortBy = 'role';
-                    this.ascending = ascending;
-                  });
-                },
-              ),
-              DataColumn2(
-                label: Text("Initiator"),
-                size: ColumnSize.L,
-                onSort: (index, ascending) {
-                  setState(() {
-                    sortBy = 'initiator';
-                    this.ascending = ascending;
-                  });
-                },
-              ),
-              DataColumn2(
-                label: Text('Added On'),
-                size: ColumnSize.L,
-                onSort: (index, ascending) {
-                  setState(() {
-                    sortBy = 'createdAt';
-                    this.ascending = ascending;
-                  });
-                },
-              ),
-              // DataColumn2(label: Text('Branch'), size: ColumnSize.L),
-              DataColumn2(label: Text('Actions')),
-            ],
-            source: UserDataSource(
-              users: filteredUsers,
-              context: context,
-              deleteUser: deleteUser,
             ),
-            border: TableBorder(
-              horizontalInside: BorderSide.none,
-              verticalInside: BorderSide.none,
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   SizedBox searchBox(bool smallScreen) {
     return SizedBox(
       height: 30,
-      width: smallScreen ? double.infinity : 250,
+      width: smallScreen ? 100 : 250,
       child: TextField(
         style: TextStyle(fontSize: 13),
         cursorHeight: 13,

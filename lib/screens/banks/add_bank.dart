@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_multi_select_items/flutter_multi_select_items.dart';
+import 'package:toastification/toastification.dart';
 
+import '../../components/tables/gen_big_table/big_table_source.dart';
+import '../../service/api.service.dart';
 import '../../service/gateway.service.dart';
 
 class AddBank extends StatefulWidget {
@@ -13,9 +17,13 @@ class AddBank extends StatefulWidget {
 class AddBankState extends State<AddBank> {
   final GatewayService gatewayService = GatewayService();
   final _formKey = GlobalKey<FormState>();
-
+  final ApiService apiService = ApiService();
+  late List settings;
+  List<String> access = [];
+  bool loading = true;
   final nameController = TextEditingController();
   final accountNumberController = TextEditingController();
+  final accountNameController = TextEditingController();
 
   @override
   void dispose() {
@@ -24,11 +32,19 @@ class AddBankState extends State<AddBank> {
     super.dispose();
   }
 
+  @override
+  void initState() {
+    getSettings();
+    super.initState();
+  }
+
   Future<void> handleSubmit(BuildContext context) async {
     try {
       final dynamic response = gatewayService.createBank(
         nameController.text,
+        accountNameController.text,
         accountNumberController.text,
+        access,
       );
 
       if (response.statusCode! >= 200 && response.statusCode! <= 300) {
@@ -38,6 +54,26 @@ class AddBankState extends State<AddBank> {
       } else {}
       // ignore: empty_catches
     } catch (e) {}
+  }
+
+  void getSettings() async {
+    try {
+      var allDepartment = await apiService.get('location');
+      setState(() {
+        settings = allDepartment.data;
+        loading = false;
+      });
+    } catch (e) {
+      doShowToast('Error $e', ToastificationType.error);
+    }
+  }
+
+  void addOrRemoveAccess(value) async {
+    if (access.contains(value)) {
+      access.remove(value);
+    } else {
+      access.add(value);
+    }
   }
 
   @override
@@ -53,6 +89,7 @@ class AddBankState extends State<AddBank> {
           child: Form(
             key: _formKey,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
                   controller: nameController,
@@ -74,6 +111,30 @@ class AddBankState extends State<AddBank> {
                     return null;
                   },
                 ),
+                SizedBox(height: 10),
+                TextFormField(
+                  keyboardType: TextInputType.text,
+                  controller: accountNameController,
+                  decoration: InputDecoration(
+                    labelText: 'Account Name *',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                      borderSide: BorderSide(color: Colors.blue),
+                    ),
+                    labelStyle: TextStyle(
+                      color: Theme.of(context).hintColor,
+                      fontSize: 15,
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter Account Name';
+                    }
+                    return null;
+                  },
+                  textCapitalization: TextCapitalization.characters,
+                ),
+
                 SizedBox(height: 10),
                 TextFormField(
                   keyboardType: TextInputType.number,
@@ -104,6 +165,20 @@ class AddBankState extends State<AddBank> {
                   },
                   textCapitalization: TextCapitalization.characters,
                 ),
+
+                SizedBox(height: 10),
+                if (!loading)
+                  MultiSelectContainer(
+                    items: settings.map<MultiSelectCard>((entry) {
+                      return MultiSelectCard(
+                        value: entry['name'],
+                        label: entry['name'],
+                      );
+                    }).toList(),
+                    onChange: (allSelectedItems, selectedItem) {
+                      addOrRemoveAccess(selectedItem);
+                    },
+                  ),
                 SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () {

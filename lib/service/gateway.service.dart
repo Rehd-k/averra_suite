@@ -14,10 +14,12 @@ class GatewayService {
    *   Bank Apis    *
    ******************/
 
-  Future<dynamic> createBank(name, accountNumber) async {
+  Future<dynamic> createBank(name, accountName, accountNumber, access) async {
     return apiService.post('/bank', {
       'name': name,
+      'accountName': accountName,
       'accountNumber': accountNumber,
+      'access': access,
     });
   }
 

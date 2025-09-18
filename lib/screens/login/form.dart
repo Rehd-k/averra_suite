@@ -193,7 +193,7 @@ class LoginForm extends StatelessWidget {
                 ),
                 items: branches.map<DropdownMenuItem<String>>((branch) {
                   return DropdownMenuItem<String>(
-                    value: branch['_id'].toString(),
+                    value: branch['name'].toString(),
                     child: Text(branch['name']),
                   );
                 }).toList(),

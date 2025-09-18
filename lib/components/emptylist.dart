@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class EmptyExpenses extends StatelessWidget {
+class EmptyComponent extends StatelessWidget {
   final IconData icon;
   final String message;
   final String subMessage;
   final Function reload;
-  const EmptyExpenses({
+  const EmptyComponent({
     super.key,
     required this.icon,
     required this.message,

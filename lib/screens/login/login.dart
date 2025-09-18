@@ -97,12 +97,28 @@ class _LoginFormState extends State<LoginScreen> {
 
       if (response.statusCode! >= 200 && response.statusCode! <= 300) {
         token = response.data['access_token'];
-
+        String role = response.data['role'];
         if (!mounted) return;
 
         JwtService().setToken = token;
+        if (role == 'god' || role == 'admin') {
+          context.router.replaceAll([
+            const AdminNavigation(children: [AdminDashbaord()]),
+          ]);
+        } else if (role == 'waiter') {
+          context.router.replaceAll([
+            WaiterNavigationRoute(children: [MakeSaleRoute()]),
+          ]);
+        } else if (role == 'bar') {
+          context.router.replaceAll([
+            BarNavigationRoute(children: [DepartmentRequest()]),
+          ]);
+        } else if (role == 'supervisor') {
+          context.router.replaceAll([
+            SuperviorNavigationRoute(children: [DashbaordSuperviorRoute()]),
+          ]);
+        }
 
-        context.router.replaceAll([const AdminDashbaord()]);
         setState(() {
           loggedIn = true;
         });

@@ -10,6 +10,7 @@ import 'table_column.dart';
 class ViewProducts extends StatelessWidget {
   final String searchFeild;
   final String searchQuery;
+  final String filter;
   final String selectedCategory;
   final String initialSort;
   final bool isLoading;
@@ -51,6 +52,7 @@ class ViewProducts extends StatelessWidget {
     required this.rowsPerPage,
     required this.tableHeader,
     required this.actions,
+    required this.filter,
   });
 
   Future<Map<String, dynamic>> _fetchServerData({
@@ -64,7 +66,7 @@ class ViewProducts extends StatelessWidget {
     });
 
     var dbproducts = await apiService.get(
-      'products?filter={"$searchFeild" : {"\$regex" : "${searchQuery.toLowerCase()}"}, "category" :  {"\$regex" : "${categoryController.text.toLowerCase()}"}}&skip=$offset&limit=$limit&sort=$sorting',
+      'products?filter={"$searchFeild" : {"\$regex" : "${searchQuery.toLowerCase()}"}, "category" :  {"\$regex" : "${categoryController.text.toLowerCase()}"}}&skip=$offset&limit=$limit&sort=$sorting&filter=$filter',
     );
 
     var {'products': products, 'totalDocuments': totalDocuments} =

@@ -138,15 +138,17 @@ class IndexServingsizeState extends State<IndexServingsizeScreen> {
           SizedBox(width: smallScreen ? 0 : 20),
           Expanded(
             flex: 2,
-            child: ViewServingsize(
-              searchController: searchController,
-              isLoading: isLoading,
-              sortBy: sortBy,
-              ascending: ascending,
-              getFilteredAndSortedRows: getFilteredAndSortedRows,
-              deleteServingsize: deleteservingsize,
-              filterServingsize: filterServings,
-              filteredServingsize: filteredsizes,
+            child: Card(
+              child: ViewServingsize(
+                searchController: searchController,
+                isLoading: isLoading,
+                sortBy: sortBy,
+                ascending: ascending,
+                getFilteredAndSortedRows: getFilteredAndSortedRows,
+                deleteServingsize: deleteservingsize,
+                filterServingsize: filterServings,
+                filteredServingsize: filteredsizes,
+              ),
             ),
           ),
         ],

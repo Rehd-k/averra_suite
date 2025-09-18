@@ -64,7 +64,6 @@ class DepartmentRequestState extends State<DepartmentRequest> {
   void getDepartments() async {
     var toDepartments = [];
     var result = await apiService.get('department?active=${true}');
-
     for (var element in result.data) {
       if (element['access'].contains(jwtService.decodedToken?['role'])) {
         toDepartments.add(element);
@@ -244,62 +243,64 @@ class DepartmentRequestState extends State<DepartmentRequest> {
     return Column(
       // mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 20),
-                child: SizedBox(
-                  width: buttonWidth,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            handleGoodsFrom('RawGoods');
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: goodsFrom == 'RawGoods'
-                                ? Colors.green
-                                : null,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(20),
-                                bottomLeft: Radius.circular(20),
+        jwtService.decodedToken?['role'] != 'bar'
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 20),
+                      child: SizedBox(
+                        width: buttonWidth,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  handleGoodsFrom('RawGoods');
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: goodsFrom == 'RawGoods'
+                                      ? Colors.green
+                                      : null,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(20),
+                                      bottomLeft: Radius.circular(20),
+                                    ),
+                                  ),
+                                ),
+                                child: const Text("Raw Materials"),
                               ),
                             ),
-                          ),
-                          child: const Text("Raw Materials"),
-                        ),
-                      ),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            handleGoodsFrom('finishedGoods');
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: goodsFrom == 'finishedGoods'
-                                ? Colors.green
-                                : null,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(
-                                topRight: Radius.circular(20),
-                                bottomRight: Radius.circular(20),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  handleGoodsFrom('finishedGoods');
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: goodsFrom == 'finishedGoods'
+                                      ? Colors.green
+                                      : null,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.only(
+                                      topRight: Radius.circular(20),
+                                      bottomRight: Radius.circular(20),
+                                    ),
+                                  ),
+                                ),
+                                child: const Text("Finished Goods"),
                               ),
                             ),
-                          ),
-                          child: const Text("Finished Goods"),
+                          ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            ),
-          ],
-        ),
+                ],
+              )
+            : SizedBox(),
         SizedBox(height: 10),
         Row(
           children: [
@@ -317,7 +318,7 @@ class DepartmentRequestState extends State<DepartmentRequest> {
                   },
                   items:
                       [
-                        {'title': '', '_id': ''},
+                        {'title': 'Click To Select', '_id': ''},
                         ...departmentFronts,
                       ].map<DropdownMenuItem<String>>((value) {
                         return DropdownMenuItem<String>(
@@ -345,7 +346,7 @@ class DepartmentRequestState extends State<DepartmentRequest> {
                   },
                   items:
                       [
-                        {'title': '', '_id': ''},
+                        {'title': 'Click To Select', '_id': ''},
                         ...departmentFronts,
                       ].map<DropdownMenuItem<String>>((value) {
                         return DropdownMenuItem<String>(
@@ -390,7 +391,9 @@ class DepartmentRequestState extends State<DepartmentRequest> {
           ),
         ),
         if (fromPoint.isEmpty)
-          Expanded(child: Center(child: Text('Select A Point To Send From'))),
+          Expanded(
+            child: Center(child: Text('Select A Department To Send From')),
+          ),
 
         if (fromPoint.isNotEmpty && products.isEmpty)
           Expanded(
@@ -403,12 +406,13 @@ class DepartmentRequestState extends State<DepartmentRequest> {
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
-                  columnSpacing: isSmallScreen ? 133 : 200,
+                  columnSpacing: isSmallScreen ? 133 : 185,
                   columns: [
                     DataColumn(label: Text('Product Title')),
                     DataColumn(label: Text('Quantity At Department')),
-                    DataColumn(label: Text('Value')),
+                    DataColumn(label: Text('Price/1')),
                     DataColumn(label: Text('Quantity To Send')),
+                    DataColumn(label: Text('Total')),
                   ],
                   rows: products.asMap().entries.map((entry) {
                     final product = entry.value;
@@ -494,6 +498,15 @@ class DepartmentRequestState extends State<DepartmentRequest> {
                                   },
                                   icon: Icon(Icons.edit),
                                 ),
+                        ),
+                        DataCell(
+                          Text(
+                            (product['quantity'] *
+                                    (product['productId']['price'] ??
+                                        product['cost']))
+                                .toString()
+                                .formatToFinancial(isMoneySymbol: true),
+                          ),
                         ),
                       ],
                     );

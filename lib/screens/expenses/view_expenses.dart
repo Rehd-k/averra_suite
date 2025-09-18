@@ -220,14 +220,14 @@ class ViewExpensesState extends State<ViewExpenses> {
                     },
                   ),
                   SizedBox(width: 10),
-                  CategoryDropdown(
+                  FiltersDropdown(
                     pillIcon: Icons.category_outlined,
                     selected: category,
                     menuList: categories,
                     doSelect: handleSelectCategory,
                   ),
                   SizedBox(width: 10),
-                  CategoryDropdown(
+                  FiltersDropdown(
                     pillIcon: Icons.pending_actions,
                     selected: status,
                     menuList: statuses,
@@ -241,7 +241,7 @@ class ViewExpensesState extends State<ViewExpenses> {
             Expanded(
               child: expenses.isEmpty
                   ? Center(
-                      child: EmptyExpenses(
+                      child: EmptyComponent(
                         icon: Icons.receipt_long,
                         message: "No Expenses Yet",
                         subMessage:

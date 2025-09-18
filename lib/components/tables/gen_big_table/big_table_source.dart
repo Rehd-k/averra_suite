@@ -435,8 +435,11 @@ class MyAsyncDataSource extends AsyncDataTableSource {
           tooltip: 'View Details',
           splashRadius: 18,
           onPressed: () {
-            var userinfo = JwtService().decodedToken;
-            if (userinfo?['role'] == 'admin' || userinfo?['role'] == 'god') {
+            if ([
+              'god',
+              'admin',
+              'manager',
+            ].contains(JwtService().decodedToken!['role'])) {
               context.router.push(
                 ProductDashboard(
                   productId: rowData['_id'],

@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:averra_suite/helpers/financial_string_formart.dart';
-import 'package:averra_suite/service/token.service.dart';
 import 'package:flutter/material.dart';
 
 import '../../app_router.gr.dart';
 import '../../components/theme_switch_button.dart';
+import '../../helpers/financial_string_formart.dart';
+import '../../service/token.service.dart';
 
 /// A type-safe data model for our navigation items.
 /// Using a class is better than a Map for readability and error prevention.
@@ -22,34 +22,55 @@ class MenuItem {
   });
 }
 
-/// The menu data now uses the MenuItem model.
-/// I've also corrected the typo in 'Dashboard'.
 final List<MenuItem> menuData = [
   MenuItem(
-    icon: Icons.inventory_2_outlined,
+    icon: Icons.local_shipping_outlined,
     title: 'Dashboard',
-    link: AdminDashbaord(),
+    link: SuperviorNavigationRoute(children: [DashbaordSuperviorRoute()]),
   ),
+
   MenuItem(
-    icon: Icons.supervised_user_circle_outlined,
-    title: 'Team',
-    link: UserManagementRoute(),
-    children: [
-      MenuItem(
-        icon: Icons.settings,
-        title: 'Dashbaord',
-        link: StaffDashboard(),
-      ),
-      MenuItem(icon: Icons.settings, title: 'Add New', link: AddUser()),
-      MenuItem(icon: Icons.settings, title: 'View Staff', link: ViewUsers()),
-    ],
+    icon: Icons.local_shipping_outlined,
+    title: 'Suppliers',
+    link: SuperviorNavigationRoute(children: [SupplierRoute()]),
   ),
   MenuItem(
     icon: Icons.perm_identity_outlined,
     title: 'Customers',
-    link: CustomerRoute(),
+    link: SuperviorNavigationRoute(children: [CustomerRoute()]),
   ),
-  MenuItem(icon: Icons.settings, title: 'Branches', link: LocationIndex()),
+  MenuItem(
+    icon: Icons.data_array_outlined,
+    title: 'Sells Report',
+    link: SuperviorNavigationRoute(children: [IncomeReportsRoute()]),
+  ),
+  MenuItem(
+    title: 'Expenses',
+    icon: Icons.pending_actions,
+    link: Expenses(),
+    children: [
+      MenuItem(
+        icon: Icons.dashboard_customize_outlined,
+        title: 'Dashbaord',
+        link: SuperviorNavigationRoute(children: [ExpensesDashbaord()]),
+      ),
+      MenuItem(
+        icon: Icons.add,
+        title: 'Add New',
+        link: SuperviorNavigationRoute(children: [AddExpenseRoute()]),
+      ),
+      MenuItem(
+        icon: Icons.category_outlined,
+        title: 'Categories',
+        link: SuperviorNavigationRoute(children: [CategoriesRoute()]),
+      ),
+      MenuItem(
+        icon: Icons.dashboard_customize_outlined,
+        title: 'View Expenses',
+        link: SuperviorNavigationRoute(children: [ViewExpenses()]),
+      ),
+    ],
+  ),
   MenuItem(
     icon: Icons.point_of_sale_outlined,
     title: 'Goods',
@@ -58,39 +79,22 @@ final List<MenuItem> menuData = [
       MenuItem(
         icon: Icons.point_of_sale_outlined,
         title: 'Products',
-        link: ProductsRoute(),
+        link: SuperviorNavigationRoute(children: [ProductsRoute()]),
       ),
       MenuItem(
         icon: Icons.raw_off_outlined,
         title: 'Raw Material',
-        link: RawMaterialIndex(),
+        link: SuperviorNavigationRoute(children: [RawMaterialIndex()]),
       ),
       MenuItem(
         icon: Icons.perm_identity_outlined,
         title: 'Category',
-        link: CategoryRoute(),
+        link: SuperviorNavigationRoute(children: [CategoryRoute()]),
       ),
       MenuItem(
         icon: Icons.perm_identity_outlined,
         title: 'Serving Size',
-        link: IndexServingsizeRoute(),
-      ),
-    ],
-  ),
-  MenuItem(
-    icon: Icons.work_outline,
-    title: 'Work In Progress',
-    link: Wip(),
-    children: [
-      MenuItem(
-        icon: Icons.local_shipping_outlined,
-        title: 'Handle Raw Material',
-        link: Wip(),
-      ),
-      MenuItem(
-        icon: Icons.local_shipping_outlined,
-        title: 'Handle Finished',
-        link: FinishedGoods(),
+        link: SuperviorNavigationRoute(children: [IndexServingsizeRoute()]),
       ),
     ],
   ),
@@ -102,144 +106,25 @@ final List<MenuItem> menuData = [
       MenuItem(
         icon: Icons.settings,
         title: 'Create',
-        link: CreateRequisition(),
+        link: SuperviorNavigationRoute(children: [CreateRequisition()]),
       ),
       MenuItem(
         icon: Icons.settings,
         title: 'Show Requisition',
-        link: RequisitionIndex(),
+        link: SuperviorNavigationRoute(children: [RequisitionIndex()]),
       ),
       MenuItem(
         title: 'Pending Requisition',
         icon: Icons.pending_actions,
-        link: PendingRequisition(),
-      ),
-    ],
-  ),
-  MenuItem(
-    icon: Icons.local_shipping_outlined,
-    title: 'Suppliers',
-    link: SupplierRoute(),
-  ),
-  MenuItem(
-    icon: Icons.account_balance_outlined,
-    title: 'Accounts',
-    link: SupplierRoute(),
-    children: [
-      MenuItem(
-        icon: Icons.bookmark_outline,
-        title: 'Petty Cash',
-        link: SupplierRoute(),
-      ),
-      MenuItem(
-        icon: Icons.book_online,
-        title: 'Cash Book',
-        link: SupplierRoute(),
-      ),
-      MenuItem(
-        icon: Icons.request_page_outlined,
-        title: 'Expenses Report',
-        link: SupplierRoute(),
-      ),
-      MenuItem(
-        icon: Icons.data_array_outlined,
-        title: 'Sells Report',
-        link: IncomeReportsRoute(),
-      ),
-      MenuItem(
-        icon: Icons.document_scanner_outlined,
-        title: 'Statement of Profit or Loss',
-        link: SupplierRoute(),
-      ),
-    ],
-  ),
-  MenuItem(
-    icon: Icons.sell_outlined,
-    title: 'Make Sell',
-    link: MakeSaleRoute(),
-  ),
-  MenuItem(
-    icon:
-        Icons.account_balance_wallet_outlined, // Changed to a more fitting icon
-    title: 'Banks',
-    link: BankRoute(),
-  ),
-  MenuItem(
-    icon: Icons.store_mall_directory_outlined, // Changed to a more fitting icon
-    title: 'Department',
-    link: DepartmentNavigation(), // This route might be a parent/wrapper
-    children: [
-      MenuItem(
-        icon: Icons.point_of_sale_outlined,
-        title: 'Dashboard',
-        link: DepartmentDashboard(),
-      ),
-      MenuItem(
-        icon: Icons.perm_identity_outlined,
-        title: 'Details',
-        link: DepartmentIndex(),
-      ),
-      MenuItem(
-        icon: Icons.local_shipping_outlined,
-        title: 'Move Products',
-        link: SendProducts(),
-      ),
-      MenuItem(
-        icon: Icons.request_page_outlined,
-        title: 'Make Request',
-        link: DepartmentRequest(),
-      ),
-      MenuItem(
-        icon: Icons.list_alt,
-        title: 'History',
-        link: DepartmentHistory(),
-      ),
-    ],
-  ),
-  MenuItem(
-    title: 'Invoices',
-    icon: Icons.inventory_2_rounded,
-    children: [
-      MenuItem(icon: Icons.add, title: 'Create Invoices', link: AddInvoice()),
-      MenuItem(
-        icon: Icons.list_alt,
-        title: 'Handle Invoices',
-        link: ViewInvoices(),
-      ),
-    ],
-    link: AddInvoice(),
-  ),
-  MenuItem(icon: Icons.settings, title: 'Settings', link: Settings()),
-  MenuItem(
-    title: 'Expenses',
-    icon: Icons.pending_actions,
-    link: Expenses(),
-    children: [
-      MenuItem(
-        icon: Icons.dashboard_customize_outlined,
-        title: 'Dashbaord',
-        link: ExpensesDashbaord(),
-      ),
-
-      MenuItem(icon: Icons.add, title: 'Add New', link: AddExpenseRoute()),
-      MenuItem(
-        icon: Icons.category_outlined,
-        title: 'Categories',
-        link: CategoriesRoute(),
-      ),
-
-      MenuItem(
-        icon: Icons.dashboard_customize_outlined,
-        title: 'View Expenses',
-        link: ViewExpenses(),
+        link: SuperviorNavigationRoute(children: [PendingRequisition()]),
       ),
     ],
   ),
 ];
 
 @RoutePage()
-class AdminNavigation extends StatelessWidget {
-  const AdminNavigation({super.key});
+class SuperviorNavigationScreen extends StatelessWidget {
+  const SuperviorNavigationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

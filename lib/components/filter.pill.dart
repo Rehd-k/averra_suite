@@ -1,11 +1,12 @@
+import 'package:averra_suite/helpers/financial_string_formart.dart';
 import 'package:flutter/material.dart';
 
-class CategoryDropdown extends StatelessWidget {
+class FiltersDropdown extends StatelessWidget {
   final String selected;
   final List menuList;
   final Function doSelect;
   final IconData pillIcon;
-  const CategoryDropdown({
+  const FiltersDropdown({
     super.key,
     required this.selected,
     required this.menuList,
@@ -23,7 +24,7 @@ class CategoryDropdown extends StatelessWidget {
           .map(
             (item) => PopupMenuItem(
               value: item['title'] as String,
-              child: Text(item['title']),
+              child: Text(capitalizeFirstLetter(item['title'])),
             ),
           )
           .toList(),

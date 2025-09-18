@@ -7,6 +7,7 @@ import '../../app_router.gr.dart';
 import '../../helpers/financial_string_formart.dart';
 import '../../service/api.service.dart';
 import '../../service/gateway.service.dart';
+import '../../service/token.service.dart';
 
 class ViewBanks extends StatefulWidget {
   final Function()? updateBank;
@@ -19,6 +20,7 @@ class ViewBanks extends StatefulWidget {
 class ViewBanksState extends State<ViewBanks> {
   final GatewayService gatewayService = GatewayService();
   final ApiService apiService = ApiService();
+  final JwtService jwtService = JwtService();
   List filteredBanks = [];
   late List banks = [];
   final TextEditingController _searchController = TextEditingController();
@@ -40,12 +42,18 @@ class ViewBanksState extends State<ViewBanks> {
   }
 
   Future updateBankList() async {
+    List bankKeep = [];
     setState(() {
       isLoading = true;
     });
     var dbbanks = await apiService.get('bank');
+    for (var element in dbbanks.data) {
+      if (element['access'].contains(jwtService.decodedToken?['location'])) {
+        bankKeep.add(element);
+      }
+    }
     setState(() {
-      banks = dbbanks.data;
+      banks = bankKeep;
       filteredBanks = List.from(banks);
       isLoading = false;
     });
@@ -173,7 +181,18 @@ class ViewBanksState extends State<ViewBanks> {
                   });
                 },
               ),
+              DataColumn2(
+                label: Text("Account Name"),
+                size: ColumnSize.L,
+                onSort: (index, ascending) {
+                  setState(() {
+                    sortBy = 'accountName';
+                    this.ascending = ascending;
+                  });
+                },
+              ),
               DataColumn2(label: Text("Account Number"), size: ColumnSize.L),
+
               DataColumn2(label: Text("Balance")),
               DataColumn2(label: Text("Is Active")),
               DataColumn2(label: Text("initiator")),
@@ -248,6 +267,7 @@ class BanksDataSource extends DataTableSource {
     return DataRow(
       cells: [
         DataCell(Text(bank['name'])),
+        DataCell(Text(bank['accountName'])),
         DataCell(Text(bank['accountNumber'])),
         bank['isActive'] ? DataCell(Text('True')) : DataCell(Text('False')),
         DataCell(

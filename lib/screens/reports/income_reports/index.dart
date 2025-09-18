@@ -41,7 +41,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
   late Map<String, dynamic> summaryCalculations;
   Map<String, dynamic> transactionUpdate = {};
   String? searchFeild = 'transactionId';
-  String? initialSort = 'createdAt';
+  String? initialSort = 'transactionDate';
   String? searchFeildForSearchText = '';
   String? paymentMethordToShow = '';
   String? selectedAccount = '';
@@ -190,7 +190,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
     bool? sortAscending,
   }) async {
     var sorting = jsonEncoder.convert({
-      "$initialSort": (sortAscending ?? true) ? 'asc' : 'desc',
+      "$initialSort": (sortAscending ?? true) ? 1 : -1,
     });
 
     var dbproducts = await apiService.get(
@@ -279,6 +279,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             onPressed: () {

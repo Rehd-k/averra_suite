@@ -8,7 +8,6 @@ class AppRouter extends RootStackRouter {
   List<AutoRoute> get routes => [
     AutoRoute(page: LoginRoute.page, keepHistory: false, initial: true),
     AutoRoute(
-      path: '/',
       page: AdminNavigation.page,
       children: [
         AutoRoute(page: AdminDashbaord.page),
@@ -49,13 +48,51 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: ViewExpenses.page),
         AutoRoute(page: AddExpenseRoute.page),
         AutoRoute(page: CategoriesRoute.page),
+        AutoRoute(page: ViewUsers.page),
+        AutoRoute(page: ViewUser.page),
+        AutoRoute(page: AddUser.page),
+        AutoRoute(
+          page: DepartmentNavigation.page,
+          children: [
+            AutoRoute(page: DepartmentDashboard.page),
+            AutoRoute(page: DepartmentIndex.page),
+          ],
+        ),
       ],
     ),
     AutoRoute(
-      page: DepartmentNavigation.page,
+      page: WaiterNavigationRoute.page,
       children: [
-        AutoRoute(page: DepartmentDashboard.page),
-        AutoRoute(page: DepartmentIndex.page),
+        AutoRoute(page: MakeSaleRoute.page),
+        AutoRoute(page: CustomerRoute.page),
+        AutoRoute(page: IncomeReportsRoute.page),
+        AutoRoute(page: CheckoutRoute.page),
+      ],
+    ),
+
+    AutoRoute(
+      page: BarNavigationRoute.page,
+      children: [AutoRoute(page: DepartmentRequest.page)],
+    ),
+    AutoRoute(
+      page: SuperviorNavigationRoute.page,
+      children: [
+        AutoRoute(page: DashbaordSuperviorRoute.page),
+        AutoRoute(page: SupplierRoute.page),
+        AutoRoute(page: CustomerRoute.page),
+        AutoRoute(page: IncomeReportsRoute.page),
+        AutoRoute(page: ExpensesDashbaord.page),
+        AutoRoute(page: AddExpenseRoute.page),
+        AutoRoute(page: CategoriesRoute.page),
+        AutoRoute(page: ViewExpenses.page),
+        AutoRoute(page: ProductsRoute.page),
+        AutoRoute(page: RawMaterialIndex.page),
+        AutoRoute(page: CategoryRoute.page),
+        AutoRoute(page: IndexServingsizeRoute.page),
+
+        AutoRoute(page: CreateRequisition.page),
+        AutoRoute(page: RequisitionIndex.page),
+        AutoRoute(page: PendingRequisition.page),
       ],
     ),
   ];

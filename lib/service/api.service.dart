@@ -93,7 +93,15 @@ class ApiService {
     }
   }
 
-  Future post(String endpoint, Map<String, dynamic> data) async {
+  Future post(
+    String endpoint,
+    Object data, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    void Function(int, int)? onSendProgress,
+    void Function(int, int)? onReceiveProgress,
+  }) async {
     try {
       var result = await _dio.post(endpoint, data: data);
 
