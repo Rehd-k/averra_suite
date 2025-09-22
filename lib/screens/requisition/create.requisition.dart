@@ -161,11 +161,14 @@ class CreateRequisitionState extends State<CreateRequisition> {
         'notes': noteController.text,
         'from': type,
         'products': selectedProducts,
+        'totalCost': totalBalance,
       };
     }
     await apiService.post('reqisition', dataToSave);
+    showToast('Done', ToastificationType.success);
     setState(() {
       selectedProducts = [];
+      totalBalance = 0;
     });
   }
 
@@ -408,156 +411,188 @@ class CreateRequisitionState extends State<CreateRequisition> {
               ),
             Expanded(
               flex: 2,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    children: [
-                      SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            totalBalance.toString().formatToFinancial(
-                              isMoneySymbol: true,
-                            ),
-                            style: TextStyle(fontSize: 10),
+              child: Card(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      children: [
+                        SizedBox(height: 20),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    selectedProducts.length
+                                        .toString()
+                                        .formatToFinancial(
+                                          isMoneySymbol: false,
+                                        ),
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                  Text(
+                                    ' Items',
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Cost :',
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                  Text(
+                                    totalBalance.toString().formatToFinancial(
+                                      isMoneySymbol: true,
+                                    ),
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          SizedBox(
-                            height: smallScreen ? 330 : 385,
-                            child: SingleChildScrollView(
+                        ),
+                        Column(
+                          children: [
+                            SizedBox(
+                              height: smallScreen ? 330 : 385,
                               child: SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: DataTable(
-                                  columnSpacing: smallScreen ? 100 : 135,
-                                  columns: const [
-                                    DataColumn(
-                                      label: Text(
-                                        'Product Name',
-                                        style: TextStyle(fontSize: 10),
-                                      ),
-                                    ),
-                                    DataColumn(
-                                      label: Text(
-                                        'Quantity',
-                                        style: TextStyle(fontSize: 10),
-                                      ),
-                                    ),
-                                    DataColumn(
-                                      label: Text(
-                                        'Cost',
-                                        style: TextStyle(fontSize: 10),
-                                      ),
-                                    ),
-                                    DataColumn(
-                                      label: Text(
-                                        'Remove',
-                                        style: TextStyle(fontSize: 10),
-                                      ),
-                                    ),
-                                  ],
-                                  rows: selectedProducts.map<DataRow>((item) {
-                                    return DataRow(
-                                      cells: [
-                                        DataCell(
-                                          Text(
-                                            item['product_title'] ?? '',
-                                            style: TextStyle(fontSize: 10),
-                                          ),
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: DataTable(
+                                    columnSpacing: smallScreen ? 100 : 160,
+                                    columns: const [
+                                      DataColumn(
+                                        label: Text(
+                                          'Product Name',
+                                          style: TextStyle(fontSize: 10),
                                         ),
-                                        DataCell(
-                                          Text(
-                                            item['quantity']
-                                                .toString()
-                                                .formatToFinancial(
-                                                  isMoneySymbol: false,
-                                                ),
-                                            style: TextStyle(fontSize: 10),
-                                          ),
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Quantity',
+                                          style: TextStyle(fontSize: 10),
                                         ),
-                                        DataCell(
-                                          Text(
-                                            item['cost']
-                                                    ?.toString()
-                                                    .formatToFinancial(
-                                                      isMoneySymbol: true,
-                                                    ) ??
-                                                '',
-                                            style: TextStyle(fontSize: 10),
-                                          ),
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Cost',
+                                          style: TextStyle(fontSize: 10),
                                         ),
-                                        DataCell(
-                                          IconButton.filledTonal(
-                                            onPressed: () {
-                                              removeFromList(item);
-                                            },
-                                            icon: Icon(
-                                              Icons.remove_circle_outline,
-                                              size: 10,
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Remove',
+                                          style: TextStyle(fontSize: 10),
+                                        ),
+                                      ),
+                                    ],
+                                    rows: selectedProducts.map<DataRow>((item) {
+                                      return DataRow(
+                                        cells: [
+                                          DataCell(
+                                            Text(
+                                              item['product_title'] ?? '',
+                                              style: TextStyle(fontSize: 10),
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    );
-                                  }).toList(),
+                                          DataCell(
+                                            Text(
+                                              item['quantity']
+                                                  .toString()
+                                                  .formatToFinancial(
+                                                    isMoneySymbol: false,
+                                                  ),
+                                              style: TextStyle(fontSize: 10),
+                                            ),
+                                          ),
+                                          DataCell(
+                                            Text(
+                                              item['cost']
+                                                      ?.toString()
+                                                      .formatToFinancial(
+                                                        isMoneySymbol: true,
+                                                      ) ??
+                                                  '',
+                                              style: TextStyle(fontSize: 10),
+                                            ),
+                                          ),
+                                          DataCell(
+                                            IconButton.filledTonal(
+                                              onPressed: () {
+                                                removeFromList(item);
+                                              },
+                                              icon: Icon(
+                                                Icons.remove_circle_outline,
+                                                size: 10,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          SizedBox(height: 20),
-                          TextField(
-                            keyboardType: TextInputType.multiline,
-                            controller: noteController,
-                            minLines:
-                                5, // The initial number of lines to display
-                            maxLines:
-                                5, // Allows the TextField to expand as needed, or set a specific max number of lines
-                            decoration: InputDecoration(
-                              hintText: 'Notes',
-                              border:
-                                  OutlineInputBorder(), // Optional: Adds a border around the text field
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () {
-                                  save('branch');
-                                },
-                                child: Text(
-                                  'From Branch',
-                                  style: TextStyle(fontSize: 10),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  save('new purchase');
-                                },
-                                child: Text(
-                                  'New Request',
-                                  style: TextStyle(fontSize: 10),
+                            SizedBox(height: 20),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: TextField(
+                                keyboardType: TextInputType.multiline,
+                                controller: noteController,
+                                minLines:
+                                    4, // The initial number of lines to display
+                                maxLines:
+                                    4, // Allows the TextField to expand as needed, or set a specific max number of lines
+                                decoration: InputDecoration(
+                                  hintText: 'Notes',
+                                  border:
+                                      OutlineInputBorder(), // Optional: Adds a border around the text field
                                 ),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () {
+                                    save('branch');
+                                  },
+                                  child: Text(
+                                    'From Branch',
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    save('new purchase');
+                                  },
+                                  child: Text(
+                                    'New Request',
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -692,7 +727,6 @@ class LocationPickerModal extends StatelessWidget {
             },
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
                 borderRadius: BorderRadius.circular(25),
                 border: Border.all(color: Colors.blue, width: 1.5),
               ),

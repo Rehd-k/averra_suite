@@ -25,28 +25,39 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
   bool loading = true;
   bool loadingTable = true;
   bool loadingCharts = true;
-  // DateTime? _fromDate = DateTime(2010, 1, 1);
-  // DateTime? _toDate = DateTime.now();
+  late Map cardsData = {
+    'totalInRange': 0,
+    'approvedInRange': 0,
+    'unapprovedInRange': 0,
+    'documentCountInRange': 0,
+    'highestSpendingCategory': {'_id': 'No Info', 'totalSpent': 0},
+    'totalForMonth': 0,
+    'latestTransactions': [],
+  };
 
   handleRangeChanged(String rangeLabel) {
     setState(() {
       selectedRange = rangeLabel;
     });
-    getChartData(selectedRange);
+
+    getData(rangeLabel);
   }
 
-  Future getChartData(dateRange) async {
+  Future getData(dateRange) async {
     final range = getDateRange(dateRange);
-    final response = await apiService.get(
-      'sales/getchart/"productId"?filter={"sorter":"$dateRange"}&startDate=${range.startDate}&endDate=${range.endDate}',
-    );
+
+    var futures = await Future.wait([
+      getCardsData(range),
+      getChartData(dateRange),
+    ]);
     setState(() {
       spots.clear();
-      response.data.forEach((item) {
+      cardsData = futures[0].data[0];
+      futures[1].data.forEach((item) {
         spots.add(
           FlSpot(
             (item['for'] as num).toDouble(),
-            (item['totalSales'] as num).toDouble(),
+            (item['totalExpenses'] as num).toDouble(),
           ),
         );
       });
@@ -54,6 +65,22 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
       loadingCharts = false;
       loadingTable = false;
     });
+  }
+
+  Future getCardsData(range) {
+    return apiService.get(
+      'expense/total?startDate=${range.startDate}&endDate=${range.endDate}',
+    );
+  }
+
+  Future getChartData(range) {
+    return apiService.get('expense/chart?filter=$range');
+  }
+
+  @override
+  void initState() {
+    handleRangeChanged('Today');
+    super.initState();
   }
 
   @override
@@ -82,7 +109,7 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
               int cardsPerRow;
 
               if (maxWidth >= 900) {
-                cardsPerRow = 3; // large screen
+                cardsPerRow = 4; // large screen
               } else if (maxWidth >= 600) {
                 cardsPerRow = 2; // medium screen
               } else {
@@ -103,8 +130,30 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
                     child: FinanceCard(
                       fontSize: isBigScreen ? 10 : 5,
                       isFinancial: true,
-                      amount: 546864536,
+                      amount: cardsData['totalInRange'],
                       title: 'Total Expenses',
+                      icon: Icon(Icons.money),
+                    ),
+                  ),
+
+                  SizedBox(
+                    width: cardWidth,
+                    child: FinanceCard(
+                      fontSize: isBigScreen ? 10 : 5,
+                      isFinancial: true,
+                      amount: cardsData['approvedInRange'],
+                      title: 'Total Approved Expenses',
+                      icon: Icon(Icons.money),
+                    ),
+                  ),
+
+                  SizedBox(
+                    width: cardWidth,
+                    child: FinanceCard(
+                      fontSize: isBigScreen ? 10 : 5,
+                      isFinancial: true,
+                      amount: cardsData['unapprovedInRange'],
+                      title: 'Total Expenses Pending',
                       icon: Icon(Icons.money),
                     ),
                   ),
@@ -114,7 +163,7 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
                     child: InfoCard(
                       fontSize: isBigScreen ? 10 : 5,
                       isFinancial: true,
-                      info: 'Dining',
+                      info: cardsData['highestSpendingCategory']['_id'],
                       title: 'Highest Spending Category',
                       icon: Icon(Icons.money),
                     ),
@@ -124,8 +173,19 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
                     child: FinanceCard(
                       fontSize: isBigScreen ? 10 : 5,
                       isFinancial: false,
-                      amount: 58,
+                      amount: cardsData['documentCountInRange'],
                       title: 'Number Of Transactions',
+                      icon: Icon(Icons.money),
+                    ),
+                  ),
+
+                  SizedBox(
+                    width: cardWidth,
+                    child: FinanceCard(
+                      fontSize: isBigScreen ? 10 : 5,
+                      isFinancial: false,
+                      amount: 58,
+                      title: 'Monthly Budget',
                       icon: Icon(Icons.money),
                     ),
                   ),
@@ -152,6 +212,7 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
                             selectedRange: selectedRange,
                             spots: spots,
                             isCurved: true,
+                            heading: 'Expenses Visualization',
                           ),
                         ),
                       ),
@@ -169,7 +230,7 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
                                 child: Row(
                                   children: [
                                     Text(
-                                      'Recent Transaction',
+                                      'Recent Entries',
                                       style: TextStyle(fontSize: 14),
                                     ),
                                   ],
@@ -178,26 +239,30 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
                               SizedBox(height: 20),
                               Expanded(
                                 child: ListView.builder(
-                                  itemCount: 10,
+                                  itemCount:
+                                      cardsData['latestTransactions'].length,
                                   itemBuilder: (context, index) {
-                                    // final product = _updatedProducts[index];
+                                    final product =
+                                        cardsData['latestTransactions'][index];
                                     return ListTile(
                                       leading: Icon(
                                         Icons.punch_clock,
                                         size: 10,
                                       ),
                                       title: Text(
-                                        "product['title']",
+                                        product['category'],
                                         style: TextStyle(fontSize: 10),
                                       ),
                                       subtitle: Text(
-                                        'Quantity: ${"product['quantity']"}',
+                                        product['description'],
                                         style: TextStyle(fontSize: 10),
                                       ),
                                       trailing: Text(
-                                        '30090002'.formatToFinancial(
-                                          isMoneySymbol: true,
-                                        ),
+                                        product['amount']
+                                            .toString()
+                                            .formatToFinancial(
+                                              isMoneySymbol: true,
+                                            ),
                                         style: TextStyle(fontSize: 10),
                                       ),
                                     );
@@ -247,26 +312,30 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
                               SizedBox(height: 20),
                               Expanded(
                                 child: ListView.builder(
-                                  itemCount: 10,
+                                  itemCount:
+                                      cardsData['latestTransactions'].length,
                                   itemBuilder: (context, index) {
-                                    // final product = _updatedProducts[index];
+                                    final product =
+                                        cardsData['latestTransactions'][index];
                                     return ListTile(
                                       leading: Icon(
                                         Icons.punch_clock,
                                         size: 10,
                                       ),
                                       title: Text(
-                                        "product['title']",
+                                        product['category'],
                                         style: TextStyle(fontSize: 10),
                                       ),
                                       subtitle: Text(
-                                        'Quantity: ${"product['quantity']"}',
+                                        product['description'],
                                         style: TextStyle(fontSize: 10),
                                       ),
                                       trailing: Text(
-                                        '30090002'.formatToFinancial(
-                                          isMoneySymbol: true,
-                                        ),
+                                        product['amount']
+                                            .toString()
+                                            .formatToFinancial(
+                                              isMoneySymbol: true,
+                                            ),
                                         style: TextStyle(fontSize: 10),
                                       ),
                                     );

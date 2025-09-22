@@ -43,6 +43,7 @@ class ProductsIndexState extends State<ProductsScreen> {
   String _searchQuery = '';
   String? barcodeHolder;
   bool _scannerActive = true;
+  String quntfilter = '';
   int rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
 
   @override
@@ -144,6 +145,12 @@ class ProductsIndexState extends State<ProductsScreen> {
     }
   }
 
+  void doQunnityFilter(v) {
+    setState(() {
+      quntfilter = v;
+    });
+  }
+
   @override
   void dispose() {
     categoryController.dispose();
@@ -227,17 +234,19 @@ class ProductsIndexState extends State<ProductsScreen> {
                     icon: Icon(Icons.filter_alt_outlined, size: 10),
                     // value: 'all',
                     items: [
-                      DropdownMenuItem(value: 'all', child: Text('All')),
+                      DropdownMenuItem(value: '', child: Text('All')),
                       DropdownMenuItem(
                         value: 'low stock',
                         child: Text('Low Stock'),
                       ),
                       DropdownMenuItem(
-                        value: 'no   stock',
+                        value: 'no stock',
                         child: Text('No Stock'),
                       ),
                     ],
-                    onChanged: (v) {},
+                    onChanged: (v) {
+                      doQunnityFilter(v);
+                    },
                   ),
                   SizedBox(width: 4),
                   if (!smallScreen)
@@ -388,7 +397,7 @@ class ProductsIndexState extends State<ProductsScreen> {
                   tooltip: 'Refresh Table',
                   icon: Icon(Icons.refresh_outlined),
                 ),
-                filter: '',
+                filter: quntfilter,
               ),
             ),
           ],

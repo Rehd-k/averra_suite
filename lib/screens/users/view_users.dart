@@ -11,8 +11,7 @@ import 'staff.card.dart';
 
 @RoutePage()
 class ViewUsers extends StatefulWidget {
-  final Function()? updateUserList;
-  const ViewUsers({super.key, this.updateUserList});
+  const ViewUsers({super.key});
 
   @override
   ViewUsersState createState() => ViewUsersState();
@@ -79,7 +78,9 @@ class ViewUsersState extends State<ViewUsers> {
   }
 
   Future getUsersList() async {
-    var dbusers = await apiService.get('user');
+    var dbusers = await apiService.get(
+      'user?select=" firstName lastName role "',
+    );
     setState(() {
       users = dbusers.data;
       getFilteredAndSortedRows();
@@ -251,11 +252,13 @@ class ViewUsersState extends State<ViewUsers> {
                               return Wrap(
                                 spacing: spacing,
                                 runSpacing: spacing,
-                                children: [{}, {}, {}, {}, {}, ...users]
+                                children: [...users]
                                     .map(
                                       (res) => SizedBox(
                                         width: cardWidth,
-                                        child: Stack(children: [StaffCard()]),
+                                        child: Stack(
+                                          children: [StaffCard(user: res)],
+                                        ),
                                       ),
                                     )
                                     .toList(),

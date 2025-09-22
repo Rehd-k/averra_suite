@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/app_router.gr.dart';
 import 'package:averra_suite/helpers/financial_string_formart.dart';
+import 'package:averra_suite/service/token.service.dart';
 import 'package:flutter/material.dart';
 import 'package:number_pagination/number_pagination.dart';
 import '../../components/datepill.dart';
@@ -285,9 +286,9 @@ class ViewExpensesState extends State<ViewExpenses> {
                                         children: [
                                           SmallinfoCard(
                                             icon: Icon(Icons.abc_outlined),
-                                            title: capitalizeFirstLetter(
-                                              res['category'],
-                                            ),
+                                            title:
+                                                "${capitalizeFirstLetter(res['category'])} ---- from ${capitalizeFirstLetter(res['initiator'])} ",
+
                                             subString: formatBackendTime(
                                               res['date'],
                                             ),
@@ -302,7 +303,20 @@ class ViewExpensesState extends State<ViewExpenses> {
                                             top: 8,
                                             child: Row(
                                               children: [
-                                                if (!res['approved'])
+                                                if (!res['approved'] &&
+                                                    [
+                                                      'god',
+                                                      'account',
+                                                      'manager',
+                                                      'admin',
+                                                      'supervisor',
+                                                    ].contains(
+                                                      JwtService()
+                                                          .decodedToken?['role'],
+                                                    ) &&
+                                                    JwtService()
+                                                            .decodedToken?['username'] ==
+                                                        res['initiator'])
                                                   _ActionButton(
                                                     icon: Icons.edit,
                                                     color: Colors.grey[600]!,
@@ -315,33 +329,56 @@ class ViewExpensesState extends State<ViewExpenses> {
                                                     },
                                                   ),
                                                 const SizedBox(width: 4),
-                                                _ActionButton(
-                                                  icon: Icons.delete,
-                                                  color: Colors.red,
-                                                  onTap: () {
-                                                    _showDeleteConfirmation(
-                                                      context,
-                                                      res['category'],
-                                                      res['_id'],
-                                                      handleDelete,
-                                                    );
-                                                  },
-                                                ),
-                                                _ActionButton(
-                                                  icon: res['approved']
-                                                      ? Icons.close
-                                                      : Icons
-                                                            .check_circle_outline_outlined,
-                                                  color: res['approved']
-                                                      ? Colors.redAccent
-                                                      : Colors.green,
-                                                  onTap: () {
-                                                    handleUpdate(res['_id'], {
-                                                      'approved':
-                                                          !res['approved'],
-                                                    });
-                                                  },
-                                                ),
+                                                if (!res['approved'] &&
+                                                    [
+                                                      'god',
+                                                      'account',
+                                                      'manager',
+                                                      'admin',
+                                                      'supervisor',
+                                                    ].contains(
+                                                      JwtService()
+                                                          .decodedToken?['role'],
+                                                    ) &&
+                                                    JwtService()
+                                                            .decodedToken?['username'] ==
+                                                        res['initiator'])
+                                                  _ActionButton(
+                                                    icon: Icons.delete,
+                                                    color: Colors.red,
+                                                    onTap: () {
+                                                      _showDeleteConfirmation(
+                                                        context,
+                                                        res['category'],
+                                                        res['_id'],
+                                                        handleDelete,
+                                                      );
+                                                    },
+                                                  ),
+                                                if ([
+                                                  'god',
+                                                  'account',
+                                                  'manager',
+                                                  'admin',
+                                                ].contains(
+                                                  JwtService()
+                                                      .decodedToken?['role'],
+                                                ))
+                                                  _ActionButton(
+                                                    icon: res['approved']
+                                                        ? Icons.close
+                                                        : Icons
+                                                              .check_circle_outline_outlined,
+                                                    color: res['approved']
+                                                        ? Colors.redAccent
+                                                        : Colors.green,
+                                                    onTap: () {
+                                                      handleUpdate(res['_id'], {
+                                                        'approved':
+                                                            !res['approved'],
+                                                      });
+                                                    },
+                                                  ),
                                               ],
                                             ),
                                           ),

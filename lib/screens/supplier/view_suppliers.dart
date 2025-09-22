@@ -1,22 +1,25 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
+import '../../app_router.gr.dart';
+import '../../helpers/supplierholder.dart';
 import '../../service/api.service.dart';
 import 'add_supplier.dart';
 
-class ViewSuppliers extends StatefulWidget {
-  final Function()? updateSupplier;
-  const ViewSuppliers({super.key, this.updateSupplier});
+@RoutePage()
+class ViewSuppliersScreen extends StatefulWidget {
+  const ViewSuppliersScreen({super.key});
 
   @override
   ViewSuppliersState createState() => ViewSuppliersState();
 }
 
-class ViewSuppliersState extends State<ViewSuppliers> {
+class ViewSuppliersState extends State<ViewSuppliersScreen> {
   final apiService = ApiService();
-  List filteredSuppliers = [];
+  List<Supplier> filteredSuppliers = [];
   late List suppliers = [];
   final TextEditingController _searchController = TextEditingController();
   bool isLoading = true;
@@ -27,12 +30,24 @@ class ViewSuppliersState extends State<ViewSuppliers> {
 
   void filterProducts(String query) {
     setState(() {
-      filteredSuppliers = suppliers.where((supplier) {
+      suppliers.where((supplier) {
         return supplier.values.any(
           (value) =>
               value.toString().toLowerCase().contains(query.toLowerCase()),
         );
       }).toList();
+
+      filteredSuppliers = List.from(
+        suppliers.map((res) {
+          return Supplier(
+            name: res['name'],
+            primaryContact: res['contactPerson'],
+            email: res['contactPerson'],
+            phoneNumber: res['phone_number'],
+            status: res['status'],
+          );
+        }),
+      );
     });
   }
 
@@ -50,9 +65,19 @@ class ViewSuppliersState extends State<ViewSuppliers> {
 
   Future getSuppliersList() async {
     var dbsuppliers = await apiService.get('supplier');
+    suppliers = dbsuppliers.data;
     setState(() {
-      suppliers = dbsuppliers.data;
-      filteredSuppliers = List.from(suppliers);
+      filteredSuppliers = List.from(
+        suppliers.map((res) {
+          return Supplier(
+            name: res['name'],
+            primaryContact: res['contactPerson'],
+            email: res['contactPerson'],
+            phoneNumber: res['phone_number'],
+            status: res['status'],
+          );
+        }),
+      );
       isLoading = false;
     });
   }
@@ -104,9 +129,12 @@ class ViewSuppliersState extends State<ViewSuppliers> {
     bool smallScreen = width <= 1200;
     return Column(
       children: [
-        smallScreen ? searchBox(smallScreen) : Container(),
+        // smallScreen ? searchBox(smallScreen) : Container(),
         Expanded(
           child: PaginatedDataTable2(
+            headingRowColor: WidgetStateProperty.all(
+              Theme.of(context).cardColor,
+            ),
             columnSpacing: 12,
             horizontalMargin: 12,
             sortColumnIndex: getColumnIndex(sortBy),
@@ -130,20 +158,7 @@ class ViewSuppliersState extends State<ViewSuppliers> {
               ),
             ],
             header: smallScreen
-                ? SizedBox(
-                    width: 10,
-                    child: FilledButton.icon(
-                      onPressed: () => showBarModalBottomSheet(
-                        expand: true,
-                        context: context,
-                        backgroundColor: Colors.transparent,
-                        builder: (context) =>
-                            AddSupplier(updateSupplier: widget.updateSupplier),
-                      ),
-                      label: Text('Add Supplier'),
-                      icon: Icon(Icons.add_box_outlined),
-                    ),
-                  )
+                ? SizedBox()
                 : Row(children: [searchBox(smallScreen)]),
             columns: [
               DataColumn2(
@@ -157,6 +172,7 @@ class ViewSuppliersState extends State<ViewSuppliers> {
                 },
               ),
               DataColumn2(label: Text("Email"), size: ColumnSize.L),
+              DataColumn2(label: Text("Primary Contact"), size: ColumnSize.L),
               DataColumn2(label: Text("Phone Number")),
               DataColumn2(label: Text("Address"), size: ColumnSize.L),
               DataColumn2(label: Text("No. of Orders")),
@@ -173,7 +189,10 @@ class ViewSuppliersState extends State<ViewSuppliers> {
               ),
               DataColumn2(label: Text('Actions')),
             ],
-            source: SuppliersDataSource(suppliers: getFilteredAndSortedRows()),
+            source: SuppliersDataSource(
+              suppliers: getFilteredAndSortedRows(),
+              context: context,
+            ),
             border: TableBorder(
               horizontalInside: BorderSide.none,
               verticalInside: BorderSide.none,
@@ -207,22 +226,27 @@ class ViewSuppliersState extends State<ViewSuppliers> {
 
 class SuppliersDataSource extends DataTableSource {
   final List suppliers;
+  BuildContext context;
+
+  SuppliersDataSource({required this.suppliers, required this.context});
 
   String formatDate(String isoDate) {
     final DateTime parsedDate = DateTime.parse(isoDate);
     return DateFormat('dd-MM-yyyy').format(parsedDate);
   }
 
-  SuppliersDataSource({required this.suppliers});
-
   @override
   DataRow? getRow(int index) {
     if (index >= suppliers.length) return null;
     final supplier = suppliers[index];
     return DataRow(
+      onLongPress: () {
+        context.router.push(SupplierDetailsRoute(supplierId: supplier['_id']));
+      },
       cells: [
         DataCell(Text(supplier['name'])),
         DataCell(Text(supplier['email'])),
+        DataCell(Text(supplier['contactPerson'])),
         DataCell(Text(supplier['phone_number'])),
         DataCell(Text(supplier['address'])),
         DataCell(Text(supplier['orders'].length.toString())),

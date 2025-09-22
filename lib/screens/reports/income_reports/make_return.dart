@@ -32,7 +32,9 @@ class MakeReturnState extends State<MakeReturn> {
   void initState() {
     super.initState();
     _quantity = 0;
-    _selectedProduct = widget.sales[0];
+    if (widget.sales.isNotEmpty) {
+      _selectedProduct = widget.sales[0];
+    }
   }
 
   void _updateProduct() {

@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:averra_suite/components/emptylist.dart';
 import 'package:averra_suite/service/api.service.dart';
 import 'package:flutter/material.dart';
 
@@ -46,12 +47,12 @@ class CategoriesState extends State<CategoriesScreen> {
   }
 
   handleUpdate(id, update) async {
-    await apiService.patch('category/update/$id', update);
+    await apiService.patch('expense/category/update/$id', update);
     getCategories();
   }
 
   handleDelete(id) async {
-    await apiService.delete('/category/delete/$id');
+    await apiService.delete('expense/category/delete/$id');
     getCategories();
   }
 
@@ -86,6 +87,8 @@ class CategoriesState extends State<CategoriesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.sizeOf(context).width;
+    bool smallScreen = width <= 1200;
     return Center(
       child: Container(
         constraints: const BoxConstraints(maxWidth: 1200),
@@ -97,13 +100,16 @@ class CategoriesState extends State<CategoriesScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Expense Categories"),
+                Text(
+                  "Expenses Categories",
+                  style: TextStyle(fontSize: smallScreen ? 10 : 14),
+                ),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     shape: const StadiumBorder(),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: smallScreen ? 10 : 16,
+                      vertical: smallScreen ? 5 : 10,
                     ),
                     elevation: 2,
                   ),
@@ -127,55 +133,62 @@ class CategoriesState extends State<CategoriesScreen> {
             const SizedBox(height: 24),
 
             Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    bottom: 60,
-                  ), // Add padding for pagination
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      // Determine how many cards per row based on screen width
-                      double maxWidth = constraints.maxWidth;
-                      int cardsPerRow;
+              child: categories.isEmpty
+                  ? EmptyComponent(
+                      icon: Icons.category_outlined,
+                      message: "No Categores Yet",
+                      reload: getCategories,
+                      subMessage: 'Add Categories to Start Logging Expenses',
+                    )
+                  : SingleChildScrollView(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          bottom: 60,
+                        ), // Add padding for pagination
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            // Determine how many cards per row based on screen width
+                            double maxWidth = constraints.maxWidth;
+                            int cardsPerRow;
 
-                      if (maxWidth >= 900) {
-                        cardsPerRow = 3; // large screen
-                      } else if (maxWidth >= 600) {
-                        cardsPerRow = 2; // medium screen
-                      } else {
-                        cardsPerRow = 1; // small screen
-                      }
+                            if (maxWidth >= 900) {
+                              cardsPerRow = 3; // large screen
+                            } else if (maxWidth >= 600) {
+                              cardsPerRow = 2; // medium screen
+                            } else {
+                              cardsPerRow = 1; // small screen
+                            }
 
-                      // Card width calculation with spacing
-                      double spacing = 16.0;
-                      double cardWidth =
-                          (maxWidth - (spacing * (cardsPerRow - 1))) /
-                          cardsPerRow;
+                            // Card width calculation with spacing
+                            double spacing = 16.0;
+                            double cardWidth =
+                                (maxWidth - (spacing * (cardsPerRow - 1))) /
+                                cardsPerRow;
 
-                      return Wrap(
-                        spacing: spacing,
-                        runSpacing: spacing,
-                        children: categories
-                            .map(
-                              (res) => SizedBox(
-                                width: cardWidth,
-                                child: CategoryCard(
-                                  title: '${res['title']}',
-                                  id: res['_id'],
-                                  handleUpdate: handleUpdate,
-                                  icon:
-                                      hospitalityIcons['${res['icon']}'] ??
-                                      Icons.help_outline,
-                                  handleDelete: handleDelete,
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      );
-                    },
-                  ),
-                ),
-              ),
+                            return Wrap(
+                              spacing: spacing,
+                              runSpacing: spacing,
+                              children: categories
+                                  .map(
+                                    (res) => SizedBox(
+                                      width: cardWidth,
+                                      child: CategoryCard(
+                                        title: '${res['title']}',
+                                        id: res['_id'],
+                                        handleUpdate: handleUpdate,
+                                        icon:
+                                            hospitalityIcons['${res['icon']}'] ??
+                                            Icons.help_outline,
+                                        handleDelete: handleDelete,
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
             ),
           ],
         ),
@@ -434,49 +447,58 @@ void _showAddCategorySheet(
                 const SizedBox(height: 16),
 
                 // Icon picker grid
-                GridView.count(
-                  crossAxisCount: 4,
-                  shrinkWrap: true,
-                  children: hospitalityIcons.entries.map((entry) {
-                    final isSelected = selectedIconName == entry.key;
-                    return GestureDetector(
-                      onTap: () {
-                        selectIcon(entry.key);
-                        setState(() {
-                          selectedIconName = entry.key;
-                        });
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? Theme.of(
-                                  context,
-                                ).colorScheme.primary.withAlpha(150)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isSelected
-                                ? Theme.of(context).colorScheme.primary
-                                : Colors.grey.shade300,
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: GridView.count(
+                      crossAxisCount: 4,
+                      shrinkWrap: true,
+                      physics:
+                          const NeverScrollableScrollPhysics(), // disable inner scroll
+                      children: hospitalityIcons.entries.map((entry) {
+                        final isSelected = selectedIconName == entry.key;
+                        return GestureDetector(
+                          onTap: () {
+                            selectIcon(entry.key);
+                            setState(() {
+                              selectedIconName = entry.key;
+                            });
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? Theme.of(
+                                      context,
+                                    ).colorScheme.primary.withAlpha(150)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Colors.grey.shade300,
+                              ),
+                            ),
+                            child: Icon(
+                              entry.value,
+                              size: 32,
+                              color: isSelected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Colors.grey.shade600,
+                            ),
                           ),
-                        ),
-                        child: Icon(
-                          entry.value,
-                          size: 32,
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Colors.grey.shade600,
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                        );
+                      }).toList(),
+                    ),
+                  ),
                 ),
 
                 const SizedBox(height: 16),
 
                 ElevatedButton(
                   onPressed: () {
+                    if (newCategory.text.isEmpty && selectedIconName.isEmpty) {
+                      return;
+                    }
                     createCategory();
                     Navigator.pop(context);
                   },

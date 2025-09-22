@@ -36,3 +36,9 @@ String formatBackendTime(String jsTime) {
   final formatter = DateFormat('hh:mm a, dd MMM yyyy');
   return formatter.format(dateTime);
 }
+
+String getInitials(String firstName, String lastName) {
+  String firstInitial = firstName.isNotEmpty ? firstName[0].toUpperCase() : '';
+  String lastInitial = lastName.isNotEmpty ? lastName[0].toUpperCase() : '';
+  return firstInitial + lastInitial;
+}

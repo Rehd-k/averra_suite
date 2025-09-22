@@ -103,9 +103,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       var dbbanks = await apiService.get('bank?skip=${banks.length}');
       setState(() {
         banks = dbbanks.data;
-        if (banks.isNotEmpty) {
-          bank = banks[0];
-        }
 
         isBankLoading = false;
       });
@@ -183,7 +180,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       'cash': double.tryParse(cashController.text) ?? 0,
       'transfer': double.tryParse(transferController.text) ?? 0,
       'card': double.tryParse(cardController.text) ?? 0,
-      'bank': bank?['_id'],
+      'bank': bank?['accountNumber'] ?? '',
       'products': widget.cart,
       'customer': selectedName?['_id'],
       'charges': selectedCharges,

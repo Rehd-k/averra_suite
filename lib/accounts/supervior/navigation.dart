@@ -32,7 +32,24 @@ final List<MenuItem> menuData = [
   MenuItem(
     icon: Icons.local_shipping_outlined,
     title: 'Suppliers',
-    link: SuperviorNavigationRoute(children: [SupplierRoute()]),
+    link: SupplierRoute(),
+    children: [
+      MenuItem(
+        icon: Icons.local_shipping_outlined,
+        title: 'Dashboards',
+        link: SuperviorNavigationRoute(children: [SuppliersDashbaordRoute()]),
+      ),
+      MenuItem(
+        icon: Icons.local_shipping_outlined,
+        title: 'Add New',
+        link: SuperviorNavigationRoute(children: [AddSupplier()]),
+      ),
+      MenuItem(
+        icon: Icons.local_shipping_outlined,
+        title: 'View Suppliers',
+        link: SuperviorNavigationRoute(children: [ViewSuppliersRoute()]),
+      ),
+    ],
   ),
   MenuItem(
     icon: Icons.perm_identity_outlined,
@@ -47,7 +64,7 @@ final List<MenuItem> menuData = [
   MenuItem(
     title: 'Expenses',
     icon: Icons.pending_actions,
-    link: Expenses(),
+    link: SuperviorNavigationRoute(),
     children: [
       MenuItem(
         icon: Icons.dashboard_customize_outlined,

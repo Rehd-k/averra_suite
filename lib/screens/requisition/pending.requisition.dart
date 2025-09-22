@@ -5,6 +5,8 @@ import 'package:averra_suite/service/toast.service.dart';
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
+import '../../components/emptylist.dart';
+import '../../components/filter.pill.dart';
 import '../../service/api.service.dart';
 import '../../service/date_range_helper.dart';
 import '../../service/token.service.dart';
@@ -24,7 +26,7 @@ class PendingRequisitionState extends State<PendingRequisition> {
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
   final JsonEncoder jsonEncoder = JsonEncoder();
-  late dynamic reqisitions = [];
+  late List reqisitions = [];
   bool isApproved = false;
 
   handleRangeChange(String select, DateTime picked) async {
@@ -79,7 +81,7 @@ class PendingRequisitionState extends State<PendingRequisition> {
   Future<void> handleFilter(value) async {
     if (value != null) {
       setState(() {
-        isApproved = value;
+        isApproved = value == 'UnFilled' ? false : true;
         reqisitions = [];
       });
     }
@@ -97,47 +99,37 @@ class PendingRequisitionState extends State<PendingRequisition> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        title: DateRangeHolder(
+          fromDate: startDate,
+          toDate: endDate,
+          handleRangeChange: handleRangeChange,
+          handleDateReset: handleDateReset,
+        ),
+
         actions: [
-          Flexible(
-            flex: 3,
-            child: DateRangeHolder(
-              fromDate: startDate,
-              toDate: endDate,
-              handleRangeChange: handleRangeChange,
-              handleDateReset: handleDateReset,
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: DropdownButton<bool>(
-              value: isApproved,
-              items: const [
-                DropdownMenuItem(value: true, child: Text('Filled')),
-                DropdownMenuItem(value: false, child: Text('UnFilled')),
-              ],
-              onChanged: (bool? value) {
-                if (value != null) {
-                  handleFilter(value); // your callback
-                }
-              },
-              borderRadius: BorderRadius.circular(12),
-              underline: const SizedBox(), // removes default underline
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.black,
-                fontWeight: FontWeight.w500,
-              ),
-              dropdownColor: Colors.white,
-              icon: const Icon(Icons.arrow_drop_down, color: Colors.black),
-            ),
+          FiltersDropdown(
+            selected: 'Filled',
+            menuList: [
+              {'title': 'Filled'},
+              {'title': 'UnFilled'},
+            ],
+            doSelect: handleFilter,
+            pillIcon: Icons.approval_rounded,
           ),
         ],
       ),
-      body: ApprovalCards(
-        data: reqisitions,
-        update: approve,
-        delete: unapprove,
-      ),
+      body: reqisitions.isEmpty
+          ? EmptyComponent(
+              icon: Icons.list_alt_outlined,
+              message: 'No Pending Reqisitions At This Time',
+              reload: getRequisitions,
+              subMessage: 'Come back later',
+            )
+          : ApprovalCards(
+              data: reqisitions,
+              update: approve,
+              delete: unapprove,
+            ),
     );
   }
 }

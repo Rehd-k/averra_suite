@@ -221,37 +221,38 @@ class ShowDetails extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => MakeReturn(
-                        updatePageInfo: updatePageInfo,
-                        sales: data,
-                        id: dataList['_id'],
-                        transactionId: dataList['transactionId'],
+              if (data.isNotEmpty)
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => MakeReturn(
+                          updatePageInfo: updatePageInfo,
+                          sales: data,
+                          id: dataList['_id'],
+                          transactionId: dataList['transactionId'],
+                        ),
                       ),
-                    ),
-                  );
-                },
-                child: Text('Return'),
-              ),
+                    );
+                  },
+                  child: Text('Return'),
+                ),
               SizedBox(width: 7),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => MakeReturn(
-                        updatePageInfo: updatePageInfo,
-                        sales: data,
-                        id: dataList['_id'],
-                        transactionId: dataList['transactionId'],
-                      ),
-                    ),
-                  );
-                },
-                child: Text('Refund'),
-              ),
+              // ElevatedButton(
+              //   onPressed: () {
+              //     Navigator.of(context).push(
+              //       MaterialPageRoute(
+              //         builder: (context) => MakeReturn(
+              //           updatePageInfo: updatePageInfo,
+              //           sales: data,
+              //           id: dataList['_id'],
+              //           transactionId: dataList['transactionId'],
+              //         ),
+              //       ),
+              //     );
+              //   },
+              //   child: Text('Refund'),
+              // ),
             ],
           ),
           SizedBox(height: 4),

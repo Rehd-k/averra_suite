@@ -117,6 +117,14 @@ class _LoginFormState extends State<LoginScreen> {
           context.router.replaceAll([
             SuperviorNavigationRoute(children: [DashbaordSuperviorRoute()]),
           ]);
+        } else if (role == 'manager') {
+          context.router.replaceAll([
+            ManagerNavigationRoute(children: [DashbaordManagerRoute()]),
+          ]);
+        } else if (role == 'accounting') {
+          context.router.replaceAll([
+            AccountingNavigationRoute(children: [AccountingDashboardRoute()]),
+          ]);
         }
 
         setState(() {

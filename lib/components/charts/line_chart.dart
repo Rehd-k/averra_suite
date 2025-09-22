@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../filter.pill.dart';
 import 'range.dart';
 
 class MainLineChart extends StatelessWidget {
@@ -8,6 +9,7 @@ class MainLineChart extends StatelessWidget {
   final String selectedRange;
   final List<FlSpot> spots;
   final bool isCurved;
+  final String? heading;
 
   const MainLineChart({
     super.key,
@@ -16,6 +18,7 @@ class MainLineChart extends StatelessWidget {
     required this.selectedRange,
     required this.spots,
     required this.isCurved,
+    this.heading,
   });
 
   @override
@@ -33,7 +36,7 @@ class MainLineChart extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Sales Visualization',
+                heading ?? 'Sales Visualization',
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.primary,
                   fontSize: 10,
@@ -42,21 +45,16 @@ class MainLineChart extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              DropdownButton<String>(
-                value: selectedRange,
-                items: RangeLabel.values.map<DropdownMenuItem<String>>((
-                  RangeLabel value,
-                ) {
-                  return DropdownMenuItem<String>(
-                    value: value.label,
-                    child: Text(value.label),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    onRangeChanged(newValue);
-                  }
-                },
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: FiltersDropdown(
+                  selected: selectedRange,
+                  menuList: RangeLabel.values.map<Map>((RangeLabel value) {
+                    return {'title': value.label};
+                  }).toList(),
+                  doSelect: onRangeChanged,
+                  pillIcon: Icons.today_outlined,
+                ),
               ),
             ],
           ),

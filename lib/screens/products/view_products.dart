@@ -66,7 +66,7 @@ class ViewProducts extends StatelessWidget {
     });
 
     var dbproducts = await apiService.get(
-      'products?filter={"$searchFeild" : {"\$regex" : "${searchQuery.toLowerCase()}"}, "category" :  {"\$regex" : "${categoryController.text.toLowerCase()}"}}&skip=$offset&limit=$limit&sort=$sorting&filter=$filter',
+      'products?filter={"$searchFeild" : {"\$regex" : "${searchQuery.toLowerCase()}"}, "category" :  {"\$regex" : "${categoryController.text.toLowerCase()}"}}&skip=$offset&limit=$limit&sort=$sorting&quntfilter=$filter',
     );
 
     var {'products': products, 'totalDocuments': totalDocuments} =

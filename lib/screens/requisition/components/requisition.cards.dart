@@ -1,4 +1,5 @@
 import 'package:averra_suite/helpers/financial_string_formart.dart';
+import 'package:averra_suite/service/token.service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -51,10 +52,32 @@ class ApprovalCards extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Date: $formattedDate",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Date: $formattedDate",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: screenWidth > 600 ? 14 : 10,
+                        ),
+                      ),
+                      if (item['initiator'] ==
+                              JwtService().decodedToken?['username'] ||
+                          [
+                            'god',
+                            'admin',
+                          ].contains(JwtService().decodedToken?['role']))
+                        IconButton(
+                          onPressed: () {
+                            delete(item['_id']);
+                          },
+                          icon: Icon(Icons.delete, size: 10),
+                          tooltip: 'Delete',
+                        ),
+                    ],
                   ),
+
                   const SizedBox(height: 6),
                   Text(
                     "Initiator: ${capitalizeFirstLetter(item['initiator'])}",
@@ -69,7 +92,11 @@ class ApprovalCards extends StatelessWidget {
                   const Spacer(),
 
                   // Buttons only if not approved
-                  if (!approved)
+                  if (!approved &&
+                      [
+                        'god',
+                        'admin',
+                      ].contains(JwtService().decodedToken?['role']))
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [

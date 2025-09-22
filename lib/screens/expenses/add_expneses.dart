@@ -271,6 +271,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 24),
 
                 // Buttons

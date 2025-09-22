@@ -528,7 +528,7 @@ class AddOrderState extends State<AddOrder> {
                     showModalBottomSheet(
                       context: context,
                       builder: (BuildContext context) {
-                        return AddSupplier(updateSupplier: updateSupplierList);
+                        return AddSupplier();
                       },
                     );
                   },

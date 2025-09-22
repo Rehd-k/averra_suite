@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:averra_suite/components/emptylist.dart';
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
+import '../../components/filter.pill.dart';
 import '../../service/api.service.dart';
 import '../../service/date_range_helper.dart';
 import '../../service/toast.service.dart';
@@ -71,7 +73,7 @@ class RequisitionIndexState extends State<RequisitionIndex> {
   Future<void> handleFilter(value) async {
     if (value != null) {
       setState(() {
-        isApproved = value;
+        isApproved = value == 'UnFilled' ? false : true;
         reqisitions = [];
       });
     }
@@ -79,6 +81,29 @@ class RequisitionIndexState extends State<RequisitionIndex> {
   }
 
   Future<void> unapprove(String id) async {
+    bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Delete'),
+          content: const Text('Are you sure you want to remove this item?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) {
+      return;
+    }
     showToast('loading...', ToastificationType.info);
     await apiService.delete('reqisition/$id');
     setState(() {
@@ -99,39 +124,37 @@ class RequisitionIndexState extends State<RequisitionIndex> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        title: DateRangeHolder(
+          fromDate: startDate,
+          toDate: endDate,
+          handleRangeChange: handleRangeChange,
+          handleDateReset: handleDateReset,
+        ),
 
         actions: [
-          Flexible(
-            child: DateRangeHolder(
-              fromDate: startDate,
-              toDate: endDate,
-              handleRangeChange: handleRangeChange,
-              handleDateReset: handleDateReset,
-            ),
-          ),
-          Expanded(
-            child: DropdownMenu<bool>(
-              initialSelection: isApproved,
-              onSelected: (value) {
-                if (value != null) {
-                  handleFilter(value);
-                }
-              },
-              dropdownMenuEntries: const [
-                DropdownMenuEntry(value: true, label: 'Filled'),
-                DropdownMenuEntry(value: false, label: 'UnFilled'),
-              ],
-              width: 200,
-              menuHeight: 120,
-            ),
+          FiltersDropdown(
+            selected: 'Filled',
+            menuList: [
+              {'title': 'Filled'},
+              {'title': 'UnFilled'},
+            ],
+            doSelect: handleFilter,
+            pillIcon: Icons.approval_rounded,
           ),
         ],
       ),
-      body: ApprovalCards(
-        data: reqisitions,
-        update: approve,
-        delete: unapprove,
-      ),
+      body: reqisitions.isEmpty
+          ? EmptyComponent(
+              icon: Icons.list_alt,
+              message: 'No Requsition At This Time',
+              reload: getRequisitions,
+              subMessage: 'Come back later',
+            )
+          : ApprovalCards(
+              data: reqisitions,
+              update: approve,
+              delete: unapprove,
+            ),
     );
   }
 }

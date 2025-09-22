@@ -439,6 +439,7 @@ class MyAsyncDataSource extends AsyncDataTableSource {
               'god',
               'admin',
               'manager',
+              'accounting',
             ].contains(JwtService().decodedToken!['role'])) {
               context.router.push(
                 ProductDashboard(

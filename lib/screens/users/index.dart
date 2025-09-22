@@ -56,12 +56,6 @@ class UserManagementScreenState extends State<UserManagementScreen> {
                     ),
                   ),
             SizedBox(width: smallScreen ? 0 : 20),
-            Expanded(
-              flex: 2,
-              child: widget.isGod == true
-                  ? SizedBox()
-                  : ViewUsers(key: _viewUserKey, updateUserList: updateUsers),
-            ),
           ],
         ),
       ),

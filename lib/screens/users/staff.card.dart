@@ -1,9 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/app_router.gr.dart';
+import 'package:averra_suite/helpers/financial_string_formart.dart';
 import 'package:flutter/material.dart';
 
 class StaffCard extends StatelessWidget {
-  const StaffCard({super.key});
+  final Map user;
+  const StaffCard({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -13,22 +15,33 @@ class StaffCard extends StatelessWidget {
         children: [
           SizedBox(height: 10),
           Center(
-            child: SizedBox(width: 100, height: 100, child: CircleAvatar()),
+            child: SizedBox(
+              width: 100,
+              height: 100,
+              child: CircleAvatar(
+                child: Center(
+                  child: Text(getInitials(user['lastName'], user['firstName'])),
+                ),
+              ),
+            ),
           ),
           SizedBox(height: 20),
           Text(
-            'Chiamaka Uzombachi',
+            capitalizeFirstLetter('${user['lastName']} ${user['firstName']}'),
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
           ),
           SizedBox(height: 5),
-          Text('Senior Software Engineer', style: TextStyle(fontSize: 10)),
+          Text(
+            capitalizeFirstLetter('${user['role']}'),
+            style: TextStyle(fontSize: 10),
+          ),
           SizedBox(height: 20),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton(
                   onPressed: () {
-                    context.router.push(ViewUser(id: ''));
+                    context.router.push(ViewUser(id: user['_id']));
                   },
                   style: ElevatedButton.styleFrom(
                     shape: const RoundedRectangleBorder(
