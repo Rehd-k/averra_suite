@@ -117,18 +117,29 @@ class AddUserState extends State<AddUser> {
 
   void handleSubmit(BuildContext context) async {
     _showToast('Adding User', ToastificationType.info);
-
-    await apiService
-        .post(widget.isGod == true ? 'user/godadd' : '/auth/register', {
-          'firstName': firstName.text,
-          'lastName': lastName.text,
-          'username': username.text,
-          'password': password.text,
-          'role': role.text,
-          'location': locations,
-          'email': email.text,
-        });
-    _showToast('User Added Successfully', ToastificationType.success);
+    if (widget.isGod == true) {
+      await apiService.post('user/godadd', {
+        'firstName': firstName.text,
+        'lastName': lastName.text,
+        'username': username.text,
+        'password': password.text,
+        'role': role.text,
+        'location': locations,
+        'email': email.text,
+      });
+      _showToast('User Added Successfully', ToastificationType.success);
+    } else {
+      await apiService.post('/auth/register', {
+        'firstName': firstName.text,
+        'lastName': lastName.text,
+        'username': username.text,
+        'password': password.text,
+        'role': role.text,
+        'location': locations,
+        'email': email.text,
+      });
+      _showToast('User Added Successfully', ToastificationType.success);
+    }
   }
 
   Future<void> uploadStaffFiles() async {

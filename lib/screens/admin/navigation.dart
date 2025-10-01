@@ -106,6 +106,11 @@ final List<MenuItem> menuData = [
       ),
       MenuItem(
         icon: Icons.settings,
+        title: 'Send To Branch',
+        link: SendToBranchRoute(),
+      ),
+      MenuItem(
+        icon: Icons.settings,
         title: 'Show Requisition',
         link: RequisitionIndex(),
       ),

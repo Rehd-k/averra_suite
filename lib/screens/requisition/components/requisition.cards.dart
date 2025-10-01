@@ -82,8 +82,14 @@ class ApprovalCards extends StatelessWidget {
                   Text(
                     "Initiator: ${capitalizeFirstLetter(item['initiator'])}",
                   ),
-                  Text("From: ${capitalizeFirstLetter(item['from'])}"),
-                  Text("Location: ${capitalizeFirstLetter(item['location'])}"),
+                  item['from'] == null
+                      ? Text("To: ${capitalizeFirstLetter(item['to'])}")
+                      : Text("From: ${capitalizeFirstLetter(item['from'])}"),
+                  item['from'] == null
+                      ? Text("From: ${capitalizeFirstLetter(item['location'])}")
+                      : Text(
+                          "Location: ${capitalizeFirstLetter(item['location'])}",
+                        ),
                   Text("Products : ${item['products'].length}"),
                   Text(
                     "Total Cost : ${item['totalCost'].toString().formatToFinancial(isMoneySymbol: false)}",

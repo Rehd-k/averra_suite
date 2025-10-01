@@ -24,35 +24,34 @@ class MenuItem {
 
 final List<MenuItem> menuData = [
   MenuItem(
-    icon: Icons.local_shipping_outlined,
+    icon: Icons.space_dashboard_outlined,
     title: 'Dashboard',
     link: AccountingNavigationRoute(children: [AccountingDashboardRoute()]),
   ),
-
   MenuItem(
     icon: Icons.local_shipping_outlined,
     title: 'Suppliers',
     link: SupplierRoute(),
     children: [
       MenuItem(
-        icon: Icons.local_shipping_outlined,
+        icon: Icons.adjust_outlined,
         title: 'Dashboards',
         link: AccountingNavigationRoute(children: [SuppliersDashbaordRoute()]),
       ),
       MenuItem(
-        icon: Icons.local_shipping_outlined,
+        icon: Icons.adjust_outlined,
         title: 'Add New',
         link: AccountingNavigationRoute(children: [AddSupplier()]),
       ),
       MenuItem(
-        icon: Icons.local_shipping_outlined,
+        icon: Icons.adjust_outlined,
         title: 'View Suppliers',
         link: AccountingNavigationRoute(children: [ViewSuppliersRoute()]),
       ),
     ],
   ),
   MenuItem(
-    icon: Icons.perm_identity_outlined,
+    icon: Icons.contacts_outlined,
     title: 'Customers',
     link: AccountingNavigationRoute(children: [CustomerRoute()]),
   ),
@@ -63,26 +62,26 @@ final List<MenuItem> menuData = [
   ),
   MenuItem(
     title: 'Expenses',
-    icon: Icons.pending_actions,
+    icon: Icons.account_balance_wallet,
     link: AccountingNavigationRoute(),
     children: [
       MenuItem(
-        icon: Icons.dashboard_customize_outlined,
+        icon: Icons.adjust_outlined,
         title: 'Dashbaord',
         link: AccountingNavigationRoute(children: [ExpensesDashbaord()]),
       ),
       MenuItem(
-        icon: Icons.add,
+        icon: Icons.adjust_outlined,
         title: 'Add New',
         link: AccountingNavigationRoute(children: [AddExpenseRoute()]),
       ),
       MenuItem(
-        icon: Icons.category_outlined,
+        icon: Icons.adjust_outlined,
         title: 'Categories',
         link: AccountingNavigationRoute(children: [CategoriesRoute()]),
       ),
       MenuItem(
-        icon: Icons.dashboard_customize_outlined,
+        icon: Icons.adjust_outlined,
         title: 'View Expenses',
         link: AccountingNavigationRoute(children: [ViewExpenses()]),
       ),
@@ -116,23 +115,18 @@ final List<MenuItem> menuData = [
     ],
   ),
   MenuItem(
-    icon: Icons.settings,
+    icon: Icons.request_quote,
     title: 'Requisition',
     link: Settings(),
     children: [
       MenuItem(
-        icon: Icons.settings,
-        title: 'Create',
-        link: AccountingNavigationRoute(children: [CreateRequisition()]),
-      ),
-      MenuItem(
-        icon: Icons.settings,
+        icon: Icons.adjust_outlined,
         title: 'Show Requisition',
         link: AccountingNavigationRoute(children: [RequisitionIndex()]),
       ),
       MenuItem(
         title: 'Pending Requisition',
-        icon: Icons.pending_actions,
+        icon: Icons.adjust_outlined,
         link: AccountingNavigationRoute(children: [PendingRequisition()]),
       ),
     ],
@@ -145,7 +139,7 @@ final List<MenuItem> menuData = [
   MenuItem(
     icon: Icons.document_scanner_outlined,
     title: 'Statement of Profit or Loss',
-    link: SupplierRoute(),
+    link: AccountingNavigationRoute(children: [ProfitLossStatementRoute()]),
   ),
 ];
 
@@ -167,10 +161,19 @@ class AccountingNavigationScreen extends StatelessWidget {
               ? null
               : AppBar(
                   title: const Text(
-                    "Admin Panel",
+                    "Account Module",
                     style: TextStyle(fontSize: 10),
                   ),
-                  actions: const [ThemeSwitchButton()],
+                  actions: [
+                    ThemeSwitchButton(),
+                    IconButton(
+                      icon: const Icon(Icons.logout_outlined, size: 10),
+                      onPressed: () {
+                        JwtService().logout();
+                        context.router.replaceAll([LoginRoute()]);
+                      },
+                    ),
+                  ],
                 ),
           // Use a Drawer for smaller screens
           drawer: isLargeScreen ? null : const Drawer(child: MenuList()),
@@ -182,6 +185,7 @@ class AccountingNavigationScreen extends StatelessWidget {
                   width: 190, // A common width for side navigation
                   child: MenuList(),
                 ),
+
               // This is the main content area that will be displayed
               Expanded(child: const SafeArea(child: AutoRouter())),
             ],

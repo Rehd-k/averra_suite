@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/app_router.gr.dart';
 import 'package:averra_suite/helpers/financial_string_formart.dart';
+import 'package:averra_suite/service/date_range_helper.dart';
 import 'package:averra_suite/service/token.service.dart';
 import 'package:flutter/material.dart';
 import 'package:number_pagination/number_pagination.dart';
@@ -32,6 +33,8 @@ class ViewExpensesState extends State<ViewExpenses> {
   String sortBy = "name";
   int totalPages = 0;
   bool ascending = true;
+  DateTime startDate = DateTime.now();
+  DateTime endDate = DateTime.now();
   DateTime selectedDate = DateTime.now();
   late List categories = [
     {'title': 'All'},
@@ -43,6 +46,28 @@ class ViewExpensesState extends State<ViewExpenses> {
   ];
   String category = 'category';
   String status = 'status';
+  handleRangeChange(String select, DateTime picked) async {
+    if (select == 'from') {
+      setState(() {
+        startDate = picked;
+        expenses = [];
+      });
+    } else if (select == 'to') {
+      setState(() {
+        endDate = picked;
+        expenses = [];
+      });
+    }
+    getExpenses();
+  }
+
+  handleDateReset() {
+    setState(() {
+      startDate = DateTime.now();
+      endDate = DateTime.now();
+    });
+    getExpenses();
+  }
 
   getCategories() async {
     var result = await apiService.get('expense/category');
@@ -59,7 +84,7 @@ class ViewExpensesState extends State<ViewExpenses> {
         : '';
 
     var dbexpenses = await apiService.get(
-      'expense?filter={"approved" : "$statusBool", "category" : "$category"}&startDate=$selectedDate&endDate=$selectedDate&skip=${selectedPageNumber == 1 ? 0 * 10 : (selectedPageNumber - 1) * 10}&sort={"date" : "asc"}',
+      'expense?filter={"approved" : "$statusBool", "category" : "$category"}&startDate=$startDate&endDate=$endDate&skip=${selectedPageNumber == 1 ? 0 * 10 : (selectedPageNumber - 1) * 10}&sort={"date" : "asc"}',
     );
     setState(() {
       totalPages = getPageGroup(dbexpenses.data['expensesCount']);
@@ -215,10 +240,15 @@ class ViewExpensesState extends State<ViewExpenses> {
               padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
-                  DateRangeButton(
-                    onPressed: () {
-                      _selectDate(context);
-                    },
+                  Expanded(
+                    child: DateRangeHolder(
+                      fromDate: startDate,
+                      toDate: endDate,
+                      handleRangeChange: (String handle, DateTime picked) {
+                        handleRangeChange(handle, picked);
+                      },
+                      handleDateReset: () {},
+                    ),
                   ),
                   SizedBox(width: 10),
                   FiltersDropdown(

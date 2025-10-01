@@ -8,6 +8,7 @@ class MainLineChart extends StatelessWidget {
   final dynamic rangeInfo;
   final String selectedRange;
   final List<FlSpot> spots;
+  final List<FlSpot> redSpots;
   final bool isCurved;
   final String? heading;
 
@@ -18,6 +19,7 @@ class MainLineChart extends StatelessWidget {
     required this.selectedRange,
     required this.spots,
     required this.isCurved,
+    required this.redSpots,
     this.heading,
   });
 
@@ -69,6 +71,7 @@ class MainLineChart extends StatelessWidget {
                     bottomTitlesData: bottomTitles,
                     xAxis: rangeInfo.xAxis,
                     spots: spots,
+                    redSpots: redSpots,
                     isCurved: isCurved,
                   ),
           ),
@@ -82,6 +85,7 @@ class _LineChart extends StatelessWidget {
   final List<ChartTitle> bottomTitlesData;
   final double xAxis;
   final List<FlSpot> spots;
+  final List<FlSpot> redSpots;
   final bool isCurved;
 
   const _LineChart({
@@ -89,6 +93,7 @@ class _LineChart extends StatelessWidget {
     required this.xAxis,
     required this.spots,
     required this.isCurved,
+    required this.redSpots,
   });
 
   @override
@@ -167,6 +172,16 @@ class _LineChart extends StatelessWidget {
             dotData: const FlDotData(show: true),
             belowBarData: BarAreaData(show: false),
             spots: spots,
+          ),
+
+          LineChartBarData(
+            isCurved: true,
+            color: Colors.red,
+            barWidth: 2,
+            isStrokeCapRound: true,
+            dotData: const FlDotData(show: true),
+            belowBarData: BarAreaData(show: false),
+            spots: redSpots,
           ),
         ],
         minX: 0,

@@ -288,11 +288,7 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => TransactionsTable(
-                      toDate: _toDate,
-                      fromDate: _fromDate,
-                      id: rawmaterialId,
-                    ),
+                    builder: (context) => TransactionsTable(id: rawmaterialId),
                   ),
                 ),
 
@@ -469,11 +465,8 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => TransactionsTable(
-                            toDate: _toDate,
-                            fromDate: _fromDate,
-                            id: rawmaterialId,
-                          ),
+                          builder: (context) =>
+                              TransactionsTable(id: rawmaterialId),
                         ),
                       ),
                     ),

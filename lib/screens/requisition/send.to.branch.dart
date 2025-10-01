@@ -2,62 +2,134 @@ import 'dart:convert';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/helpers/financial_string_formart.dart';
-import 'package:averra_suite/service/api.service.dart';
-import 'package:averra_suite/service/toast.service.dart';
+import 'package:averra_suite/service/token.service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:toastification/toastification.dart';
 
+import '../../service/api.service.dart';
+import '../../service/toast.service.dart';
+import 'create.requisition.dart';
+
 @RoutePage()
-class CreateRequisition extends StatefulWidget {
-  const CreateRequisition({super.key});
+class SendToBranchScreen extends StatefulWidget {
+  const SendToBranchScreen({super.key});
 
   @override
-  CreateRequisitionState createState() => CreateRequisitionState();
+  SendToBranchState createState() => SendToBranchState();
 }
 
-class CreateRequisitionState extends State<CreateRequisition> {
+class SendToBranchState extends State<SendToBranchScreen> {
   ApiService apiService = ApiService();
+  JwtService jwtService = JwtService();
+  late String selectedDepartment = '';
+  late String selectedLocation = '';
+  late List departmentFronts = [];
   final TextEditingController productController = TextEditingController();
   final TextEditingController costController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController noteController = TextEditingController();
   final JsonEncoder jsonEncoder = JsonEncoder();
-  List<Map<String, dynamic>> products = [];
+  List<dynamic> products = [];
   List<Map<String, dynamic>> selectedProducts = [];
   Map<String, dynamic>? selectedProduct;
+  bool loading = true;
   String searchFeild = 'title';
   String searchQuery = '';
+  String fromPoint = '';
   num skip = 0;
   num limit = 10;
   num totalBalance = 0;
 
-  Future<List<Map>> getProducts(String query) async {
-    var sorting = jsonEncoder.convert({"title": 'asc'});
-    var response = await Future.wait([
-      apiService.get(
-        'products?filter={"$searchFeild" : {"\$regex" : "${query.toLowerCase()}"}}&skip=$skip&limit=$limit&sort=$sorting',
-      ),
-      apiService.get(
-        'rawmaterial?filter={"$searchFeild" : {"\$regex" : "${query.toLowerCase()}"}}&skip=$skip&limit=$limit&sort=$sorting',
-      ),
-    ]);
+  void getProductsFromDepartment(query) async {
+    try {
+      var result = await apiService.get('department/for-both/$query');
+      setState(() {
+        products = result.data['finishedGoods'];
+        products.addAll(result.data['RawGoods']);
+        loading = false;
+      });
+    } catch (e) {
+      showToast('Error $e', ToastificationType.error);
+    }
+  }
 
-    var {'products': products, 'totalDocuments': totalDocuments} =
-        response[0].data;
+  Future<void> save() async {
+    Map<String, dynamic>? dataToSave;
+    String currentLocation = jwtService.decodedToken?['location'];
+    if (selectedProducts.isEmpty) {
+      return;
+    }
 
-    var {'materials': materials, 'totalDocuments': totalmaterialsDocuments} =
-        response[1].data;
-    products.addAll(materials);
-    return List<Map>.from(products);
+    var result = await apiService.get('location');
+    List<dynamic> locations = result.data;
+
+    // Find location in locations with currentLocation as its name
+    // locations.removeWhere((loc) => loc['name'] == currentLocation);
+
+    // if (locations.isEmpty) {
+    //   showToast('No Other Branches', ToastificationType.error);
+    //   return;
+    // }
+
+    // Open modal and wait for selection
+    final selectedLocation = await showModalBottomSheet(
+      // ignore: use_build_context_synchronously
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => LocationPickerModal(locations: locations),
+    );
+
+    if (selectedLocation == null) {
+      return;
+    }
+    dataToSave = {
+      'notes': noteController.text,
+      'to': selectedLocation['name'],
+      'products': selectedProducts,
+      'totalCost': totalBalance,
+      'approved': true,
+    };
+    await apiService.post('reqisition', dataToSave);
+    showToast('Done', ToastificationType.success);
+    setState(() {
+      selectedProducts = [];
+      totalBalance = 0;
+    });
+  }
+
+  void getDepartments() async {
+    var res = await apiService.get('department?active=${true}&type=store');
+    setState(() {
+      departmentFronts = res.data;
+      loading = false;
+    });
+  }
+
+  void selectFrom(value) async {
+    setState(() {
+      selectedProduct = null;
+      costController.clear();
+      quantityController.clear();
+      selectedDepartment = value;
+    });
+    if (value != '') {
+      getProductsFromDepartment(selectedDepartment);
+    }
+  }
+
+  Future<List<Map>> getProducts(String title) async {
+    var filteredProducts = products
+        .where((product) => product['productId']['title'].contains(title))
+        .toList();
+    return List<Map>.from(filteredProducts);
   }
 
   selectProductFromSugestion(suggestion, modelState) {
     var exists = selectedProducts.firstWhere(
-      (element) => element['productId'] == suggestion['_id'],
+      (element) => element['productId'] == suggestion['productId']['_id'],
       orElse: () => {},
     );
-
     if (exists.isEmpty) {
       setState(() {
         selectedProduct = suggestion;
@@ -107,14 +179,26 @@ class CreateRequisitionState extends State<CreateRequisition> {
       showToast('Quantity Value is not Valid', ToastificationType.info);
       return;
     }
+    if (num.parse(quantityController.text) > selectedProduct?['quantity']) {
+      showToast(
+        'Entered Quantity Is More Than Avialeble Quantity At Store',
+        ToastificationType.info,
+      );
+      return;
+    }
     if (costController.text.isEmpty || num.parse(costController.text) < 1) {
       showToast('Cost Value is not Valid', ToastificationType.info);
       return;
     }
 
     var item = {
-      'productId': selectedProduct?['_id'],
-      'product_title': selectedProduct?['title'],
+      'productId': selectedProduct?['productId']['_id'],
+      'product_title': selectedProduct?['productId']['title'],
+      'from': selectedDepartment,
+      'fromName': departmentFronts.firstWhere(
+        (element) => element['_id'] == selectedDepartment,
+        orElse: () => {},
+      ),
       'cost': num.tryParse(costController.text) ?? 0,
       'quantity': num.tryParse(quantityController.text) ?? 0,
     };
@@ -130,42 +214,7 @@ class CreateRequisitionState extends State<CreateRequisition> {
     }
   }
 
-  Future<void> save(String type) async {
-    Map<String, dynamic>? dataToSave;
-    if (selectedProducts.isEmpty) {
-      return;
-    }
-    if (type == 'branch') {
-      var result = await apiService.get('location');
-      List<dynamic> locations = result.data;
-
-      // Open modal and wait for selection
-      final selectedLocation = await showModalBottomSheet(
-        // ignore: use_build_context_synchronously
-        context: context,
-        isScrollControlled: true,
-        builder: (_) => LocationPickerModal(locations: locations),
-      );
-
-      if (selectedLocation == null) {
-        return;
-      }
-      dataToSave = {
-        'notes': noteController.text,
-        'from': selectedLocation['name'],
-        'products': selectedProducts,
-        'totalCost': totalBalance,
-      };
-    } else {
-      dataToSave = {
-        'notes': noteController.text,
-        'from': type,
-        'products': selectedProducts,
-        'totalCost': totalBalance,
-      };
-    }
-    await apiService.post('reqisition', dataToSave);
-    showToast('Done', ToastificationType.success);
+  emptyList() {
     setState(() {
       selectedProducts = [];
       totalBalance = 0;
@@ -174,137 +223,15 @@ class CreateRequisitionState extends State<CreateRequisition> {
 
   @override
   void initState() {
+    getDepartments();
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    productController.dispose();
-    costController.dispose();
-    quantityController.dispose();
-    noteController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.sizeOf(context).width;
     bool smallScreen = width <= 1200;
-
     return Scaffold(
-      floatingActionButton: smallScreen
-          ? FloatingActionButton.small(
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (context) {
-                    return StatefulBuilder(
-                      builder: (context, setModalState) {
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                SizedBox(height: 20),
-                                buildProductsInput(
-                                  selectedProduct,
-                                  productController,
-                                  getProducts,
-                                  selectProductFromSugestion,
-                                  deselectProductFromSugestion,
-                                  onchange,
-                                  setModalState,
-                                ),
-                                SizedBox(height: 20),
-                                TextFormField(
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: <TextInputFormatter>[
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  controller: quantityController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Quantity',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(5.0),
-                                      ),
-                                      borderSide: BorderSide(
-                                        color: Colors.blue,
-                                      ),
-                                    ),
-                                    labelStyle: TextStyle(
-                                      color: Theme.of(context).hintColor,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Cost Cannot be Empty';
-                                    }
-                                    if (int.parse(value) < 1) {
-                                      return 'Must Be Greater Than 0';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                SizedBox(height: 20),
-                                TextFormField(
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: <TextInputFormatter>[
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  controller: costController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Cost',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(5.0),
-                                      ),
-                                      borderSide: BorderSide(
-                                        color: Colors.blue,
-                                      ),
-                                    ),
-                                    labelStyle: TextStyle(
-                                      color: Theme.of(context).hintColor,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Cost Cannot be Empty';
-                                    }
-                                    if (int.parse(value) < 1) {
-                                      return 'Must Be Greater Than 0';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                SizedBox(height: 20),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      addToList(setModalState);
-                                    },
-                                    child: Text(
-                                      'Add To List',
-                                      style: TextStyle(fontSize: 10),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-              child: Icon(Icons.add, size: 10),
-            )
-          : null,
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
@@ -318,6 +245,39 @@ class CreateRequisitionState extends State<CreateRequisition> {
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
                       children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: loading
+                              ? Center(child: CircularProgressIndicator())
+                              : DropdownButtonFormField<String>(
+                                  value: selectedDepartment,
+                                  decoration: InputDecoration(
+                                    labelText: 'From',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  onChanged: (String? newValue) {
+                                    selectFrom(newValue);
+                                  },
+                                  items:
+                                      [
+                                        {'title': '', '_id': ''},
+                                        ...departmentFronts,
+                                      ].map<DropdownMenuItem<String>>((value) {
+                                        return DropdownMenuItem<String>(
+                                          value: value['_id'],
+                                          child: Text(
+                                            capitalizeFirstLetter(
+                                              value['title'],
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                  validator: (value) => value == ''
+                                      ? 'Please select an option'
+                                      : null,
+                                ),
+                        ),
+
                         SizedBox(height: 20),
                         buildProductsInput(
                           selectedProduct,
@@ -350,9 +310,13 @@ class CreateRequisitionState extends State<CreateRequisition> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Cost Cannot be Empty';
+                              return 'Quantity Cannot be Empty';
                             }
                             if (int.parse(value) < 1) {
+                              return 'Must Be Greater Than 0';
+                            }
+                            if (num.parse(value) >
+                                num.parse(selectedProduct?['quantity'])) {
                               return 'Must Be Greater Than 0';
                             }
                             return null;
@@ -566,10 +530,10 @@ class CreateRequisitionState extends State<CreateRequisition> {
                               Expanded(
                                 child: OutlinedButton(
                                   onPressed: () {
-                                    save('branch');
+                                    emptyList();
                                   },
                                   child: Text(
-                                    'From Branch',
+                                    'Clear',
                                     style: TextStyle(fontSize: 10),
                                   ),
                                 ),
@@ -578,10 +542,10 @@ class CreateRequisitionState extends State<CreateRequisition> {
                               Expanded(
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    save('new purchase');
+                                    save();
                                   },
                                   child: Text(
-                                    'New Request',
+                                    'Send',
                                     style: TextStyle(fontSize: 10),
                                   ),
                                 ),
@@ -597,153 +561,6 @@ class CreateRequisitionState extends State<CreateRequisition> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-Widget buildProductsInput(
-  selectedProduct,
-  productController,
-  fetchProducts,
-  selectUserFromSugestion,
-  deselectUserFromSugestion,
-  onchange,
-  setModalState,
-) {
-  return selectedProduct == null
-      ? Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: productController,
-                    decoration: InputDecoration(
-                      labelText: 'Product',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onChanged: (value) {
-                      onchange(setModalState);
-                    },
-                  ),
-                ),
-              ],
-            ),
-            if (productController.text.isNotEmpty)
-              FutureBuilder<List<Map>>(
-                future: fetchProducts(productController.text),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        'Error: ${snapshot.error}',
-                        style: TextStyle(fontSize: 10),
-                      ),
-                    );
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        'No suggestions',
-                        style: TextStyle(fontSize: 10),
-                      ),
-                    );
-                  } else {
-                    return ListView(
-                      shrinkWrap: true,
-                      children: snapshot.data!.map((suggestion) {
-                        return ListTile(
-                          title: Text(
-                            suggestion['title'] ??
-                                suggestion['productId']['title'],
-                            style: TextStyle(fontSize: 10),
-                          ),
-                          subtitle: Text(
-                            suggestion['category'] ?? '',
-                            style: TextStyle(fontSize: 10),
-                          ),
-                          trailing: Text(
-                            suggestion['quantity'].toString().formatToFinancial(
-                              isMoneySymbol: false,
-                            ),
-                            style: TextStyle(fontSize: 10),
-                          ),
-                          onTap: () {
-                            selectUserFromSugestion(suggestion, setModalState);
-                          },
-                        );
-                      }).toList(),
-                    );
-                  }
-                },
-              ),
-          ],
-        )
-      : Chip(
-          label: Text(
-            selectedProduct?['title'] ?? selectedProduct?['productId']['title'],
-            style: TextStyle(fontSize: 10),
-          ),
-          deleteIcon: Icon(Icons.close, size: 10),
-          onDeleted: () {
-            deselectUserFromSugestion(setModalState);
-          },
-        );
-}
-
-class LocationPickerModal extends StatelessWidget {
-  final List<dynamic> locations;
-
-  const LocationPickerModal({super.key, required this.locations});
-
-  @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final crossAxisCount = screenWidth > 600
-        ? 4
-        : 2; // 4 on big screens, 2 on small
-
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: GridView.builder(
-        shrinkWrap: true,
-        itemCount: locations.length,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossAxisCount,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 2.5, // pill-like
-        ),
-        itemBuilder: (_, index) {
-          final location = locations[index];
-          return GestureDetector(
-            onTap: () {
-              Navigator.pop(context, location); // return the selected item
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(color: Colors.blue, width: 1.5),
-              ),
-              alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Text(
-                location['name'] ?? 'Unnamed',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          );
-        },
       ),
     );
   }

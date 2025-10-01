@@ -3,11 +3,16 @@ import 'package:flutter/services.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 Future<void> showDamagedGoodsForm(
-    BuildContext context, handleDamagedGoods, id, num goodRemaining) async {
+  BuildContext context,
+  handleDamagedGoods,
+  id,
+  String from,
+  num goodRemaining,
+) async {
+  print('$handleDamagedGoods $id, $goodRemaining, $from');
   DateTime selectedDate = DateTime.now();
   final quantityController = TextEditingController();
   final reasonController = TextEditingController();
-
   showMaterialModalBottomSheet(
     context: context,
     builder: (context) => Container(
@@ -21,7 +26,7 @@ Future<void> showDamagedGoodsForm(
                 'Register Damaged Goods',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-              Text('(Total Remaining -  ${goodRemaining.toString()})')
+              Text('(Total Remaining -  ${goodRemaining.toString()})'),
             ],
           ),
           SizedBox(height: 16),
@@ -41,9 +46,7 @@ Future<void> showDamagedGoodsForm(
                     selectedDate = picked;
                   }
                 },
-                child: Text(
-                  "${selectedDate.toLocal()}".split(' ')[0],
-                ),
+                child: Text("${selectedDate.toLocal()}".split(' ')[0]),
               ),
             ],
           ),
@@ -64,7 +67,8 @@ Future<void> showDamagedGoodsForm(
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                          'Quantity cannot exceed remaining goods ($goodRemaining)'),
+                        'Quantity cannot exceed remaining goods ($goodRemaining)',
+                      ),
                     ),
                   );
                 }
@@ -101,6 +105,7 @@ Future<void> showDamagedGoodsForm(
                       'quantity': int.parse(quantityController.text),
                       'reason': reasonController.text,
                       'date': selectedDate.toString().split(' ')[0],
+                      'from': from,
                     });
                     if (context.mounted) {
                       Navigator.pop(context);

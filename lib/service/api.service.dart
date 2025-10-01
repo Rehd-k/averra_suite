@@ -41,6 +41,7 @@ class UnauthorizedException extends ApiException {
 class ApiService {
   final Dio _dio = Dio(
     BaseOptions(
+      // baseUrl: 'http://82.197.93.187:3000/',
       baseUrl: 'http://localhost:3000/',
       contentType: "application/json",
       validateStatus: (_) => true,

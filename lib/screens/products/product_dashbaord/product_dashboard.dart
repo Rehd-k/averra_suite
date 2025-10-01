@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/helpers/financial_string_formart.dart';
 import 'package:averra_suite/service/toast.service.dart';
+import 'package:averra_suite/service/token.service.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -16,10 +17,12 @@ import '../../../components/tables/gen_big_table/big_table.dart';
 import '../../../components/tables/gen_big_table/big_table_source.dart';
 import '../../../service/api.service.dart';
 import '../../ledgers/day_ledger.dart';
+import '../../ledgers/goods.audit.dart';
 import 'add_order.dart';
 import 'header.dart';
 import 'helpers/damaged_goods.dart';
 import 'helpers/edit_product.dart';
+import 'helpers/return_goods.dart';
 import 'table_collums.dart';
 
 @RoutePage()
@@ -44,6 +47,7 @@ class ProductDashboard extends StatefulWidget {
 class ProductDashboardState extends State<ProductDashboard> {
   ApiService apiService = ApiService();
   JsonEncoder jsonEncoder = JsonEncoder();
+  JwtService jwtService = JwtService();
   late String productId;
   late Map data;
   bool loading = true;
@@ -189,6 +193,7 @@ class ProductDashboardState extends State<ProductDashboard> {
           context,
           handleDamagedGoods,
           rowData['_id'],
+          rowData['dropOfLocation'],
           (rowData['quantity'] - getSold(rowData['sold'])),
         );
       }
@@ -200,10 +205,11 @@ class ProductDashboardState extends State<ProductDashboard> {
       if (rowData['quantity'] == getSold(rowData['sold'])) {
         doAlerts('This batch have been sold out');
       } else {
-        showDamagedGoodsForm(
+        showReturnsHandler(
           context,
-          handleDamagedGoods,
+          handleReturndGoods,
           rowData['_id'],
+          rowData['dropOfLocation'],
           (rowData['quantity'] - getSold(rowData['sold'])),
         );
       }
@@ -218,16 +224,10 @@ class ProductDashboardState extends State<ProductDashboard> {
   }
 
   handleReturndGoods(data) async {
-    num amountSpent = data['totalPayable'] - data['debt'];
-    num quantityPaidFor = amountSpent ~/ data['price'];
-    num quantityRemening = data['quantity'] - quantityPaidFor;
-
-    if (data['quantity'] <= quantityRemening) {}
-
-    // await apiService.put('purchases/return/${data['_id']}', {
-    //   ...data,
-    //   "productId": productId,
-    // });
+    await apiService.put('purchases/return/${data['_id']}', {
+      ...data,
+      "productId": productId,
+    });
   }
 
   handleRangeChange(String? select, DateTime? picked) async {
@@ -310,31 +310,35 @@ class ProductDashboardState extends State<ProductDashboard> {
               ),
             ),
             if (isBigScreen)
-              IconButton(
-                tooltip: 'Add Order',
-                onPressed: () => showBarModalBottomSheet(
-                  expand: true,
-                  context: context,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => AddOrder(
-                    productId: productId,
-                    getUpDate: getAllData,
-                    type: widget.type,
+              if ([
+                'god',
+                'admin',
+                'manager',
+                'supervisor',
+                'store',
+              ].contains(jwtService.decodedToken?['role']))
+                IconButton(
+                  tooltip: 'Add Order',
+                  onPressed: () => showBarModalBottomSheet(
+                    expand: true,
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => AddOrder(
+                      productId: productId,
+                      getUpDate: getAllData,
+                      type: widget.type,
+                    ),
                   ),
+                  icon: Icon(Icons.add_box_outlined),
                 ),
-                icon: Icon(Icons.add_box_outlined),
-              ),
             if (isBigScreen)
               IconButton(
                 tooltip: 'View Report',
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => TransactionsTable(
-                      toDate: _toDate,
-                      fromDate: _fromDate,
-                      id: productId,
-                    ),
+                    builder: (context) => TransactionsTable(id: productId),
+                    // GoodsAudit(product: 'star')
                   ),
                 ),
 
@@ -356,29 +360,39 @@ class ProductDashboardState extends State<ProductDashboard> {
                 icon: Icon(Icons.save_alt_outlined, size: 20),
               ),
             if (isBigScreen)
-              IconButton(
-                tooltip: 'Edit Product',
-                onPressed: () => showBarModalBottomSheet(
-                  expand: true,
-                  context: context,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => EditProduct(
-                    updatePageInfo: getAllData,
-                    productId: widget.productId,
+              if ([
+                'god',
+                'admin',
+                'manager',
+              ].contains(jwtService.decodedToken?['role']))
+                IconButton(
+                  tooltip: 'Edit Product',
+                  onPressed: () => showBarModalBottomSheet(
+                    expand: true,
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => EditProduct(
+                      updatePageInfo: getAllData,
+                      productId: widget.productId,
+                    ),
                   ),
+                  icon: Icon(Icons.edit_note_outlined),
                 ),
-                icon: Icon(Icons.edit_note_outlined),
-              ),
             if (isBigScreen)
-              IconButton(
-                onPressed: () async {
-                  final bool doDelete = await callDialog();
-                  if (doDelete) {
-                    deleteProduct();
-                  }
-                },
-                icon: Icon(Icons.delete_outline),
-              ),
+              if ([
+                'god',
+                'admin',
+                'manager',
+              ].contains(jwtService.decodedToken?['role']))
+                IconButton(
+                  onPressed: () async {
+                    final bool doDelete = await callDialog();
+                    if (doDelete) {
+                      deleteProduct();
+                    }
+                  },
+                  icon: Icon(Icons.delete_outline),
+                ),
 
             if (!isBigScreen)
               PopupMenuButton<int>(
@@ -389,75 +403,87 @@ class ProductDashboardState extends State<ProductDashboard> {
                 ),
                 itemBuilder: (context) {
                   return [
-                    PopupMenuItem(
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.add,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withAlpha(180),
-                            size: 16,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            "Add Order",
-                            style: TextStyle(
-                              fontSize: 12,
+                    if ([
+                      'god',
+                      'admin',
+                      'manager',
+                      'supervisor',
+                      'store',
+                    ].contains(jwtService.decodedToken?['role']))
+                      PopupMenuItem(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.add,
                               color: Theme.of(
                                 context,
                               ).colorScheme.onSurface.withAlpha(180),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              "Add Order",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withAlpha(180),
+                              ),
+                            ),
+                          ],
+                        ),
+                        onTap: () => {
+                          showBarModalBottomSheet(
+                            expand: true,
+                            context: context,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => AddOrder(
+                              productId: productId,
+                              getUpDate: getAllData,
+                              type: widget.type,
                             ),
                           ),
-                        ],
+                        },
                       ),
-                      onTap: () => {
-                        showBarModalBottomSheet(
-                          expand: true,
-                          context: context,
-                          backgroundColor: Colors.transparent,
-                          builder: (context) => AddOrder(
-                            productId: productId,
-                            getUpDate: getAllData,
-                            type: widget.type,
-                          ),
-                        ),
-                      },
-                    ),
-                    PopupMenuItem(
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.edit_note_outlined,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withAlpha(180),
-                            size: 16,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            "Edit Product",
-                            style: TextStyle(
-                              fontSize: 12,
+                    if ([
+                      'god',
+                      'admin',
+                      'manager',
+                    ].contains(jwtService.decodedToken?['role']))
+                      PopupMenuItem(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.edit_note_outlined,
                               color: Theme.of(
                                 context,
                               ).colorScheme.onSurface.withAlpha(180),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              "Edit Product",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withAlpha(180),
+                              ),
+                            ),
+                          ],
+                        ),
+                        onTap: () => {
+                          showBarModalBottomSheet(
+                            expand: true,
+                            context: context,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => EditProduct(
+                              updatePageInfo: getAllData,
+                              productId: widget.productId,
                             ),
                           ),
-                        ],
+                        },
                       ),
-                      onTap: () => {
-                        showBarModalBottomSheet(
-                          expand: true,
-                          context: context,
-                          backgroundColor: Colors.transparent,
-                          builder: (context) => EditProduct(
-                            updatePageInfo: getAllData,
-                            productId: widget.productId,
-                          ),
-                        ),
-                      },
-                    ),
                     PopupMenuItem(
                       child: Row(
                         children: [
@@ -507,43 +533,46 @@ class ProductDashboardState extends State<ProductDashboard> {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => TransactionsTable(
-                            toDate: _toDate,
-                            fromDate: _fromDate,
-                            id: productId,
-                          ),
+                          builder: (context) =>
+                              TransactionsTable(id: productId),
+                          // GoodsAudit(product: 'star'),
                         ),
                       ),
                     ),
-                    PopupMenuItem(
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.delete_outline,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withAlpha(180),
-                            size: 16,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            "Delete Product",
-                            style: TextStyle(
-                              fontSize: 12,
+                    if ([
+                      'god',
+                      'admin',
+                      'manager',
+                    ].contains(jwtService.decodedToken?['role']))
+                      PopupMenuItem(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete_outline,
                               color: Theme.of(
                                 context,
                               ).colorScheme.onSurface.withAlpha(180),
+                              size: 16,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 10),
+                            Text(
+                              "Delete Product",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withAlpha(180),
+                              ),
+                            ),
+                          ],
+                        ),
+                        onTap: () async {
+                          final bool doDelete = await callDialog();
+                          if (doDelete) {
+                            deleteProduct();
+                          }
+                        },
                       ),
-                      onTap: () async {
-                        final bool doDelete = await callDialog();
-                        if (doDelete) {
-                          deleteProduct();
-                        }
-                      },
-                    ),
                   ];
                 },
                 elevation: 2,
@@ -652,6 +681,7 @@ class ProductDashboardState extends State<ProductDashboard> {
                                         selectedRange: selectedRange,
                                         spots: spots,
                                         isCurved: true,
+                                        redSpots: [],
                                       ),
                                     ),
                                   ),
@@ -676,6 +706,7 @@ class ProductDashboardState extends State<ProductDashboard> {
                                         selectedRange: selectedRange,
                                         spots: [],
                                         isCurved: false,
+                                        redSpots: [],
                                       ),
                                     ),
                                   ),
@@ -722,7 +753,7 @@ class ProductDashboardState extends State<ProductDashboard> {
                             handleDamagedGoodsClicked(rowData);
                           },
                           doReturnGoods: (rowData) {
-                            handleReturndGoods(rowData);
+                            handleReturnGoodsClicked(rowData);
                           },
                         ),
                 ),

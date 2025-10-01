@@ -4,6 +4,7 @@ import 'package:averra_suite/service/api.service.dart';
 import 'package:flutter/material.dart';
 
 import '../../components/tables/custom_data_table.dart';
+import 'add_contacts.dart';
 
 @RoutePage()
 class SupplierDetailsScreen extends StatefulWidget {
@@ -20,6 +21,7 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
   late Map supplierDetails = {};
   late List recentOrders;
   List orderHistory = [];
+
   @override
   void initState() {
     supplierId = widget.supplierId;
@@ -30,9 +32,54 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
 
   Future<void> getVendorDetails() async {
     var vendor = await apiService.get('supplier/$supplierId');
+    print('vendor.data: ${vendor.data}, page : 35');
     setState(() {
       supplierDetails = vendor.data;
     });
+  }
+
+  Future<void> updateSupplier() async {
+    // Replace this with your database save logic
+    await apiService.patch('supplier/${widget.supplierId}', {
+      'otherContacts': supplierDetails['otherContacts'],
+    });
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('saved successfully!')));
+  }
+
+  Future<void> removeExtraContact(String contactId) async {
+    setState(() {
+      supplierDetails['otherContacts'].removeWhere(
+        (contact) => contact['_id'] == contactId,
+      );
+    });
+
+    await apiService.patch('supplier/${widget.supplierId}', {
+      'otherContacts': supplierDetails['otherContacts'],
+    });
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('saved successfully!')));
+  }
+
+  updateSuppliersList() {
+    showModalBottomSheet(
+      context: context,
+      builder: (addContext) {
+        return AddSupplierContact(
+          currentList: supplierDetails['otherContacts'] ?? [],
+          onUpdated: (newList) {
+            setState(() {
+              supplierDetails['otherContacts'] = newList;
+            });
+          },
+          supplierId: supplierId,
+        );
+      },
+    );
   }
 
   Future<void> getVendorOrders() async {
@@ -55,7 +102,6 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
   Widget build(BuildContext context) {
     double width = MediaQuery.sizeOf(context).width;
     bool smallScreen = width <= 1200;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -222,12 +268,16 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
                           ),
                           smallScreen
                               ? IconButton.filledTonal(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    updateSuppliersList();
+                                  },
                                   icon: Icon(Icons.add, size: 12),
                                   tooltip: 'Add New Contact',
                                 )
                               : ElevatedButton.icon(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    updateSuppliersList();
+                                  },
                                   label: Text(
                                     'Add New Contact',
                                     style: TextStyle(fontSize: 10),
@@ -238,10 +288,10 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
                       ),
                     ),
                     CustomDataTable(
-                      columns: const [
+                      columns: [
                         DataColumn(
                           label: SizedBox(
-                            width: 300,
+                            width: smallScreen ? 100 : 200,
                             child: Text(
                               'Name',
                               style: TextStyle(fontWeight: FontWeight.bold),
@@ -250,7 +300,7 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
                         ),
                         DataColumn(
                           label: SizedBox(
-                            width: 120,
+                            width: smallScreen ? 100 : 200,
                             child: Text(
                               'Email',
                               style: TextStyle(fontWeight: FontWeight.bold),
@@ -259,7 +309,7 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
                         ),
                         DataColumn(
                           label: SizedBox(
-                            width: 120,
+                            width: smallScreen ? 100 : 200,
                             child: Text(
                               'Phone',
                               style: TextStyle(fontWeight: FontWeight.bold),
@@ -268,15 +318,24 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
                         ),
                         DataColumn(
                           label: SizedBox(
-                            width: 120,
+                            width: smallScreen ? 100 : 200,
                             child: Text(
-                              'Price',
+                              'Role',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                        DataColumn(
+                          label: SizedBox(
+                            width: smallScreen ? 100 : 200,
+                            child: Text(
+                              'Delete',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),
                       ],
-                      data: [],
+                      data: supplierDetails['otherContacts'] ?? [],
                       cellBuilder: (supplier) => [
                         DataCell(
                           SizedBox(
@@ -300,9 +359,7 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
                           SizedBox(
                             width: 100,
                             child: Text(
-                              supplier['phone_number']
-                                  .toString()
-                                  .formatToFinancial(isMoneySymbol: true),
+                              supplier['phone_number'].toString(),
                               style: TextStyle(fontSize: 10),
                             ),
                           ),
@@ -311,10 +368,20 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
                           SizedBox(
                             width: 100,
                             child: Text(
-                              supplier['role'].toString().formatToFinancial(
-                                isMoneySymbol: true,
-                              ),
+                              supplier['role'].toString(),
                               style: TextStyle(fontSize: 10),
+                            ),
+                          ),
+                        ),
+
+                        DataCell(
+                          SizedBox(
+                            width: 100,
+                            child: IconButton(
+                              onPressed: () {
+                                removeExtraContact(supplier['_id']);
+                              },
+                              icon: Icon(Icons.delete_outline, size: 10),
                             ),
                           ),
                         ),
@@ -333,10 +400,10 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
                       child: Text('Resent Orders'),
                     ),
                     CustomDataTable(
-                      columns: const [
+                      columns: [
                         DataColumn(
                           label: SizedBox(
-                            width: 100,
+                            width: smallScreen ? 100 : 200,
                             child: Text(
                               'Product Name',
                               style: TextStyle(fontWeight: FontWeight.bold),
@@ -345,7 +412,7 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
                         ),
                         DataColumn(
                           label: SizedBox(
-                            width: 100,
+                            width: smallScreen ? 100 : 200,
                             child: Text(
                               'Total Amount',
                               style: TextStyle(fontWeight: FontWeight.bold),
@@ -354,7 +421,7 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
                         ),
                         DataColumn(
                           label: SizedBox(
-                            width: 100,
+                            width: smallScreen ? 100 : 200,
                             child: Text(
                               'Total Paid',
                               style: TextStyle(fontWeight: FontWeight.bold),
@@ -363,7 +430,7 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
                         ),
                         DataColumn(
                           label: SizedBox(
-                            width: 100,
+                            width: smallScreen ? 100 : 200,
                             child: Text(
                               'Status',
                               style: TextStyle(fontWeight: FontWeight.bold),
@@ -372,7 +439,7 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
                         ),
                         DataColumn(
                           label: SizedBox(
-                            width: 100,
+                            width: smallScreen ? 100 : 200,
                             child: Text(
                               'Date',
                               style: TextStyle(fontWeight: FontWeight.bold),

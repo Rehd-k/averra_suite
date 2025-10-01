@@ -160,7 +160,16 @@ class SuperviorNavigationScreen extends StatelessWidget {
                     "Admin Panel",
                     style: TextStyle(fontSize: 10),
                   ),
-                  actions: const [ThemeSwitchButton()],
+                  actions: [
+                    const ThemeSwitchButton(),
+                    IconButton(
+                      icon: const Icon(Icons.logout_outlined, size: 10),
+                      onPressed: () {
+                        JwtService().logout();
+                        context.router.replaceAll([LoginRoute()]);
+                      },
+                    ),
+                  ],
                 ),
           // Use a Drawer for smaller screens
           drawer: isLargeScreen ? null : const Drawer(child: MenuList()),

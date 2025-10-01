@@ -6,6 +6,7 @@ Future<void> showReturnsHandler(
   BuildContext context,
   handleDamagedGoods,
   id,
+  String from,
   num goodRemaining,
 ) async {
   DateTime selectedDate = DateTime.now();
@@ -104,6 +105,7 @@ Future<void> showReturnsHandler(
                       'quantity': int.parse(quantityController.text),
                       'reason': reasonController.text,
                       'date': selectedDate.toString().split(' ')[0],
+                      'from': from,
                     });
                     if (context.mounted) {
                       Navigator.pop(context);

@@ -392,7 +392,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
                             child: CircularProgressIndicator(),
                           ),
                         )
-                      : cardsInfo(isBigScreen, summaryCalculations),
+                      : layout(isBigScreen, summaryCalculations),
                 ),
                 Row(
                   children: [
@@ -552,80 +552,126 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
     );
   }
 
-  GridView cardsInfo(bool isBigScreen, Map data) {
-    return GridView.count(
-      physics: ScrollPhysics(parent: NeverScrollableScrollPhysics()),
-      primary: true,
-      crossAxisSpacing: 20,
-      mainAxisSpacing: 20,
-      crossAxisCount: isBigScreen ? 3 : 2,
-      childAspectRatio: 3,
-      children: [
-        FinanceCard(
-          title: 'No of Sales',
-          icon: Icon(Icons.payments_outlined),
-          isFinancial: false,
-          amount: data['no_of_sale'],
-          fontSize: isBigScreen ? 10 : 5,
-          color: Theme.of(context).colorScheme.surface,
-        ),
-        FinanceCard(
-          title: 'Sales Value',
-          icon: Icon(Icons.payments_outlined),
-          isFinancial: true,
-          amount: data['total_sales'],
-          fontSize: isBigScreen ? 10 : 5,
-          color: Theme.of(context).colorScheme.surface,
-        ),
-        FinanceCard(
-          title: 'Total Paid',
-          icon: Icon(Icons.payments_outlined),
-          isFinancial: true,
-          amount: data['total_paid'],
-          fontSize: isBigScreen ? 10 : 5,
-          color: Theme.of(context).colorScheme.surface,
-        ),
-        FinanceCard(
-          title: 'Transfers',
-          icon: Icon(Icons.payments_outlined),
-          isFinancial: true,
-          amount: data['transfer'],
-          fontSize: isBigScreen ? 10 : 5,
-          color: Theme.of(context).colorScheme.surface,
-        ),
-        FinanceCard(
-          title: 'Card Payments',
-          icon: Icon(Icons.payments_outlined),
-          isFinancial: true,
-          amount: data['card'],
-          fontSize: isBigScreen ? 10 : 5,
-          color: Theme.of(context).colorScheme.surface,
-        ),
-        FinanceCard(
-          title: 'Cash Payments',
-          icon: Icon(Icons.payments_outlined),
-          isFinancial: true,
-          amount: data['cash'],
-          fontSize: isBigScreen ? 10 : 5,
-          color: Theme.of(context).colorScheme.surface,
-        ),
-        FinanceCard(
-          title: 'Discounts',
-          icon: Icon(Icons.payments_outlined),
-          isFinancial: true,
-          amount: data['discount'],
-          fontSize: isBigScreen ? 10 : 5,
-          color: Theme.of(context).colorScheme.surface,
-        ),
-        FinanceCard(
-          title: 'Porfit',
-          icon: Icon(Icons.payments_outlined),
-          isFinancial: true,
-          amount: data['profit'],
-          fontSize: isBigScreen ? 10 : 5,
-          color: Theme.of(context).colorScheme.surface,
-        ),
-      ],
+  LayoutBuilder layout(bool isBigScreen, Map data) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Determine how many cards per row based on screen width
+        double maxWidth = constraints.maxWidth;
+        int cardsPerRow;
+
+        if (maxWidth >= 900) {
+          cardsPerRow = 3; // large screen
+        } else if (maxWidth >= 600) {
+          cardsPerRow = 2; // medium screen
+        } else {
+          cardsPerRow = 2; // small screen
+        }
+
+        // Card width calculation with spacing
+        double spacing = 16.0;
+        double cardWidth =
+            (maxWidth - (spacing * (cardsPerRow - 1))) / cardsPerRow;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            SizedBox(
+              width: cardWidth,
+              child: FinanceCard(
+                title: 'No of Sales',
+                icon: Icon(Icons.payments_outlined),
+                isFinancial: false,
+                amount: data['no_of_sale'],
+                fontSize: isBigScreen ? 10 : 5,
+                color: Theme.of(context).colorScheme.surface,
+              ),
+            ),
+            SizedBox(
+              width: cardWidth,
+              child: FinanceCard(
+                title: 'Sales Value',
+                icon: Icon(Icons.payments_outlined),
+                isFinancial: true,
+                amount: data['total_sales'],
+                fontSize: isBigScreen ? 10 : 5,
+                color: Theme.of(context).colorScheme.surface,
+              ),
+            ),
+
+            SizedBox(
+              width: cardWidth,
+              child: FinanceCard(
+                title: 'Total Paid',
+                icon: Icon(Icons.payments_outlined),
+                isFinancial: true,
+                amount: data['total_paid'],
+                fontSize: isBigScreen ? 10 : 5,
+                color: Theme.of(context).colorScheme.surface,
+              ),
+            ),
+
+            SizedBox(
+              width: cardWidth,
+              child: FinanceCard(
+                title: 'Transfers',
+                icon: Icon(Icons.payments_outlined),
+                isFinancial: true,
+                amount: data['transfer'],
+                fontSize: isBigScreen ? 10 : 5,
+                color: Theme.of(context).colorScheme.surface,
+              ),
+            ),
+
+            SizedBox(
+              width: cardWidth,
+              child: FinanceCard(
+                title: 'Card Payments',
+                icon: Icon(Icons.payments_outlined),
+                isFinancial: true,
+                amount: data['card'],
+                fontSize: isBigScreen ? 10 : 5,
+                color: Theme.of(context).colorScheme.surface,
+              ),
+            ),
+
+            SizedBox(
+              width: cardWidth,
+              child: FinanceCard(
+                title: 'Cash Payments',
+                icon: Icon(Icons.payments_outlined),
+                isFinancial: true,
+                amount: data['cash'],
+                fontSize: isBigScreen ? 10 : 5,
+                color: Theme.of(context).colorScheme.surface,
+              ),
+            ),
+            SizedBox(
+              width: cardWidth,
+              child: FinanceCard(
+                title: 'Discounts',
+                icon: Icon(Icons.payments_outlined),
+                isFinancial: true,
+                amount: data['discount'],
+                fontSize: isBigScreen ? 10 : 5,
+                color: Theme.of(context).colorScheme.surface,
+              ),
+            ),
+
+            SizedBox(
+              width: cardWidth,
+              child: FinanceCard(
+                title: 'Porfit',
+                icon: Icon(Icons.payments_outlined),
+                isFinancial: true,
+                amount: data['profit'],
+                fontSize: isBigScreen ? 10 : 5,
+                color: Theme.of(context).colorScheme.surface,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

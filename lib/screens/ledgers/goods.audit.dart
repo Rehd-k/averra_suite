@@ -1,9 +1,10 @@
 import 'package:averra_suite/helpers/financial_string_formart.dart';
-import 'package:averra_suite/service/api.service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../service/api.service.dart';
 import '../../service/date_range_helper.dart';
+import '../../service/token.service.dart';
 
 // --- DATA MODEL ---
 // This class represents a single transaction record.
@@ -27,21 +28,23 @@ class TransactionModel {
 }
 
 // --- THE TRANSACTION TABLE WIDGET ---
-class TransactionsTable extends StatefulWidget {
-  final String id;
-  const TransactionsTable({super.key, required this.id});
+
+class GoodsAudit extends StatefulWidget {
+  final String product;
+  const GoodsAudit({super.key, required this.product});
 
   @override
-  DayLedgerState createState() => DayLedgerState();
+  GoodsAuditState createState() => GoodsAuditState();
 }
 
-class DayLedgerState extends State<TransactionsTable> {
+class GoodsAuditState extends State<GoodsAudit> {
   ApiService apiService = ApiService();
-  late List<TransactionModel> transactions = [];
-  late String id;
+  JwtService jwtService = JwtService();
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
-
+  String product = 'star';
+  late List transactions = [];
+  late List departments = [];
   static const List<Color> _monthColors = [
     Color(0xFFE3F2FD), // Jan - Light Blue
     Color(0xFFE8F5E9), // Feb - Light Green
@@ -57,29 +60,6 @@ class DayLedgerState extends State<TransactionsTable> {
     Color(0xFFECEFF1), // Dec - Blue Grey
   ];
 
-  Future<void> getReportData() async {
-    var result = await apiService.get(
-      'analytics/get-products-report?id=$id&start=$startDate&end=$endDate',
-    );
-    List<TransactionModel> innerTransaction = [];
-    for (var element in result.data) {
-      innerTransaction.add(
-        TransactionModel(
-          date: DateTime.parse(element['Date']),
-          description: element['Description'],
-          inwardQty: element['direction'] == 'inward' ? element['qty'] : 0,
-          inwardAmt: element['direction'] == 'inward' ? element['amount'] : 0,
-          outwardQty: element['direction'] == 'outward' ? element['qty'] : 0,
-          outwardAmt: element['direction'] == 'outward' ? element['amount'] : 0,
-        ),
-      );
-    }
-
-    setState(() {
-      transactions.addAll(innerTransaction);
-    });
-  }
-
   handleRangeChange(String select, DateTime picked) async {
     if (select == 'from') {
       setState(() {
@@ -92,7 +72,7 @@ class DayLedgerState extends State<TransactionsTable> {
         transactions = [];
       });
     }
-    getReportData();
+    getRequisitions();
   }
 
   handleDateReset() {
@@ -101,13 +81,35 @@ class DayLedgerState extends State<TransactionsTable> {
       endDate = DateTime.now();
       transactions = [];
     });
-    getReportData();
+    getRequisitions();
+  }
+
+  Future<void> getRequisitions() async {
+    var result = await apiService.get(
+      'stock-flow?filter={"product" : "$product"}&startDate=$startDate&endDate=$endDate&selectedDateField=createdAt',
+    );
+
+    List<TransactionModel> innerTransaction = [];
+    for (var element in result.data) {
+      innerTransaction.add(
+        TransactionModel(
+          date: DateTime.parse(element['Date']),
+          description: element['Description'],
+          inwardQty: element['direction'] == 'in' ? element['qty'] : 0,
+          inwardAmt: element['direction'] == 'in' ? element['amount'] : 0,
+          outwardQty: element['direction'] == 'out' ? element['qty'] : 0,
+          outwardAmt: element['direction'] == 'out' ? element['amount'] : 0,
+        ),
+      );
+    }
+    setState(() {
+      transactions = innerTransaction;
+    });
   }
 
   @override
   void initState() {
-    id = widget.id;
-    getReportData();
+    product = widget.product;
     super.initState();
   }
 

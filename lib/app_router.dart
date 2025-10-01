@@ -50,6 +50,8 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: ViewUsers.page),
         AutoRoute(page: ViewUser.page),
         AutoRoute(page: AddUser.page),
+        AutoRoute(page: SendToBranchRoute.page),
+        AutoRoute(page: ProfitLossStatementRoute.page),
         AutoRoute(
           page: DepartmentNavigation.page,
           children: [
@@ -152,6 +154,7 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: ViewUsers.page),
         AutoRoute(page: ViewUser.page),
         AutoRoute(page: AddUser.page),
+        AutoRoute(page: ProfitLossStatementRoute.page),
       ],
     ),
   ];
