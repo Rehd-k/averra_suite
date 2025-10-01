@@ -123,7 +123,7 @@ class AddUserState extends State<AddUser> {
         'lastName': lastName.text,
         'username': username.text,
         'password': password.text,
-        'role': role.text,
+        'role': widget.isGod == true ? 'god' : role.text,
         'location': locations,
         'email': email.text,
       });
