@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:averra_suite/service/api.service.dart';
 import 'package:flutter/material.dart';
 
 import '../../app_router.gr.dart';
@@ -62,7 +63,29 @@ class WaiterNavigationScreen extends StatelessWidget {
                     "Admin Panel",
                     style: TextStyle(fontSize: 10),
                   ),
-                  actions: const [ThemeSwitchButton()],
+
+                  actions: [
+                    CircleAvatar(
+                      child: IconButton(
+                        icon: const Icon(Icons.person_outlined),
+                        onPressed: () async {
+                          JwtService jwtService = JwtService();
+                          ApiService apiService = ApiService();
+                          await apiService.get(
+                            'notification/test/${jwtService.decodedToken?['sub']}/this_title/testingnotification',
+                          );
+                        },
+                      ),
+                    ),
+                    const ThemeSwitchButton(),
+                    IconButton(
+                      icon: const Icon(Icons.logout_outlined, size: 12),
+                      onPressed: () {
+                        JwtService().logout();
+                        context.router.replaceAll([LoginRoute()]);
+                      },
+                    ),
+                  ],
                 ),
           // Use a Drawer for smaller screens
           drawer: isLargeScreen ? null : const Drawer(child: MenuList()),

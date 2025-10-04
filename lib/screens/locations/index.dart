@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:averra_suite/service/toast.service.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:toastification/toastification.dart';
 
 import '../../service/api.service.dart';
 import 'add_location.dart';
@@ -34,7 +36,7 @@ class LocationIndexState extends State<LocationIndex> {
 
   Future<void> handleSubmit() async {
     try {
-      final dynamic response = await apiService.post('/location', {
+      await apiService.post('location', {
         'name': nameController.text,
         'location': locationController.text,
         'manager': managerController.text,
@@ -42,12 +44,13 @@ class LocationIndexState extends State<LocationIndex> {
         'closingHours': closingController.text,
         'firm_name': firmNameController.text,
       });
-
-      if (response.statusCode! >= 200 && response.statusCode! <= 300) {
-        // widget.updateLocation!();
-      } else {}
-      // ignore: empty_catches
-    } catch (e) {}
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Added')));
+      getLocationsList();
+    } catch (e) {
+      showToast('Error : $e', ToastificationType.error);
+    }
   }
 
   List filteredLocations = [];
@@ -179,28 +182,26 @@ class LocationIndexState extends State<LocationIndex> {
             )
           : null,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         actions: [
-          SizedBox(
-            width: 10,
-            child: FilledButton.icon(
-              onPressed: () => showBarModalBottomSheet(
-                expand: true,
-                context: context,
-                backgroundColor: Colors.transparent,
-                builder: (context) => AddLocation(
-                  handleSubmit: handleSubmit,
-                  nameController: nameController,
-                  locationController: locationController,
-                  managerController: managerController,
-                  contactController: contactController,
-                  openingController: openingController,
-                  closingController: closingController,
-                  formKey: _formKey,
-                ),
+          FilledButton.icon(
+            onPressed: () => showBarModalBottomSheet(
+              expand: true,
+              context: context,
+              backgroundColor: Colors.transparent,
+              builder: (context) => AddLocation(
+                handleSubmit: handleSubmit,
+                nameController: nameController,
+                locationController: locationController,
+                managerController: managerController,
+                contactController: contactController,
+                openingController: openingController,
+                closingController: closingController,
+                formKey: _formKey,
               ),
-              label: Text('Add Location'),
-              icon: Icon(Icons.add_box_outlined),
             ),
+            label: Text('Add Location'),
+            icon: Icon(Icons.add_box_outlined),
           ),
         ],
       ),

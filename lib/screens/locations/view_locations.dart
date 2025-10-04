@@ -14,18 +14,19 @@ class ViewLocations extends StatelessWidget {
   final Function getFilteredAndSortedRows;
   final Function getColumnIndex;
   final Function deleteLocation;
-  const ViewLocations(
-      {super.key,
-      required this.filteredLocations,
-      required this.searchController,
-      required this.isLoading,
-      required this.rowsPerPage,
-      required this.sortBy,
-      required this.ascending,
-      required this.filterLocations,
-      required this.getFilteredAndSortedRows,
-      required this.getColumnIndex,
-      required this.deleteLocation});
+  const ViewLocations({
+    super.key,
+    required this.filteredLocations,
+    required this.searchController,
+    required this.isLoading,
+    required this.rowsPerPage,
+    required this.sortBy,
+    required this.ascending,
+    required this.filterLocations,
+    required this.getFilteredAndSortedRows,
+    required this.getColumnIndex,
+    required this.deleteLocation,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -48,34 +49,21 @@ class ViewLocations extends StatelessWidget {
             },
             empty: Text('No Locations Recorded'),
             minWidth: 1000,
-            actions: [
-              FilledButton.icon(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.exit_to_app,
-                  size: 10,
-                ),
-                label: Text(
-                  'Extract',
-                  style: TextStyle(fontWeight: FontWeight.w100, fontSize: 10),
-                ),
-              )
-            ],
+
             header: smallScreen
                 ? SizedBox()
-                : Row(
-                    children: [searchBox(smallScreen, context)],
-                  ),
+                : Row(children: [searchBox(smallScreen, context)]),
             columns: [
               DataColumn2(
-                  label: Text("Name"),
-                  size: ColumnSize.L,
-                  onSort: (index, ascending) {
-                    // setState(() {
-                    //   sortBy = 'name';
-                    //   this.ascending = ascending;
-                    // });
-                  }),
+                label: Text("Name"),
+                size: ColumnSize.L,
+                onSort: (index, ascending) {
+                  // setState(() {
+                  //   sortBy = 'name';
+                  //   this.ascending = ascending;
+                  // });
+                },
+              ),
               DataColumn2(label: Text("Location")),
               DataColumn2(label: Text("Manager")),
               DataColumn2(label: Text("Opening Hours")),
@@ -91,11 +79,12 @@ class ViewLocations extends StatelessWidget {
                   // });
                 },
               ),
-              DataColumn2(label: Text('Actions'))
+              DataColumn2(label: Text('Actions')),
             ],
             source: LocationsDataSource(
-                locations: getFilteredAndSortedRows(),
-                deleteLocation: deleteLocation),
+              locations: getFilteredAndSortedRows(),
+              deleteLocation: deleteLocation,
+            ),
             border: TableBorder(
               horizontalInside: BorderSide.none,
               verticalInside: BorderSide.none,
@@ -115,9 +104,7 @@ class ViewLocations extends StatelessWidget {
           hintText: "Search...",
           fillColor: Theme.of(context).colorScheme.surface,
           filled: true,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
           suffixIcon: IconButton(
             icon: Icon(Icons.search),
             onPressed: () => filterLocations(searchController.text),
@@ -153,19 +140,22 @@ class LocationsDataSource extends DataTableSource {
         DataCell(Text(location['closingHours'] ?? '')),
         DataCell(Text(location['initiator'])),
         DataCell(Text(formatDate(location['createdAt']))),
-        DataCell(Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            // OutlinedButton(onPressed: () {}, child: Text('Update'))
-            location['name'] != 'main'
-                ? OutlinedButton(
-                    onPressed: () {
-                      deleteLocation(location['_id']);
-                    },
-                    child: Text('Delete'))
-                : SizedBox()
-          ],
-        ))
+        DataCell(
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              // OutlinedButton(onPressed: () {}, child: Text('Update'))
+              location['name'] != 'main'
+                  ? OutlinedButton(
+                      onPressed: () {
+                        deleteLocation(location['_id']);
+                      },
+                      child: Text('Delete'),
+                    )
+                  : SizedBox(),
+            ],
+          ),
+        ),
       ],
     );
   }

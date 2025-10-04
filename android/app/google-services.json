@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "674663446479",
+    "project_id": "avira-suite",
+    "storage_bucket": "avira-suite.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:674663446479:android:7e990533836acc127644ba",
+        "android_client_info": {
+          "package_name": "com.vercel.averra_suite"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJc9pbTYIpc38z_uQk9khEszFoM0Oro-M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

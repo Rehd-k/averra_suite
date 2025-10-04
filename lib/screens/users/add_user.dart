@@ -124,7 +124,7 @@ class AddUserState extends State<AddUser> {
         'username': username.text,
         'password': password.text,
         'role': widget.isGod == true ? 'god' : role.text,
-        'location': locations,
+        'location': 'all',
         'email': email.text,
       });
       _showToast('User Added Successfully', ToastificationType.success);

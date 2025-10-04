@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../app_router.gr.dart';
+import '../../helpers/notification.token.dart';
 import '../../service/api.service.dart';
 import '../../service/token.service.dart';
 import 'form.dart';
@@ -22,6 +23,8 @@ class _LoginFormState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final service = NotificationService();
+
   late String token;
   late FocusNode usernameFocus;
   late FocusNode passwordFocus;
@@ -34,6 +37,7 @@ class _LoginFormState extends State<LoginScreen> {
   final ApiService apiServices = ApiService();
   bool loggedIn = false;
   bool showForm = false;
+
   @override
   void initState() {
     super.initState();
@@ -95,62 +99,69 @@ class _LoginFormState extends State<LoginScreen> {
         'location': widget.isGod == true ? 'all' : locations,
       });
 
-      if (response.statusCode! >= 200 && response.statusCode! <= 300) {
-        token = response.data['access_token'];
-        String role = response.data['role'];
-        if (!mounted) return;
-
-        JwtService().setToken = token;
-        if (role == 'god' || role == 'admin') {
-          context.router.replaceAll([
-            const AdminNavigation(children: [AdminDashbaord()]),
-          ]);
-        } else if (role == 'waiter') {
-          context.router.replaceAll([
-            WaiterNavigationRoute(children: [MakeSaleRoute()]),
-          ]);
-        } else if (role == 'bar') {
-          context.router.replaceAll([
-            BarNavigationRoute(children: [DepartmentRequest()]),
-          ]);
-        } else if (role == 'supervisor') {
-          context.router.replaceAll([
-            SuperviorNavigationRoute(children: [DashbaordSuperviorRoute()]),
-          ]);
-        } else if (role == 'manager') {
-          context.router.replaceAll([
-            ManagerNavigationRoute(children: [DashbaordManagerRoute()]),
-          ]);
-        } else if (role == 'accounting') {
-          context.router.replaceAll([
-            AccountingNavigationRoute(children: [AccountingDashboardRoute()]),
-          ]);
-        }
-
-        setState(() {
-          loggedIn = true;
-        });
-      } else {
-        if (response.data['statusCode'] == 401) {
-          var result = response.data['message'];
-          if (result == 'Invalid password') {
-            setState(() {
-              passwordErrorMessage = result;
-              isLoading = false;
-            });
-
-            passwordFocus.requestFocus();
-          }
-          if (result == 'User not found in this location') {
-            setState(() {
-              usernameErrorMessage = result;
-              isLoading = false;
-            });
-
-            usernameFocus.requestFocus();
-          }
-        } else {}
+      token = response.data['access_token'];
+      String role = response.data['role'];
+      String id = response.data['sub'];
+      debugPrint(response.data.toString());
+      String? fcmToken = await service.getToken();
+      debugPrint('FCM Token: $fcmToken');
+      if (fcmToken != null) {
+        await service.registerToken(fcmToken, id); // From auth
       }
+      service.handleMessages();
+      if (!mounted) return;
+
+      JwtService().setToken = token;
+      if (role == 'god' || role == 'admin') {
+        context.router.replaceAll([
+          const AdminNavigation(children: [AdminDashbaord()]),
+        ]);
+      } else if (role == 'waiter') {
+        context.router.replaceAll([
+          WaiterNavigationRoute(children: [MakeSaleRoute()]),
+        ]);
+      } else if (role == 'bar') {
+        context.router.replaceAll([
+          BarNavigationRoute(children: [DepartmentRequest()]),
+        ]);
+      } else if (role == 'supervisor') {
+        context.router.replaceAll([
+          SuperviorNavigationRoute(children: [DashbaordSuperviorRoute()]),
+        ]);
+      } else if (role == 'manager') {
+        context.router.replaceAll([
+          ManagerNavigationRoute(children: [DashbaordManagerRoute()]),
+        ]);
+      } else if (role == 'accounting') {
+        context.router.replaceAll([
+          AccountingNavigationRoute(children: [AccountingDashboardRoute()]),
+        ]);
+      }
+
+      setState(() {
+        loggedIn = true;
+      });
+      // } else {
+      //   if (response.data['statusCode'] == 401) {
+      //     var result = response.data['message'];
+      //     if (result == 'Invalid password') {
+      //       setState(() {
+      //         passwordErrorMessage = result;
+      //         isLoading = false;
+      //       });
+
+      //       passwordFocus.requestFocus();
+      //     }
+      //     if (result == 'User not found in this location') {
+      //       setState(() {
+      //         usernameErrorMessage = result;
+      //         isLoading = false;
+      //       });
+
+      //       usernameFocus.requestFocus();
+      //     }
+      //   } else {}
+      // }
     } on DioException catch (e, _) {
       if (e.type == DioExceptionType.connectionError) {
         setState(() {

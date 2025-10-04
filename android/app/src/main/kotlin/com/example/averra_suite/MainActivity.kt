@@ -1,4 +1,4 @@
-package com.example.averra_suite
+package com.vercel.averra_suite
 
 import io.flutter.embedding.android.FlutterActivity
 

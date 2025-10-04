@@ -5,7 +5,6 @@ import 'package:averra_suite/service/date_range_helper.dart';
 import 'package:averra_suite/service/token.service.dart';
 import 'package:flutter/material.dart';
 import 'package:number_pagination/number_pagination.dart';
-import '../../components/datepill.dart';
 import '../../components/emptylist.dart';
 import '../../components/filter.pill.dart';
 import '../../components/smallinfo.card.dart';
@@ -163,22 +162,6 @@ class ViewExpensesState extends State<ViewExpenses> {
       status = value;
     });
     getExpenses();
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(), // The date displayed when the picker opens
-      firstDate: DateTime(2000), // The earliest date a user can select
-      lastDate: DateTime.now(), // The latest date a user can select
-    );
-    if (picked != null) {
-      // Handle the selected date, e.g., update a state variable
-      setState(() {
-        selectedDate = picked;
-      });
-      getExpenses();
-    }
   }
 
   handleDelete(id) async {
