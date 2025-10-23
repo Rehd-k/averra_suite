@@ -100,7 +100,10 @@ class AppRouter extends RootStackRouter {
     ),
     AutoRoute(
       page: BarNavigationRoute.page,
-      children: [AutoRoute(page: DepartmentRequest.page)],
+      children: [
+        AutoRoute(page: CartRoute.page),
+        AutoRoute(page: DepartmentRequest.page),
+      ],
     ),
     AutoRoute(
       page: SuperviorNavigationRoute.page,

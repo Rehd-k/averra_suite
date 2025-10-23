@@ -109,7 +109,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
     }
   }
 
-  handleUpdate(updateInfo) {
+  void handleUpdate(updateInfo) {
     setState(() {
       transactionUpdate = updateInfo;
       updateTransaction();
@@ -126,7 +126,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
     );
   }
 
-  handleShowDetails(details, isBigScreen) {
+  void handleShowDetails(details, isBigScreen) {
     selectedItem = details;
     if (isBigScreen) {
       setState(() {
@@ -137,7 +137,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
     }
   }
 
-  handleSelection(dynamic selected) {
+  void handleSelection(dynamic selected) {
     showModalBottomSheet(
       isScrollControlled: true,
       context: context,
@@ -160,7 +160,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
     );
   }
 
-  handleRangeChange(String select, DateTime picked) async {
+  Future<void> handleRangeChange(String select, DateTime picked) async {
     if (select == 'from') {
       setState(() {
         _fromDate = picked;
@@ -174,7 +174,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
     handleCalculations();
   }
 
-  onReciptScanned(String field, String reciptQuery) {
+  void onReciptScanned(String field, String reciptQuery) {
     setState(() {
       searchFeild = field;
       query = reciptQuery;
@@ -215,7 +215,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
     };
   }
 
-  handleCalculations() async {
+  Future<void> handleCalculations() async {
     var dbproducts = await apiService.get(
       'sales?filter={"$searchFeild" : {"\$regex" : "${query.toLowerCase()}"}, "handler" : "$selectedAccount", "paymentMethod" : "$paymentMethordToShow"}&startDate=$_fromDate&endDate=$_toDate',
     );
@@ -248,7 +248,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
     return;
   }
 
-  doRePrint(Map saleData) async {
+  Future<void> doRePrint(Map saleData) async {
     final profile = await CapabilityProfile.load();
     _printerService.printData(
       _printerService.printers.firstWhere(

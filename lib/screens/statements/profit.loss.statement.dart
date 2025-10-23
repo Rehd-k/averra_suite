@@ -20,7 +20,7 @@ class ProfitLossStatementState extends State<ProfitLossStatementScreen> {
   late Map entries = {};
   bool loading = true;
 
-  handleRangeChange(String select, DateTime picked) async {
+  Future<void> handleRangeChange(String select, DateTime picked) async {
     if (select == 'from') {
       setState(() {
         startDate = picked;
@@ -35,7 +35,7 @@ class ProfitLossStatementState extends State<ProfitLossStatementScreen> {
     getInitailData();
   }
 
-  handleDateReset() {
+  void handleDateReset() {
     setState(() {
       startDate = DateTime.now();
       endDate = DateTime.now();

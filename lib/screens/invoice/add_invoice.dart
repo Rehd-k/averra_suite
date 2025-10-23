@@ -263,7 +263,7 @@ class AddInvoiceState extends State<AddInvoice> {
     }
   }
 
-  _onFieldUnfocus(int index, String value) {
+  void _onFieldUnfocus(int index, String value) {
     int? newQty = int.tryParse(value);
     if (newQty == null || newQty < 1) {
       newQty = 1;
@@ -279,7 +279,7 @@ class AddInvoiceState extends State<AddInvoice> {
     }
   }
 
-  selectUserFromSugestion(suggestion) {
+  void selectUserFromSugestion(suggestion) {
     setState(() {
       selectedName = suggestion;
       nameController.clear();
@@ -296,17 +296,17 @@ class AddInvoiceState extends State<AddInvoice> {
     });
   }
 
-  deselectUserFromSugestion() {
+  void deselectUserFromSugestion() {
     setState(() {
       selectedName = null;
     });
   }
 
-  onchange() {
+  void onchange() {
     setState(() {});
   }
 
-  selectProduct(suggestion) {
+  void selectProduct(suggestion) {
     suggestion['quantity'] > 0
         ? setState(() {
             final existingIndex = selectedProducts.indexWhere(
@@ -477,7 +477,7 @@ class AddInvoiceState extends State<AddInvoice> {
                               child: isLoading
                                   ? Center(child: CircularProgressIndicator())
                                   : DropdownButtonFormField<String>(
-                                      value: department,
+                                      initialValue: department,
                                       decoration: InputDecoration(
                                         labelText: 'Department',
                                         border: OutlineInputBorder(),
@@ -517,7 +517,7 @@ class AddInvoiceState extends State<AddInvoice> {
                               child: isLoading
                                   ? Center(child: CircularProgressIndicator())
                                   : DropdownButtonFormField<String>(
-                                      value: bank?['accountNumber'],
+                                      initialValue: bank?['accountNumber'],
                                       decoration: InputDecoration(
                                         labelText: 'Select Bank',
                                         border: OutlineInputBorder(

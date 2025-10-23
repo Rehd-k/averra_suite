@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/helpers/financial_string_formart.dart';
 import 'package:averra_suite/service/token.service.dart';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 
 import '../../app_router.gr.dart';
 import '../../components/theme_switch_button.dart';
+import '../../helpers/title_bar.dart';
 
 /// A type-safe data model for our navigation items.
 /// Using a class is better than a Map for readability and error prevention.
@@ -266,17 +270,42 @@ class AdminNavigation extends StatelessWidget {
                   actions: const [ThemeSwitchButton()],
                 ),
           // Use a Drawer for smaller screens
-          drawer: isLargeScreen ? null : const Drawer(child: MenuList()),
-          body: Row(
-            children: [
-              // Show the permanent side menu on large screens
-              if (isLargeScreen)
-                const SizedBox(
-                  width: 190, // A common width for side navigation
+          drawer: isLargeScreen
+              ? null
+              : const Drawer(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(0),
+                      bottomRight: Radius.circular(0),
+                    ),
+                  ),
                   child: MenuList(),
                 ),
-              // This is the main content area that will be displayed
-              Expanded(child: const SafeArea(child: AutoRouter())),
+          body: Column(
+            children: [
+              if (isLargeScreen && Platform.isWindows)
+                WindowTitleBarBox(
+                  child: Row(
+                    children: [
+                      Expanded(child: MoveWindow(child: Text('Logged In'))),
+                      const WindowButtons(),
+                    ],
+                  ),
+                ),
+              Expanded(
+                child: Row(
+                  children: [
+                    // Show the permanent side menu on large screens
+                    if (isLargeScreen)
+                      const SizedBox(
+                        width: 190, // A common width for side navigation
+                        child: MenuList(),
+                      ),
+                    // This is the main content area that will be displayed
+                    Expanded(child: const SafeArea(child: AutoRouter())),
+                  ],
+                ),
+              ),
             ],
           ),
         );

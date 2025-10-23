@@ -142,7 +142,7 @@ class AddProductsState extends State<AddProducts> {
     });
   }
 
-  doShowToast(String toastMessage, ToastificationType type) {
+  void doShowToast(String toastMessage, ToastificationType type) {
     toastification.show(
       title: Text(toastMessage),
       type: type,
@@ -240,7 +240,7 @@ class AddProductsState extends State<AddProducts> {
                     ),
                     SizedBox(height: 10),
                     DropdownButtonFormField<String>(
-                      value: categoryController.text.isNotEmpty
+                      initialValue: categoryController.text.isNotEmpty
                           ? categoryController.text
                           : null,
                       decoration: InputDecoration(
@@ -278,7 +278,7 @@ class AddProductsState extends State<AddProducts> {
                     ),
                     SizedBox(height: 10),
                     DropdownButtonFormField<String>(
-                      value: servingSize,
+                      initialValue: servingSize,
                       decoration: InputDecoration(
                         labelText: 'Product Type',
                         border: OutlineInputBorder(

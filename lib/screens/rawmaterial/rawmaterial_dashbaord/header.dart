@@ -66,7 +66,7 @@ class ProductHeader extends StatelessWidget {
                     ),
                   ],
                   onChanged: onFieldChange,
-                  value: selectedField,
+                  initialValue: selectedField,
                 ),
                 SizedBox(height: 16.0),
                 DateRangeHolder(
@@ -95,7 +95,7 @@ class ProductHeader extends StatelessWidget {
                     );
                   }).toList(),
                   onChanged: onSupplierChange,
-                  value: selectedSupplier,
+                  initialValue: selectedSupplier,
                 ),
                 SizedBox(height: 16.0),
                 DropdownButtonFormField<String>(
@@ -115,7 +115,7 @@ class ProductHeader extends StatelessWidget {
                     ),
                   ],
                   onChanged: onSelectStatus,
-                  value: selectedStatus,
+                  initialValue: selectedStatus,
                 ),
               ],
             ),

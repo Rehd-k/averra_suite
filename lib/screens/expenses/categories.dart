@@ -40,23 +40,23 @@ class CategoriesState extends State<CategoriesScreen> {
   ApiService apiService = ApiService();
   late List categories = [];
 
-  selectIcon(icon) {
+  void selectIcon(icon) {
     setState(() {
       selectedIconName = icon;
     });
   }
 
-  handleUpdate(id, update) async {
+  Future<void> handleUpdate(id, update) async {
     await apiService.patch('expense/category/update/$id', update);
     getCategories();
   }
 
-  handleDelete(id) async {
+  Future<void> handleDelete(id) async {
     await apiService.delete('expense/category/delete/$id');
     getCategories();
   }
 
-  createCategory() async {
+  Future<void> createCategory() async {
     var newCat = {'icon': selectedIconName, 'title': newCategory.text};
     await apiService.post('expense/category', newCat);
     setState(() {
@@ -66,7 +66,7 @@ class CategoriesState extends State<CategoriesScreen> {
     getCategories();
   }
 
-  getCategories() async {
+  Future<void> getCategories() async {
     var result = await apiService.get('expense/category');
     setState(() {
       categories = result.data;

@@ -29,7 +29,7 @@ class PendingRequisitionState extends State<PendingRequisition> {
   late List reqisitions = [];
   bool isApproved = false;
 
-  handleRangeChange(String select, DateTime picked) async {
+  Future<void> handleRangeChange(String select, DateTime picked) async {
     if (select == 'from') {
       setState(() {
         startDate = picked;
@@ -68,7 +68,7 @@ class PendingRequisitionState extends State<PendingRequisition> {
     getRequisitions();
   }
 
-  handleDateReset() {
+  void handleDateReset() {
     setState(() {
       startDate = DateTime.now();
       endDate = DateTime.now();

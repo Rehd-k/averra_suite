@@ -158,7 +158,7 @@ class MakeReturnState extends State<MakeReturn> {
         child: Column(
           children: <Widget>[
             DropdownButtonFormField<Map<String, dynamic>>(
-              value: _selectedProduct,
+              initialValue: _selectedProduct,
               items: widget.sales.map((product) {
                 return DropdownMenuItem<Map<String, dynamic>>(
                   value: product,

@@ -364,7 +364,7 @@ class AddOrderState extends State<AddOrder> {
       ),
 
       DropdownButtonFormField<String>(
-        value: toPoint,
+        initialValue: toPoint,
         decoration: InputDecoration(
           labelText: 'Drop Off Point',
           border: OutlineInputBorder(),
@@ -388,7 +388,7 @@ class AddOrderState extends State<AddOrder> {
       ),
 
       DropdownButtonFormField<String>(
-        value: status,
+        initialValue: status,
         decoration: InputDecoration(
           labelText: 'Select Status',
           border: OutlineInputBorder(),
@@ -442,7 +442,7 @@ class AddOrderState extends State<AddOrder> {
 
       // paymentMethod
       DropdownButtonFormField<String>(
-        value: paymentMethord,
+        initialValue: paymentMethord,
         decoration: InputDecoration(
           labelText: 'Payment Methord',
           border: OutlineInputBorder(),
@@ -521,7 +521,7 @@ class AddOrderState extends State<AddOrder> {
       isLoading
           ? SizedBox(height: 10, width: 10, child: CircularProgressIndicator())
           : DropdownButtonFormField<String>(
-              value: supplier,
+              initialValue: supplier,
               decoration: InputDecoration(
                 suffix: TextButton(
                   onPressed: () {
@@ -743,7 +743,7 @@ class PriceAmount extends StatelessWidget {
         if (label != 'Cash')
           Expanded(
             child: DropdownButtonFormField<String>(
-              value: bank,
+              initialValue: bank,
               decoration: InputDecoration(
                 labelText: 'Banks',
                 border: OutlineInputBorder(),

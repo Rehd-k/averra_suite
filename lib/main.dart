@@ -1,43 +1,46 @@
+import 'dart:io';
+
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 
-import 'firebase_options.dart';
 import 'helpers/noti_service.dart';
-import 'helpers/notification.token.dart';
 import 'helpers/theme.dart';
 import 'helpers/theme_provider.dart';
 import 'service/navigation.service.dart';
 
 // Add this to your main.dart or a separate file
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // 👈 required on desktop
-  );
-  print("Handling a background message: ${message.messageId}");
-}
+// @pragma('vm:entry-point')
+// Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+//   await Firebase.initializeApp();
+//   print("Handling a background message: ${message.messageId}");
+// }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // 👈 required on desktop
-  );
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  NotificationSettings settings = await NotificationService().messaging
-      .requestPermission();
-  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    print('User granted permission');
-  }
-  NotiService().initNotification();
+  // await Firebase.initializeApp(
+  //   options: DefaultFirebaseOptions.currentPlatform,
+  // );
+  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  // await LocalNotificationService().initNotification();
+
   runApp(
     ChangeNotifierProvider(
       create: (_) => ThemeProvider(),
       child: ToastificationWrapper(child: const MyApp()),
     ),
   );
+  if (Platform.isWindows) {
+    doWhenWindowReady(() {
+      final win = appWindow;
+      win.maximize();
+      win.title = "Averra Suite";
+      win.show();
+    });
+  }
 }
 
 class MyApp extends StatelessWidget {

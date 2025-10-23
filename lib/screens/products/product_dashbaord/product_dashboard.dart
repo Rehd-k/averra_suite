@@ -17,7 +17,6 @@ import '../../../components/tables/gen_big_table/big_table.dart';
 import '../../../components/tables/gen_big_table/big_table_source.dart';
 import '../../../service/api.service.dart';
 import '../../ledgers/day_ledger.dart';
-import '../../ledgers/goods.audit.dart';
 import 'add_order.dart';
 import 'header.dart';
 import 'helpers/damaged_goods.dart';
@@ -102,7 +101,7 @@ class ProductDashboardState extends State<ProductDashboard> {
     super.initState();
   }
 
-  getAllData() async {
+  Future<void> getAllData() async {
     await getDashboardData();
     await getChartData('Today');
   }
@@ -180,11 +179,11 @@ class ProductDashboardState extends State<ProductDashboard> {
     },
   );
 
-  printSelected() {
+  void printSelected() {
     debugPrint(_selectedRows.toString());
   }
 
-  handleDamagedGoodsClicked(rowData) async {
+  Future<void> handleDamagedGoodsClicked(rowData) async {
     if (returnedSelection.isEmpty) {
       if (rowData['quantity'] == getSold(rowData['sold'])) {
         doAlerts('This batch have been sold out');
@@ -200,7 +199,7 @@ class ProductDashboardState extends State<ProductDashboard> {
     }
   }
 
-  handleReturnGoodsClicked(rowData) async {
+  Future<void> handleReturnGoodsClicked(rowData) async {
     if (returnedSelection.isEmpty) {
       if (rowData['quantity'] == getSold(rowData['sold'])) {
         doAlerts('This batch have been sold out');
@@ -216,21 +215,21 @@ class ProductDashboardState extends State<ProductDashboard> {
     }
   }
 
-  handleDamagedGoods(data) async {
+  Future<void> handleDamagedGoods(data) async {
     await apiService.put('purchases/doDamage/${data['_id']}', {
       ...data,
       "productId": productId,
     });
   }
 
-  handleReturndGoods(data) async {
+  Future<void> handleReturndGoods(data) async {
     await apiService.put('purchases/return/${data['_id']}', {
       ...data,
       "productId": productId,
     });
   }
 
-  handleRangeChange(String? select, DateTime? picked) async {
+  Future<void> handleRangeChange(String? select, DateTime? picked) async {
     if (select == 'from') {
       setState(() {
         _fromDate = picked;
@@ -242,7 +241,7 @@ class ProductDashboardState extends State<ProductDashboard> {
     }
   }
 
-  handleRangeChanged(String rangeLabel) {
+  void handleRangeChanged(String rangeLabel) {
     setState(() {
       selectedRange = rangeLabel;
     });
@@ -771,7 +770,7 @@ class ProductDashboardState extends State<ProductDashboard> {
     return sold.fold(0, (sum, item) => sum + (item["amount"] ?? 0));
   }
 
-  handleDateReset() {
+  void handleDateReset() {
     setState(() {
       _fromDate = DateTime.now();
       _toDate = DateTime.now();
@@ -779,7 +778,7 @@ class ProductDashboardState extends State<ProductDashboard> {
     });
   }
 
-  doAlerts(String message) {
+  void doAlerts(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: Theme.of(context).colorScheme.surfaceBright,

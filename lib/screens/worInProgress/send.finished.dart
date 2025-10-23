@@ -99,7 +99,7 @@ class _SendFinishedState extends State<SendFinished> {
     Navigator.of(context).pop();
   }
 
-  getUnitPrice() {
+  int getUnitPrice() {
     return totalCost ~/ num.parse(amountController.text);
   }
 

@@ -38,7 +38,7 @@ class CartSection extends StatelessWidget {
     }
   }
 
-  doShowToast(String toastMessage, ToastificationType type) {
+  void doShowToast(String toastMessage, ToastificationType type) {
     toastification.show(
       title: Text(toastMessage),
       type: type,
@@ -131,12 +131,12 @@ class CartSection extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Save',
+                          'Save/Send',
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.surface,
                           ),
                         ),
-                        Icon(Icons.save_alt_outlined, size: 15),
+                        Icon(Icons.send_and_archive_outlined, size: 15),
                       ],
                     ),
                   ),

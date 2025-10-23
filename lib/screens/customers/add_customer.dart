@@ -46,7 +46,7 @@ class AddCustomerState extends State<AddCustomer> {
     super.dispose();
   }
 
-  _showToast(String toastMessage, ToastificationType type) {
+  void _showToast(String toastMessage, ToastificationType type) {
     toastification.show(
       title: Text(toastMessage),
       type: type,
@@ -214,7 +214,7 @@ class AddCustomerState extends State<AddCustomer> {
                 ),
                 SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                  value: stateController.text.isNotEmpty
+                  initialValue: stateController.text.isNotEmpty
                       ? stateController.text
                       : null,
                   decoration: InputDecoration(

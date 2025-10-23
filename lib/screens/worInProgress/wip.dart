@@ -379,7 +379,7 @@ class WipState extends State<Wip> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: DropdownButtonFormField<String>(
-                  value: fromPoint,
+                  initialValue: fromPoint,
                   decoration: InputDecoration(
                     labelText: 'From (Select Department)',
                     border: OutlineInputBorder(),
@@ -408,7 +408,7 @@ class WipState extends State<Wip> {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: DropdownButtonFormField<String>(
-                        value: process,
+                        initialValue: process,
                         decoration: InputDecoration(
                           labelText: 'Select Process',
                           border: OutlineInputBorder(),
@@ -435,7 +435,7 @@ class WipState extends State<Wip> {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: DropdownButtonFormField<String>(
-                        value: toPoint,
+                        initialValue: toPoint,
                         decoration: InputDecoration(
                           labelText: 'To (Select Department)',
                           border: OutlineInputBorder(),

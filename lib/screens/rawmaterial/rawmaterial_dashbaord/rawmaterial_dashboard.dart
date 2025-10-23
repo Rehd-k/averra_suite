@@ -134,11 +134,11 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
     },
   );
 
-  printSelected() {
+  void printSelected() {
     debugPrint(_selectedRows.toString());
   }
 
-  handleDamagedGoodsClicked(rowData) async {
+  Future<void> handleDamagedGoodsClicked(rowData) async {
     if (returnedSelection.isEmpty) {
       if (rowData['quantity'] == getSold(rowData['sold'])) {
         doAlerts('This batch have been sold out');
@@ -153,7 +153,7 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
     }
   }
 
-  handleReturnGoodsClicked(rowData) async {
+  Future<void> handleReturnGoodsClicked(rowData) async {
     if (returnedSelection.isEmpty) {
       if (rowData['quantity'] == getSold(rowData['sold'])) {
         doAlerts('This batch have been sold out');
@@ -168,14 +168,14 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
     }
   }
 
-  handleDamagedGoods(data) async {
+  Future<void> handleDamagedGoods(data) async {
     await apiService.put('purchases/doDamage/${data['_id']}', {
       ...data,
       "rawmaterialId": rawmaterialId,
     });
   }
 
-  handleReturndGoods(data) async {
+  Future<void> handleReturndGoods(data) async {
     num amountSpent = data['totalPayable'] - data['debt'];
     num quantityPaidFor = amountSpent ~/ data['price'];
     num quantityRemening = data['quantity'] - quantityPaidFor;
@@ -188,7 +188,7 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
     // });
   }
 
-  handleRangeChange(String? select, DateTime? picked) async {
+  Future<void> handleRangeChange(String? select, DateTime? picked) async {
     if (select == 'from') {
       setState(() {
         _fromDate = picked;
@@ -200,7 +200,7 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
     }
   }
 
-  handleRangeChanged(String rangeLabel) {
+  void handleRangeChanged(String rangeLabel) {
     setState(() {
       selectedRange = rangeLabel;
     });
@@ -633,7 +633,7 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
     return sold.fold(0, (sum, item) => sum + (item["amount"] ?? 0));
   }
 
-  handleDateReset() {
+  void handleDateReset() {
     setState(() {
       _fromDate = DateTime.now();
       _toDate = DateTime.now();
@@ -641,7 +641,7 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
     });
   }
 
-  doAlerts(String message) {
+  void doAlerts(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: Theme.of(context).colorScheme.surfaceBright,

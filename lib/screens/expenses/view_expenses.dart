@@ -45,7 +45,7 @@ class ViewExpensesState extends State<ViewExpenses> {
   ];
   String category = 'category';
   String status = 'status';
-  handleRangeChange(String select, DateTime picked) async {
+  Future<void> handleRangeChange(String select, DateTime picked) async {
     if (select == 'from') {
       setState(() {
         startDate = picked;
@@ -60,7 +60,7 @@ class ViewExpensesState extends State<ViewExpenses> {
     getExpenses();
   }
 
-  handleDateReset() {
+  void handleDateReset() {
     setState(() {
       startDate = DateTime.now();
       endDate = DateTime.now();
@@ -68,14 +68,14 @@ class ViewExpensesState extends State<ViewExpenses> {
     getExpenses();
   }
 
-  getCategories() async {
+  Future<void> getCategories() async {
     var result = await apiService.get('expense/category');
     setState(() {
       categories.addAll(result.data);
     });
   }
 
-  getExpenses() async {
+  Future<void> getExpenses() async {
     var statusBool = status == 'approved'
         ? true
         : status == 'pending'
@@ -164,17 +164,17 @@ class ViewExpensesState extends State<ViewExpenses> {
     getExpenses();
   }
 
-  handleDelete(id) async {
+  Future<void> handleDelete(id) async {
     await apiService.delete('expense/$id');
     getExpenses();
   }
 
-  handleUpdate(id, update) async {
+  Future<void> handleUpdate(id, update) async {
     await apiService.patch('expense/$id', update);
     getExpenses();
   }
 
-  handlePageChange(pageNumber) {
+  void handlePageChange(pageNumber) {
     setState(() {
       selectedPageNumber = pageNumber;
     });

@@ -82,7 +82,7 @@ String formatSold(dynamic value) {
   return getSold(value).toString().formatToFinancial(isMoneySymbol: false);
 }
 
-doShowToast(String toastMessage, ToastificationType type) {
+void doShowToast(String toastMessage, ToastificationType type) {
   toastification.show(
     title: Text(toastMessage),
     type: type,

@@ -58,7 +58,7 @@ class IncomeReportsHeader extends StatelessWidget {
                     ),
                   ],
                   onChanged: onFieldChange,
-                  value: selectedField,
+                  initialValue: selectedField,
                 ),
                 SizedBox(height: 16.0),
                 searchBox(context),
@@ -83,7 +83,7 @@ class IncomeReportsHeader extends StatelessWidget {
                     );
                   }).toList(),
                   onChanged: onAccountChange,
-                  value: selectedAccount,
+                  initialValue: selectedAccount,
                 ),
                 SizedBox(height: 16.0),
                 DropdownButtonFormField<String>(
@@ -114,7 +114,7 @@ class IncomeReportsHeader extends StatelessWidget {
                     ),
                   ],
                   onChanged: onPaymentMethodChange,
-                  value: selectedPaymentMethod,
+                  initialValue: selectedPaymentMethod,
                 ),
               ],
             ))

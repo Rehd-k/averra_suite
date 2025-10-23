@@ -139,7 +139,7 @@ class DepartmentHistoryState extends State<DepartmentHistory> {
     }
   }
 
-  handleRangeChange(String select, DateTime picked) async {
+  Future<void> handleRangeChange(String select, DateTime picked) async {
     if (select == 'from') {
       setState(() {
         startDate = picked;
@@ -151,7 +151,7 @@ class DepartmentHistoryState extends State<DepartmentHistory> {
     }
   }
 
-  handleDateReset() {
+  void handleDateReset() {
     setState(() {
       startDate = DateTime.now();
       endDate = DateTime.now();

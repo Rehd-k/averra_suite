@@ -79,6 +79,7 @@ class WaiterNavigationScreen extends StatelessWidget {
                     ),
                     const ThemeSwitchButton(),
                     IconButton(
+                      tooltip: 'Logout',
                       icon: const Icon(Icons.logout_outlined, size: 12),
                       onPressed: () {
                         JwtService().logout();

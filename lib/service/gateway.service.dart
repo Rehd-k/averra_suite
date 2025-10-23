@@ -1,5 +1,7 @@
 // ignore_for_file: slash_for_doc_comments
 
+import 'package:dio/src/response.dart';
+
 import 'api.service.dart';
 
 class GatewayService {
@@ -23,7 +25,7 @@ class GatewayService {
     });
   }
 
-  getBanks() async {
+  Future<Response> getBanks() async {
     return await apiService.get('bank');
   }
 

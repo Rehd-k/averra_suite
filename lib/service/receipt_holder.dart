@@ -9,7 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:image/image.dart' as imgi;
 
-generateReceipt(
+Future<Uint8List> generateReceipt(
   PaperSize paper,
   CapabilityProfile profile,
   Map saleData,

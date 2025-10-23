@@ -52,7 +52,7 @@ class CreateRequisitionState extends State<CreateRequisition> {
     return List<Map>.from(products);
   }
 
-  selectProductFromSugestion(suggestion, modelState) {
+  void selectProductFromSugestion(suggestion, modelState) {
     var exists = selectedProducts.firstWhere(
       (element) => element['productId'] == suggestion['_id'],
       orElse: () => {},
@@ -71,7 +71,7 @@ class CreateRequisitionState extends State<CreateRequisition> {
     }
   }
 
-  deselectProductFromSugestion(modelState) {
+  void deselectProductFromSugestion(modelState) {
     setState(() {
       selectedProduct = null;
     });
@@ -80,7 +80,7 @@ class CreateRequisitionState extends State<CreateRequisition> {
     }
   }
 
-  onchange(modelState) {
+  void onchange(modelState) {
     setState(() {});
     if (modelState != null) {
       modelState(() {});

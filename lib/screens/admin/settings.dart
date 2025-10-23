@@ -27,7 +27,7 @@ class SettingsState extends State<Settings> {
     super.dispose();
   }
 
-  _showToast(String message, ToastificationType type) {
+  void _showToast(String message, ToastificationType type) {
     toastification.show(
       title: Text('Loading'),
       description: Text(message),

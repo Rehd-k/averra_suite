@@ -40,7 +40,7 @@ class _EditProductState extends State<EditProduct> {
     getProduct();
   }
 
-  getProduct() async {
+  Future<void> getProduct() async {
     var prod = await apiService.get('products/findone/${widget.productId}');
 
     setState(() {

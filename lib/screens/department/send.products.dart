@@ -250,7 +250,7 @@ class SendProductsState extends State<SendProducts> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: DropdownButtonFormField<String>(
-                  value: fromPoint,
+                  initialValue: fromPoint,
                   decoration: InputDecoration(
                     labelText: 'From (Select Department)',
                     border: OutlineInputBorder(),
@@ -278,7 +278,7 @@ class SendProductsState extends State<SendProducts> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: DropdownButtonFormField<String>(
-                  value: toPoint,
+                  initialValue: toPoint,
                   decoration: InputDecoration(
                     labelText: 'To (Select Point)',
                     border: OutlineInputBorder(),

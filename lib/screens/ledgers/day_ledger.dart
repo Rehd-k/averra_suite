@@ -80,7 +80,7 @@ class DayLedgerState extends State<TransactionsTable> {
     });
   }
 
-  handleRangeChange(String select, DateTime picked) async {
+  Future<void> handleRangeChange(String select, DateTime picked) async {
     if (select == 'from') {
       setState(() {
         startDate = picked;
@@ -95,7 +95,7 @@ class DayLedgerState extends State<TransactionsTable> {
     getReportData();
   }
 
-  handleDateReset() {
+  void handleDateReset() {
     setState(() {
       startDate = DateTime.now();
       endDate = DateTime.now();

@@ -65,7 +65,7 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
     ).showSnackBar(const SnackBar(content: Text('saved successfully!')));
   }
 
-  updateSuppliersList() {
+  void updateSuppliersList() {
     showModalBottomSheet(
       context: context,
       builder: (addContext) {

@@ -35,7 +35,7 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
     'latestTransactions': [],
   };
 
-  handleRangeChanged(String rangeLabel) {
+  void handleRangeChanged(String rangeLabel) {
     setState(() {
       selectedRange = rangeLabel;
     });

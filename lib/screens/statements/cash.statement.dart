@@ -40,7 +40,7 @@ class CashStatementState extends State<CashStatementScreen> {
   num finalBalace = 0;
   num openingBalace = 0;
 
-  handleRangeChange(String select, DateTime picked) async {
+  Future<void> handleRangeChange(String select, DateTime picked) async {
     if (select == 'from') {
       setState(() {
         startDate = picked;
@@ -55,7 +55,7 @@ class CashStatementState extends State<CashStatementScreen> {
     getCashFlow();
   }
 
-  handleDateReset() {
+  void handleDateReset() {
     setState(() {
       startDate = DateTime.now();
       endDate = DateTime.now();
@@ -105,7 +105,7 @@ class CashStatementState extends State<CashStatementScreen> {
     });
   }
 
-  sumByType(List items) {
+  void sumByType(List items) {
     double totalIn = 0.0;
     double totalOut = 0.0;
 
@@ -145,7 +145,7 @@ class CashStatementState extends State<CashStatementScreen> {
     }
   }
 
-  clearForm() {
+  void clearForm() {
     descController.clear();
     amountController.clear();
     categoryController.clear();

@@ -153,7 +153,7 @@ class MakePurchacePaymentsState extends State<MakePurchacePayments> {
                                 fontSize: 15,
                               ),
                             ),
-                            value: selectedPaymentMethod,
+                            initialValue: selectedPaymentMethod,
                             items: [
                               DropdownMenuItem(
                                 value: 'cash',
@@ -176,7 +176,7 @@ class MakePurchacePaymentsState extends State<MakePurchacePayments> {
                         if (selectedPaymentMethod == 'bank')
                           Expanded(
                             child: DropdownButtonFormField(
-                              value: selectedBank.isEmpty ? null : selectedBank,
+                              initialValue: selectedBank.isEmpty ? null : selectedBank,
                               decoration: InputDecoration(
                                 labelText: 'Select Bank',
                                 border: OutlineInputBorder(

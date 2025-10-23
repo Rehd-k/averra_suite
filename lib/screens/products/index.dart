@@ -78,25 +78,25 @@ class ProductsIndexState extends State<ProductsScreen> {
     }
   }
 
-  setSelectedField(String field) {
+  void setSelectedField(String field) {
     setState(() {
       searchFeild = field;
     });
   }
 
-  setSelectedCategory(String category) {
+  void setSelectedCategory(String category) {
     setState(() {
       selectedCategory = category;
     });
   }
 
-  handleSelectedRows(List<TableDataModel> selected) {
+  void handleSelectedRows(List<TableDataModel> selected) {
     setState(() {
       selectedRows = selected;
     });
   }
 
-  handleShowModal(barcode) {
+  void handleShowModal(barcode) {
     showModalBottomSheet(
       enableDrag: true,
       // Close the modal when tapping outside or inside AddProducts
@@ -123,7 +123,7 @@ class ProductsIndexState extends State<ProductsScreen> {
     });
   }
 
-  checkProductExistence(barcode) async {
+  Future<void> checkProductExistence(barcode) async {
     var dbproducts = await apiService.get(
       'products?filter={"barcode" : {"\$regex" : "$barcode"}}',
     );

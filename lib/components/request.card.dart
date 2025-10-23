@@ -23,7 +23,7 @@ class _RequestCardState extends State<RequestCard> {
   final GlobalKey _productsKey = GlobalKey();
   final ApiService apiService = ApiService();
 
-  handleApprove(String id, String section) async {
+  Future<void> handleApprove(String id, String section) async {
     showToast('loading...', ToastificationType.info);
     await apiService.get('department-history/approve/$id/$section');
     setState(() {});

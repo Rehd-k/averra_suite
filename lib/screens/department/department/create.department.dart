@@ -77,7 +77,7 @@ class CreateDepartment extends StatelessWidget {
               ),
               SizedBox(height: 10),
               DropdownButtonFormField<String>(
-                value: type,
+                initialValue: type,
                 decoration: InputDecoration(
                   labelText: 'Select Type',
                   border: OutlineInputBorder(),

@@ -2,8 +2,9 @@ import 'dart:ui';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-class NotiService {
-  final notificationsPlugin = FlutterLocalNotificationsPlugin();
+class LocalNotificationService {
+  final FlutterLocalNotificationsPlugin notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   final bool _isInitialized = false;
 
@@ -14,8 +15,18 @@ class NotiService {
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
+    const WindowsInitializationSettings initializationSettingsWindow =
+        WindowsInitializationSettings(
+          appName: 'Averra Suite',
+          appUserModelId: '',
+          guid: 'c299e27a-6b7e-4374-b38a-b67fa5f232d4',
+          iconPath: 'assets/icon.ico',
+        );
+
+    InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      windows: initializationSettingsWindow,
+    );
 
     await notificationsPlugin.initialize(initializationSettings);
   }
@@ -58,6 +69,7 @@ class NotiService {
         ),
       ],
     ),
+    windows: WindowsNotificationDetails(),
   );
 
   Future<void> showNotification(String title, String body) async {
@@ -67,8 +79,7 @@ class NotiService {
       uniqueId,
       title,
       body,
-      platformChannelSpecifics,
-      payload: 'item x',
+      platformChannelSpecifics
     );
   }
 }

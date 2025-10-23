@@ -2,9 +2,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 
 import '../../app_router.gr.dart';
+// import '../../helpers/notification.token.dart';
+import '../../components/theme_switch_button.dart';
 import '../../helpers/notification.token.dart';
+import '../../helpers/title_bar.dart';
 import '../../service/api.service.dart';
 import '../../service/token.service.dart';
 import 'form.dart';
@@ -61,7 +65,7 @@ class _LoginFormState extends State<LoginScreen> {
     });
   }
 
-  showToast(String toastMessage, ToastificationType type) {
+  void showToast(String toastMessage, ToastificationType type) {
     toastification.show(
       title: Text(toastMessage),
       type: type,
@@ -82,7 +86,7 @@ class _LoginFormState extends State<LoginScreen> {
     }
   }
 
-  handleAddLocation(String location) {
+  void handleAddLocation(String location) {
     setState(() {
       locations = location;
     });
@@ -103,12 +107,12 @@ class _LoginFormState extends State<LoginScreen> {
       String role = response.data['role'];
       String id = response.data['sub'];
       debugPrint(response.data.toString());
-      String? fcmToken = await service.getToken();
-      debugPrint('FCM Token: $fcmToken');
-      if (fcmToken != null) {
-        await service.registerToken(fcmToken, id); // From auth
-      }
-      service.handleMessages();
+      // String? fcmToken = await service.getToken();
+      // debugPrint('FCM Token: $fcmToken');
+      // if (fcmToken != null) {
+      //   await service.registerToken(fcmToken, id); // From auth
+      // }
+      // service.handleMessages();
       if (!mounted) return;
 
       JwtService().setToken = token;
@@ -179,7 +183,7 @@ class _LoginFormState extends State<LoginScreen> {
     }
   }
 
-  emptyErrorMessage() {
+  void emptyErrorMessage() {
     setState(() {
       passwordErrorMessage = '';
       usernameErrorMessage = '';
@@ -189,53 +193,69 @@ class _LoginFormState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: widget.isGod == true
-          ? AppBar(title: const Text('God Login'))
-          : null,
-      body: Container(
-        color: Theme.of(context).cardColor,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Row(
+      // appBar: widget.isGod == true
+      //     ? AppBar(title: const Text('God Login'))
+      //     : null,
+      body: Column(
+        children: [
+          WindowTitleBarBox(
+            child: Row(
               children: [
-                Expanded(
-                  flex: constraints.maxWidth > 600 ? 4 : 1,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: !showForm
-                        ? const Center(child: CircularProgressIndicator())
-                        : LoginForm(
-                            formKey: _formKey,
-                            userController: _userController,
-                            passwordController: _passwordController,
-                            submit: _submit,
-                            passwordErrorMessage: passwordErrorMessage,
-                            usernameErrorMessage: usernameErrorMessage,
-                            usernameFocus: usernameFocus,
-                            passwordFocus: passwordFocus,
-                            emptyErrorMessage: emptyErrorMessage,
-                            hidePassword: hidePassword,
-                            toggleHideShowPassword: toggleHideShowPassword,
-                            isLoading: isLoading,
-                            branches: branches,
-                            handleAddLocation: handleAddLocation,
-                            isGod: widget.isGod ?? false,
-                          ),
-                  ),
-                ),
-                constraints.maxWidth > 600
-                    ? Expanded(
-                        flex: 7,
-                        child: Image(
-                          image: AssetImage('assets/images/banner.png'),
-                          fit: BoxFit.fill,
-                        ),
-                      )
-                    : Container(),
+                Expanded(child: MoveWindow(child: Text(''))),
+                ThemeSwitchButton(),
+                const WindowButtons(),
               ],
-            );
-          },
-        ),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              color: Theme.of(context).cardColor,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Row(
+                    children: [
+                      Expanded(
+                        flex: constraints.maxWidth > 600 ? 4 : 1,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: !showForm
+                              ? const Center(child: CircularProgressIndicator())
+                              : LoginForm(
+                                  formKey: _formKey,
+                                  userController: _userController,
+                                  passwordController: _passwordController,
+                                  submit: _submit,
+                                  passwordErrorMessage: passwordErrorMessage,
+                                  usernameErrorMessage: usernameErrorMessage,
+                                  usernameFocus: usernameFocus,
+                                  passwordFocus: passwordFocus,
+                                  emptyErrorMessage: emptyErrorMessage,
+                                  hidePassword: hidePassword,
+                                  toggleHideShowPassword:
+                                      toggleHideShowPassword,
+                                  isLoading: isLoading,
+                                  branches: branches,
+                                  handleAddLocation: handleAddLocation,
+                                  isGod: widget.isGod ?? false,
+                                ),
+                        ),
+                      ),
+                      constraints.maxWidth > 600
+                          ? Expanded(
+                              flex: 7,
+                              child: Image(
+                                image: AssetImage('assets/images/banner.png'),
+                                fit: BoxFit.fill,
+                              ),
+                            )
+                          : Container(),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

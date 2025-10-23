@@ -86,13 +86,13 @@ class AddUserState extends State<AddUser> {
     });
   }
 
-  handleAddLocation(String location) {
+  void handleAddLocation(String location) {
     setState(() {
       locations = location;
     });
   }
 
-  _showToast(String message, ToastificationType type) {
+  void _showToast(String message, ToastificationType type) {
     toastification.show(
       title: Text('Loading'),
       description: Text(message),
@@ -163,463 +163,466 @@ class AddUserState extends State<AddUser> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Center(
-        child: Card(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 900),
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    // Determine how many cards per row based on screen width
-                    double maxWidth = constraints.maxWidth;
-                    int cardsPerRow;
+    return Scaffold(
+      appBar: widget.isGod == true ? AppBar() : null,
+      body: SingleChildScrollView(
+        child: Center(
+          child: Card(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 900),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Determine how many cards per row based on screen width
+                      double maxWidth = constraints.maxWidth;
+                      int cardsPerRow;
 
-                    if (maxWidth >= 900) {
-                      cardsPerRow = 4; // large screen
-                    } else if (maxWidth >= 600) {
-                      cardsPerRow = 2; // medium screen
-                    } else {
-                      cardsPerRow = 1; // small screen
-                    }
-
-                    // Card width calculation with spacing
-                    double spacing = 16.0;
-                    double cardWidth =
-                        (maxWidth - (spacing * (cardsPerRow - 1))) /
-                        cardsPerRow;
-
-                    return Form(
-                      key: _formKey,
-                      child: Wrap(
-                        spacing: spacing,
-                        runSpacing: spacing,
-                        children: [
-                          SizedBox(
-                            width: cardWidth,
-                            child: TextFormField(
-                              controller: firstName,
-                              decoration: InputDecoration(
-                                labelText: 'First Name *',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(5.0),
-                                  ),
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                labelStyle: TextStyle(
-                                  color: Theme.of(context).hintColor,
-                                  fontSize: 15,
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter the first name';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          SizedBox(
-                            width: cardWidth,
-                            child: TextFormField(
-                              controller: lastName,
-                              decoration: InputDecoration(
-                                labelText: 'Last Name *',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(5.0),
-                                  ),
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                labelStyle: TextStyle(
-                                  color: Theme.of(context).hintColor,
-                                  fontSize: 15,
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter the first name';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-
-                          SizedBox(
-                            width: cardWidth,
-                            child: TextFormField(
-                              controller: email,
-                              keyboardType: TextInputType.emailAddress,
-                              decoration: InputDecoration(
-                                labelText: 'Email',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(5.0),
-                                  ),
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                labelStyle: TextStyle(
-                                  color: Theme.of(context).hintColor,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: cardWidth,
-                            child: TextFormField(
-                              controller: address,
-                              decoration: InputDecoration(
-                                labelText: 'Address',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(5.0),
-                                  ),
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                labelStyle: TextStyle(
-                                  color: Theme.of(context).hintColor,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          SizedBox(
-                            width: cardWidth,
-                            child: TextFormField(
-                              controller: username,
-                              decoration: InputDecoration(
-                                labelText: 'Username',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(5.0),
-                                  ),
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                labelStyle: TextStyle(
-                                  color: Theme.of(context).hintColor,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: cardWidth,
-                            child: TextFormField(
-                              controller: password,
-                              decoration: InputDecoration(
-                                labelText: 'Password',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(5.0),
-                                  ),
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                labelStyle: TextStyle(
-                                  color: Theme.of(context).hintColor,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          SizedBox(
-                            width: cardWidth,
-                            child: TextFormField(
-                              controller: _dateController,
-                              readOnly: true,
-                              decoration: InputDecoration(
-                                labelText: 'Select Date',
-                                suffixIcon: Icon(Icons.calendar_today),
-                              ),
-                              onTap: () => _selectDate(context),
-                            ),
-                          ),
-                          SizedBox(
-                            width: cardWidth,
-                            child: DropdownButtonFormField<String>(
-                              decoration: InputDecoration(
-                                labelText: 'Gender',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                              ),
-                              items: ['male', 'female'].map<DropdownMenuItem<String>>((
-                                branch,
-                              ) {
-                                return DropdownMenuItem<String>(
-                                  value: branch
-                                      .toString(), // Assuming 'id' is the key for the value
-                                  child: Text(
-                                    capitalizeFirstLetter(branch),
-                                  ), // Assuming 'name' is the key for the display text
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                gender.text = value!;
-                              },
-                            ),
-                          ),
-
-                          SizedBox(
-                            width: cardWidth,
-                            child: TextFormField(
-                              controller: jobTitle,
-                              keyboardType: TextInputType.datetime,
-                              decoration: InputDecoration(
-                                labelText: 'Job Title',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(5.0),
-                                  ),
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                labelStyle: TextStyle(
-                                  color: Theme.of(context).hintColor,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: cardWidth,
-                            child: TextFormField(
-                              controller: department,
-                              keyboardType: TextInputType.datetime,
-                              decoration: InputDecoration(
-                                labelText: 'Department',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(5.0),
-                                  ),
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                labelStyle: TextStyle(
-                                  color: Theme.of(context).hintColor,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          SizedBox(
-                            width: cardWidth,
-                            child: TextFormField(
-                              controller: department,
-                              keyboardType: TextInputType.datetime,
-                              decoration: InputDecoration(
-                                labelText: 'Shift Shedule',
-                                helperText:
-                                    'Monday - Friday (08:00AM - 06:00Pm)',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(5.0),
-                                  ),
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                labelStyle: TextStyle(
-                                  color: Theme.of(context).hintColor,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          SizedBox(
-                            width: cardWidth,
-                            child: DropdownButtonFormField<String>(
-                              decoration: InputDecoration(
-                                labelText: 'Nationality',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                              ),
-                              items: ['Nigeria', 'Ghana']
-                                  .map<DropdownMenuItem<String>>((branch) {
-                                    return DropdownMenuItem<String>(
-                                      value: branch
-                                          .toString(), // Assuming 'id' is the key for the value
-                                      child: Text(
-                                        capitalizeFirstLetter(branch),
-                                      ), // Assuming 'name' is the key for the display text
-                                    );
-                                  })
-                                  .toList(),
-                              onChanged: (value) {
-                                nationality.text = value!;
-                              },
-                            ),
-                          ),
-                          SizedBox(
-                            width: cardWidth,
-                            child: DropdownButtonFormField<String>(
-                              decoration: InputDecoration(
-                                labelText: 'Marital Status',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                              ),
-                              items: ['Married', 'Single']
-                                  .map<DropdownMenuItem<String>>((branch) {
-                                    return DropdownMenuItem<String>(
-                                      value: branch
-                                          .toString(), // Assuming 'id' is the key for the value
-                                      child: Text(
-                                        capitalizeFirstLetter(branch),
-                                      ), // Assuming 'name' is the key for the display text
-                                    );
-                                  })
-                                  .toList(),
-                              onChanged: (value) {
-                                maritalStatus.text = value!;
-                              },
-                            ),
-                          ),
-
-                          SizedBox(
-                            width: cardWidth,
-                            child: TextFormField(
-                              controller: reportingManager,
-                              keyboardType: TextInputType.datetime,
-                              decoration: InputDecoration(
-                                labelText: 'Reporting Manager',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(5.0),
-                                  ),
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                labelStyle: TextStyle(
-                                  color: Theme.of(context).hintColor,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: cardWidth,
-                            child: DropdownButtonFormField<String>(
-                              value: 'waiter', // 👈 initial value
-                              onChanged: (value) {
-                                role.text = value ?? '';
-                              },
-                              decoration: const InputDecoration(
-                                labelText: 'Role',
-                                border: OutlineInputBorder(),
-                              ),
-                              items:
-                                  [
-                                    'admin',
-                                    'manager',
-                                    'cashier',
-                                    'staff',
-                                    'waiter',
-                                    'bar',
-                                    'supervisor',
-                                    'accounting',
-                                  ].map((category) {
-                                    return DropdownMenuItem<String>(
-                                      value: category,
-                                      child: Text(category),
-                                    );
-                                  }).toList(),
-                            ),
-                          ),
-
-                          SizedBox(
-                            width: cardWidth,
-                            child: DropdownButtonFormField<String>(
-                              decoration: InputDecoration(
-                                labelText: 'Select Location',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                              ),
-                              items: branches.map<DropdownMenuItem<String>>((
-                                branch,
-                              ) {
-                                return DropdownMenuItem<String>(
-                                  value: branch['name']
-                                      .toString(), // Assuming 'id' is the key for the value
-                                  child: Text(
-                                    branch['name'],
-                                  ), // Assuming 'name' is the key for the display text
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                handleAddLocation(value!);
-                              },
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please select a location';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-
-                          if (selectedFile == null)
-                            SizedBox(
-                              width: cardWidth,
-                              child: Center(
-                                child: FilledButton.tonalIcon(
-                                  icon: Icon(Icons.add),
-                                  onPressed: uploadStaffFiles,
-                                  label: Text('Add New'),
-                                ),
-                              ),
-                            )
-                          else
-                            SizedBox(
-                              width: cardWidth,
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Image.file(
-                                      selectedFile!,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  Positioned(
-                                    right: 0,
-                                    top: 0,
-                                    child: IconButton(
-                                      icon: Icon(
-                                        Icons.close,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () => removeFile(),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity * 0.5,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        handleSubmit(context);
+                      if (maxWidth >= 900) {
+                        cardsPerRow = 4; // large screen
+                      } else if (maxWidth >= 600) {
+                        cardsPerRow = 2; // medium screen
+                      } else {
+                        cardsPerRow = 1; // small screen
                       }
+
+                      // Card width calculation with spacing
+                      double spacing = 16.0;
+                      double cardWidth =
+                          (maxWidth - (spacing * (cardsPerRow - 1))) /
+                          cardsPerRow;
+
+                      return Form(
+                        key: _formKey,
+                        child: Wrap(
+                          spacing: spacing,
+                          runSpacing: spacing,
+                          children: [
+                            SizedBox(
+                              width: cardWidth,
+                              child: TextFormField(
+                                controller: firstName,
+                                decoration: InputDecoration(
+                                  labelText: 'First Name *',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(5.0),
+                                    ),
+                                    borderSide: BorderSide(color: Colors.blue),
+                                  ),
+                                  labelStyle: TextStyle(
+                                    color: Theme.of(context).hintColor,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter the first name';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              child: TextFormField(
+                                controller: lastName,
+                                decoration: InputDecoration(
+                                  labelText: 'Last Name *',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(5.0),
+                                    ),
+                                    borderSide: BorderSide(color: Colors.blue),
+                                  ),
+                                  labelStyle: TextStyle(
+                                    color: Theme.of(context).hintColor,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter the first name';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+
+                            SizedBox(
+                              width: cardWidth,
+                              child: TextFormField(
+                                controller: email,
+                                keyboardType: TextInputType.emailAddress,
+                                decoration: InputDecoration(
+                                  labelText: 'Email',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(5.0),
+                                    ),
+                                    borderSide: BorderSide(color: Colors.blue),
+                                  ),
+                                  labelStyle: TextStyle(
+                                    color: Theme.of(context).hintColor,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              child: TextFormField(
+                                controller: address,
+                                decoration: InputDecoration(
+                                  labelText: 'Address',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(5.0),
+                                    ),
+                                    borderSide: BorderSide(color: Colors.blue),
+                                  ),
+                                  labelStyle: TextStyle(
+                                    color: Theme.of(context).hintColor,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(
+                              width: cardWidth,
+                              child: TextFormField(
+                                controller: username,
+                                decoration: InputDecoration(
+                                  labelText: 'Username',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(5.0),
+                                    ),
+                                    borderSide: BorderSide(color: Colors.blue),
+                                  ),
+                                  labelStyle: TextStyle(
+                                    color: Theme.of(context).hintColor,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              child: TextFormField(
+                                controller: password,
+                                decoration: InputDecoration(
+                                  labelText: 'Password',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(5.0),
+                                    ),
+                                    borderSide: BorderSide(color: Colors.blue),
+                                  ),
+                                  labelStyle: TextStyle(
+                                    color: Theme.of(context).hintColor,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(
+                              width: cardWidth,
+                              child: TextFormField(
+                                controller: _dateController,
+                                readOnly: true,
+                                decoration: InputDecoration(
+                                  labelText: 'Select Date',
+                                  suffixIcon: Icon(Icons.calendar_today),
+                                ),
+                                onTap: () => _selectDate(context),
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              child: DropdownButtonFormField<String>(
+                                decoration: InputDecoration(
+                                  labelText: 'Gender',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                ),
+                                items: ['male', 'female']
+                                    .map<DropdownMenuItem<String>>((branch) {
+                                      return DropdownMenuItem<String>(
+                                        value: branch
+                                            .toString(), // Assuming 'id' is the key for the value
+                                        child: Text(
+                                          capitalizeFirstLetter(branch),
+                                        ), // Assuming 'name' is the key for the display text
+                                      );
+                                    })
+                                    .toList(),
+                                onChanged: (value) {
+                                  gender.text = value!;
+                                },
+                              ),
+                            ),
+
+                            SizedBox(
+                              width: cardWidth,
+                              child: TextFormField(
+                                controller: jobTitle,
+                                keyboardType: TextInputType.datetime,
+                                decoration: InputDecoration(
+                                  labelText: 'Job Title',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(5.0),
+                                    ),
+                                    borderSide: BorderSide(color: Colors.blue),
+                                  ),
+                                  labelStyle: TextStyle(
+                                    color: Theme.of(context).hintColor,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              child: TextFormField(
+                                controller: department,
+                                keyboardType: TextInputType.datetime,
+                                decoration: InputDecoration(
+                                  labelText: 'Department',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(5.0),
+                                    ),
+                                    borderSide: BorderSide(color: Colors.blue),
+                                  ),
+                                  labelStyle: TextStyle(
+                                    color: Theme.of(context).hintColor,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(
+                              width: cardWidth,
+                              child: TextFormField(
+                                controller: department,
+                                keyboardType: TextInputType.datetime,
+                                decoration: InputDecoration(
+                                  labelText: 'Shift Shedule',
+                                  helperText:
+                                      'Monday - Friday (08:00AM - 06:00Pm)',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(5.0),
+                                    ),
+                                    borderSide: BorderSide(color: Colors.blue),
+                                  ),
+                                  labelStyle: TextStyle(
+                                    color: Theme.of(context).hintColor,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(
+                              width: cardWidth,
+                              child: DropdownButtonFormField<String>(
+                                decoration: InputDecoration(
+                                  labelText: 'Nationality',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                ),
+                                items: ['Nigeria', 'Ghana']
+                                    .map<DropdownMenuItem<String>>((branch) {
+                                      return DropdownMenuItem<String>(
+                                        value: branch
+                                            .toString(), // Assuming 'id' is the key for the value
+                                        child: Text(
+                                          capitalizeFirstLetter(branch),
+                                        ), // Assuming 'name' is the key for the display text
+                                      );
+                                    })
+                                    .toList(),
+                                onChanged: (value) {
+                                  nationality.text = value!;
+                                },
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              child: DropdownButtonFormField<String>(
+                                decoration: InputDecoration(
+                                  labelText: 'Marital Status',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                ),
+                                items: ['Married', 'Single']
+                                    .map<DropdownMenuItem<String>>((branch) {
+                                      return DropdownMenuItem<String>(
+                                        value: branch
+                                            .toString(), // Assuming 'id' is the key for the value
+                                        child: Text(
+                                          capitalizeFirstLetter(branch),
+                                        ), // Assuming 'name' is the key for the display text
+                                      );
+                                    })
+                                    .toList(),
+                                onChanged: (value) {
+                                  maritalStatus.text = value!;
+                                },
+                              ),
+                            ),
+
+                            SizedBox(
+                              width: cardWidth,
+                              child: TextFormField(
+                                controller: reportingManager,
+                                keyboardType: TextInputType.datetime,
+                                decoration: InputDecoration(
+                                  labelText: 'Reporting Manager',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(5.0),
+                                    ),
+                                    borderSide: BorderSide(color: Colors.blue),
+                                  ),
+                                  labelStyle: TextStyle(
+                                    color: Theme.of(context).hintColor,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              child: DropdownButtonFormField<String>(
+                                initialValue: 'waiter', // 👈 initial value
+                                onChanged: (value) {
+                                  role.text = value ?? '';
+                                },
+                                decoration: const InputDecoration(
+                                  labelText: 'Role',
+                                  border: OutlineInputBorder(),
+                                ),
+                                items:
+                                    [
+                                      'admin',
+                                      'manager',
+                                      'cashier',
+                                      'staff',
+                                      'waiter',
+                                      'bar',
+                                      'supervisor',
+                                      'accounting',
+                                    ].map((category) {
+                                      return DropdownMenuItem<String>(
+                                        value: category,
+                                        child: Text(category),
+                                      );
+                                    }).toList(),
+                              ),
+                            ),
+
+                            SizedBox(
+                              width: cardWidth,
+                              child: DropdownButtonFormField<String>(
+                                decoration: InputDecoration(
+                                  labelText: 'Select Location',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                ),
+                                items: branches.map<DropdownMenuItem<String>>((
+                                  branch,
+                                ) {
+                                  return DropdownMenuItem<String>(
+                                    value: branch['name']
+                                        .toString(), // Assuming 'id' is the key for the value
+                                    child: Text(
+                                      branch['name'],
+                                    ), // Assuming 'name' is the key for the display text
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  handleAddLocation(value!);
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please select a location';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+
+                            if (selectedFile == null)
+                              SizedBox(
+                                width: cardWidth,
+                                child: Center(
+                                  child: FilledButton.tonalIcon(
+                                    icon: Icon(Icons.add),
+                                    onPressed: uploadStaffFiles,
+                                    label: Text('Add New'),
+                                  ),
+                                ),
+                              )
+                            else
+                              SizedBox(
+                                width: cardWidth,
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.grey),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Image.file(
+                                        selectedFile!,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    Positioned(
+                                      right: 0,
+                                      top: 0,
+                                      child: IconButton(
+                                        icon: Icon(
+                                          Icons.close,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () => removeFile(),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
                     },
-                    child: Text('Submit'),
                   ),
-                ),
-              ],
+                  SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity * 0.5,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          handleSubmit(context);
+                        }
+                      },
+                      child: Text('Submit'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

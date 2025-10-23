@@ -88,7 +88,7 @@ class ViewUsersState extends State<ViewUsers> {
     });
   }
 
-  getFilteredAndSortedRows() {
+  void getFilteredAndSortedRows() {
     List filtered = users.where((user) {
       return user.values.any(
         (value) =>
@@ -109,7 +109,7 @@ class ViewUsersState extends State<ViewUsers> {
     });
   }
 
-  sortUsers(String v) {
+  void sortUsers(String v) {
     List filtered = users
         .where((map) => map["role"].toString().toLowerCase() == v)
         .toList();
@@ -147,13 +147,13 @@ class ViewUsersState extends State<ViewUsers> {
     });
   }
 
-  handlePageChange(pageNumber) {
+  void handlePageChange(pageNumber) {
     setState(() {
       selectedPageNumber = pageNumber;
     });
   }
 
-  void handleSelectStatus(value) {
+  void handleSelectStatus(String value) {
     setState(() {
       status = value;
     });

@@ -58,7 +58,7 @@ class IndexState extends State<CustomerDetails> {
     };
   }
 
-  getDashBaordData() async {
+  Future<void> getDashBaordData() async {
     var dbproducts = await apiService.get(
       'invoice/customer/dashboard?filter={"customer" : "${widget.customer['_id']}"}',
     );

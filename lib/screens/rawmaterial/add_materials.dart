@@ -102,7 +102,7 @@ class AddRawMaterialState extends State<AddRawMaterial> {
     });
   }
 
-  doShowToast(String toastMessage, ToastificationType type) {
+  void doShowToast(String toastMessage, ToastificationType type) {
     toastification.show(
       title: Text(toastMessage),
       type: type,
@@ -191,7 +191,7 @@ class AddRawMaterialState extends State<AddRawMaterial> {
                     ),
                     SizedBox(height: 10),
                     DropdownButtonFormField<String>(
-                      value: categoryController.text.isNotEmpty
+                      initialValue: categoryController.text.isNotEmpty
                           ? categoryController.text
                           : null,
                       decoration: InputDecoration(

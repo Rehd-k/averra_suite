@@ -1,10 +1,8 @@
 import 'dart:io';
 
 import 'package:averra_suite/service/api.service.dart';
-import 'package:averra_suite/service/toast.service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:toastification/toastification.dart';
 
 import 'noti_service.dart';
 
@@ -13,14 +11,17 @@ class NotificationService {
   ApiService apiService = ApiService();
 
   Future<String?> getToken() async {
-    print('gotten here');
     if (kIsWeb || Platform.isAndroid || Platform.isIOS) {
-      String? token = await FirebaseMessaging.instance.getToken();
-      print("FCM Token: $token");
-      return token;
+      NotificationSettings settings = await FirebaseMessaging.instance
+          .requestPermission();
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        String? token = await FirebaseMessaging.instance.getToken();
+        return token;
+      }
     } else {
       print("FCM not supported on this platform");
     }
+    return null;
   }
 
   Future<void> registerToken(String token, String userId) async {
@@ -35,7 +36,7 @@ class NotificationService {
   // Handle incoming notifications
   void handleMessages() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      NotiService().showNotification(
+      LocalNotificationService().showNotification(
         message.notification?.title ?? 'No Title',
         message.notification?.body ?? 'No Body',
       );

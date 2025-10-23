@@ -41,7 +41,7 @@ class SendToBranchState extends State<SendToBranchScreen> {
   num limit = 10;
   num totalBalance = 0;
 
-  void getProductsFromDepartment(query) async {
+  void getProductsFromDepartment(String query) async {
     try {
       var result = await apiService.get('department/for-both/$query');
       setState(() {
@@ -56,7 +56,6 @@ class SendToBranchState extends State<SendToBranchScreen> {
 
   Future<void> save() async {
     Map<String, dynamic>? dataToSave;
-    String currentLocation = jwtService.decodedToken?['location'];
     if (selectedProducts.isEmpty) {
       return;
     }
@@ -106,12 +105,12 @@ class SendToBranchState extends State<SendToBranchScreen> {
     });
   }
 
-  void selectFrom(value) async {
+  void selectFrom(String? value) async {
     setState(() {
       selectedProduct = null;
       costController.clear();
       quantityController.clear();
-      selectedDepartment = value;
+      selectedDepartment = value ?? '';
     });
     if (value != '') {
       getProductsFromDepartment(selectedDepartment);
@@ -125,7 +124,7 @@ class SendToBranchState extends State<SendToBranchScreen> {
     return List<Map>.from(filteredProducts);
   }
 
-  selectProductFromSugestion(suggestion, modelState) {
+  void selectProductFromSugestion(suggestion, modelState) {
     var exists = selectedProducts.firstWhere(
       (element) => element['productId'] == suggestion['productId']['_id'],
       orElse: () => {},
@@ -143,7 +142,7 @@ class SendToBranchState extends State<SendToBranchScreen> {
     }
   }
 
-  deselectProductFromSugestion(modelState) {
+  void deselectProductFromSugestion(modelState) {
     setState(() {
       selectedProduct = null;
     });
@@ -152,7 +151,7 @@ class SendToBranchState extends State<SendToBranchScreen> {
     }
   }
 
-  onchange(modelState) {
+  void onchange(modelState) {
     setState(() {});
     if (modelState != null) {
       modelState(() {});
@@ -214,7 +213,7 @@ class SendToBranchState extends State<SendToBranchScreen> {
     }
   }
 
-  emptyList() {
+  void emptyList() {
     setState(() {
       selectedProducts = [];
       totalBalance = 0;
@@ -250,7 +249,7 @@ class SendToBranchState extends State<SendToBranchScreen> {
                           child: loading
                               ? Center(child: CircularProgressIndicator())
                               : DropdownButtonFormField<String>(
-                                  value: selectedDepartment,
+                                  initialValue: selectedDepartment,
                                   decoration: InputDecoration(
                                     labelText: 'From',
                                     border: OutlineInputBorder(),

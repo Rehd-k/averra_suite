@@ -54,7 +54,7 @@ dependencies:
   qr_flutter: ^4.1.0
   image: ^4.3.0
   pdf: ^3.11.3
-  share_plus: ^11.1.0
+  share_plus: ^12.0.0
   flutter_thermal_printer: ^1.2.1+1
   infinite_scroll_pagination: ^5.1.0
   shared_preferences: ^2.5.3
@@ -68,7 +68,8 @@ dependencies:
   flutter_speed_dial: ^7.0.0
   firebase_core: ^4.1.1
   firebase_messaging: ^16.0.2
-  flutter_local_notifications: ^19.4.2
+  flutter_local_notifications: ^19.5.0
+  web_socket_channel: ^3.0.3
 
 dev_dependencies:
   flutter_test:
@@ -79,7 +80,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   auto_route_generator: ^10.2.3
   build_runner: ^2.5.4
   

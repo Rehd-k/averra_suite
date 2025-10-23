@@ -107,7 +107,7 @@ class FinishedGoodsState extends State<FinishedGoods> {
                 child: SizedBox(
                   width: textFieldWidth,
                   child: DropdownButtonFormField<String>(
-                    value: fromPoint,
+                    initialValue: fromPoint,
                     decoration: const InputDecoration(
                       labelText: 'Select Department',
                       border: OutlineInputBorder(),

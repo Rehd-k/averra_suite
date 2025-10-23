@@ -77,7 +77,7 @@ class ProductService {
     }
   }
 
-  checkAndFetchProducts(pageKey, doApiCount, productsLength) {
+  dynamic checkAndFetchProducts(pageKey, doApiCount, productsLength) {
     if (pageKey < 1) {
       doApiCount();
       return pageKey;

@@ -1,6 +1,6 @@
-import 'dart:io';
+// import 'dart:io';
 import 'package:excel/excel.dart';
-import 'package:path_provider/path_provider.dart';
+// import 'package:path_provider/path_provider.dart';
 
 Future<void> createExcelFile() async {
   // Create a new Excel document
@@ -35,12 +35,10 @@ Future<void> createExcelFile() async {
   ]);
 
   // Save file to device storage
-  List<int>? fileBytes = excel.save();
-  if (fileBytes != null) {
-    Directory dir = await getApplicationDocumentsDirectory();
-    String filePath = "${dir.path}/example.xlsx";
-    File(filePath)
-      ..createSync(recursive: true)
-      ..writeAsBytesSync(fileBytes);
-  }
+  // List<int>? fileBytes = excel.save();
+  // Directory dir = await getApplicationDocumentsDirectory();
+  // String filePath = "${dir.path}/example.xlsx";
+  // File(filePath)
+  //   ..createSync(recursive: true)
+  //   ..writeAsBytesSync(fileBytes);
 }

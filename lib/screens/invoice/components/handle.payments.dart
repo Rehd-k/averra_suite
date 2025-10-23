@@ -43,7 +43,7 @@ class HandlePaymentsState extends State<HandlePayments> {
     super.initState();
   }
 
-  getTotalToPay() {
+  void getTotalToPay() {
     num sum = 0;
     num indiDiscounts = 0;
     for (var item in widget.cart) {
@@ -59,7 +59,7 @@ class HandlePaymentsState extends State<HandlePayments> {
     indiDiscount = indiDiscounts;
   }
 
-  getDiscountedValue() {
+  void getDiscountedValue() {
     if (widget.discount != 0) {
       num? part = widget.discount;
       num? whole = widget.total;

@@ -64,7 +64,7 @@ class AddSupplierState extends State<AddSupplier> {
     _notesController.clear();
   }
 
-  handleStatusChange(value) {
+  void handleStatusChange(value) {
     status = value;
   }
 
@@ -154,7 +154,7 @@ class AddSupplierState extends State<AddSupplier> {
                                 fontSize: 15,
                               ),
                             ),
-                            value: status,
+                            initialValue: status,
                             items: [
                               DropdownMenuItem(
                                 value: 'active',

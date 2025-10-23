@@ -25,7 +25,7 @@ class AccountingDashboardState extends State<AccountingDashboardScreen> {
   bool loadingTable = true;
   bool loadingCharts = true;
   late Map cardsData = {'revenue': 0, 'expenses': 0};
-  handleRangeChanged(String rangeLabel) {
+  void handleRangeChanged(String rangeLabel) {
     setState(() {
       selectedRange = rangeLabel;
     });

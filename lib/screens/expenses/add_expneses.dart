@@ -26,7 +26,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   String _category = '';
   DateTime _selectedDate = DateTime.now();
 
-  getCategories() async {
+  Future<void> getCategories() async {
     var result = await apiService.get('expense/category');
     setState(() {
       categories = result.data;
@@ -34,7 +34,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     });
   }
 
-  createNewExpences() async {
+  Future<void> createNewExpences() async {
     showToast('loading...', ToastificationType.info);
     var data = {
       "category": _category,
@@ -52,7 +52,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     clearExpencesForm();
   }
 
-  clearExpencesForm() async {
+  Future<void> clearExpencesForm() async {
     setState(() {
       _category = '';
       _notesController.clear();
@@ -143,7 +143,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     if (loadedCategory)
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: _category,
+                          initialValue: _category,
                           decoration: InputDecoration(
                             prefixIcon: const Icon(
                               Icons.category_outlined,

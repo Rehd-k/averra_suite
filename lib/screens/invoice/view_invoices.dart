@@ -43,13 +43,13 @@ class ViewInvoicesState extends State<ViewInvoices> {
     });
   }
 
-  onInputChange(value) {
+  void onInputChange(value) {
     setState(() {
       selectedForSearch = value;
     });
   }
 
-  onSelectStatus(value) {
+  void onSelectStatus(value) {
     setState(() {
       selectedStatus = value;
     });
@@ -57,7 +57,7 @@ class ViewInvoicesState extends State<ViewInvoices> {
     _fetchInvoices();
   }
 
-  handleRangeChange(String select, DateTime picked) async {
+  Future<void> handleRangeChange(String select, DateTime picked) async {
     if (select == 'from') {
       setState(() {
         _fromDate = picked;
@@ -71,13 +71,13 @@ class ViewInvoicesState extends State<ViewInvoices> {
     _fetchInvoices();
   }
 
-  handleRangeChanged(String rangeLabel) {
+  void handleRangeChanged(String rangeLabel) {
     setState(() {
       selectedDateField = rangeLabel;
     });
   }
 
-  onSearchParamsChange(value) async {
+  Future<void> onSearchParamsChange(value) async {
     await Future.delayed(const Duration(seconds: 1));
     _invoices = [];
     setState(() {
@@ -87,7 +87,7 @@ class ViewInvoicesState extends State<ViewInvoices> {
     _fetchInvoices();
   }
 
-  handleDateReset() {
+  void handleDateReset() {
     setState(() {
       _fromDate = DateTime.now();
       _toDate = DateTime.now();
@@ -95,7 +95,7 @@ class ViewInvoicesState extends State<ViewInvoices> {
     });
   }
 
-  checkIfInvoiceIdAndGetIno() {
+  void checkIfInvoiceIdAndGetIno() {
     if (widget.invoiceId != null) {
       searchParams = widget.invoiceId!;
       _fromDate = DateTime(2000);

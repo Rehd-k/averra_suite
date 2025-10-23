@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:averra_suite/service/token.service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+
 
 import '../../helpers/financial_string_formart.dart';
 import '../../service/api.service.dart';
@@ -40,6 +40,8 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
   bool _scannerActive = false;
   String departmentId = '';
   List departments = [];
+  DateTime startDate = DateTime.now();
+  DateTime endDate = DateTime.now();
 
   late final _pagingController = PagingController<int, dynamic>(
     getNextPageKey: (state) => ProductService().checkAndFetchProducts(
@@ -61,7 +63,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
     apiCount++;
   }
 
-  voidDoApiCheck(productsCount, totalProductsAmount) {
+  void voidDoApiCheck(productsCount, totalProductsAmount) {
     localproducts = productsCount;
     setState(() {
       numberOfProducts = totalProductsAmount;
@@ -176,48 +178,36 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
 
   void saveCartToStorage() async {
     if (cart.isNotEmpty) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      var savedCart = prefs.getString('cart') ?? '[]';
-      List cartArray = jsonDecode(savedCart);
+      var res = await apiService.post('cart', cart);
       setState(() {
-        cartArray.add(cart);
-        savedCarts = cartArray;
+        savedCarts.add(res.data);
         cart = [];
+        
       });
-      String cartJson = jsonEncode(cartArray);
-      await prefs.setString('cart', cartJson);
+  
     }
   }
 
-  void loadCartFromStorage(int index) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    var storageCart = savedCarts.elementAt(index);
+  void loadCartFromStorage(String id) async {
+    var res = await apiService.get('cart/$id');
     setState(() {
-      cart = List<Map<String, dynamic>>.from(storageCart);
-      savedCarts.removeAt(index);
-      prefs.setString('cart', json.encode(savedCarts));
+      cart = List<Map<String, dynamic>>.from(res.data['products']);
+      // savedCarts.removeAt(index);
     });
   }
 
   void getCartsFromStorage() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    var carts = prefs.getString('cart');
-
-    if (carts != null) {
-      var cartsArray = jsonDecode(carts);
-      setState(() {
-        savedCarts = List.from(cartsArray);
-      });
-    } else {
-      savedCarts = [];
-    }
+    var res = await apiService.get(
+      'cart?filter={"initiator" : "${JwtService().decodedToken?['username']}"}&startDate=$startDate&endDate=$endDate',
+    );
+    print(res.data);
+    savedCarts = res.data;
   }
 
-  void removeCartFromStorage(int index) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  void removeCartFromStorage(String id) async {
+    await apiService.delete('cart/$id');
     setState(() {
-      savedCarts.removeAt(index);
-      prefs.setString('cart', json.encode(savedCarts));
+      savedCarts.removeWhere((res) => res['_id'] == id);
     });
   }
 
@@ -298,7 +288,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
               child: isLoading
                   ? Center(child: CircularProgressIndicator())
                   : DropdownButtonFormField<String>(
-                      value: departmentId,
+                      initialValue: departmentId,
                       decoration: InputDecoration(
                         labelText: 'From',
                         border: OutlineInputBorder(),
@@ -335,12 +325,12 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
               ),
               onPressed: _toggleFocus,
             ),
-            ...savedCarts.asMap().entries.map((res) {
-              int index = res.key; // Get the index
+            ...savedCarts.map((res) {
+              // Get the index
               // String value = res.value;
               return Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: savedCartsIcon(index),
+                child: savedCartsIcon(res['_id']),
               );
             }),
           ],
@@ -493,10 +483,10 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
     );
   }
 
-  InkWell savedCartsIcon(int index) {
+  InkWell savedCartsIcon(String id) {
     return InkWell(
       onTap: () {
-        loadCartFromStorage(index);
+        loadCartFromStorage(id);
       },
       child: Stack(
         clipBehavior: Clip.none, // Ensures the close icon is not clipped
@@ -516,7 +506,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
             top: -4, // Adjust position
             child: InkWell(
               onTap: () {
-                removeCartFromStorage(index);
+                removeCartFromStorage(id);
               },
               child: CircleAvatar(
                 radius: 8, // Small red circle

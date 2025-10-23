@@ -23,7 +23,7 @@ class SuppliersDashbaordState extends State<SuppliersDashbaordScreen> {
     super.initState();
   }
 
-  getDetails() async {
+  Future<void> getDetails() async {
     var response = await apiService.get('supplier/dashbaord');
     setState(() {
       res = response.data;

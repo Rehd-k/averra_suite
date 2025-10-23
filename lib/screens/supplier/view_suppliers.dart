@@ -2,13 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 import '../../app_router.gr.dart';
 import '../../helpers/supplierholder.dart';
 import '../../service/api.service.dart';
-import 'add_contacts.dart';
-import 'add_supplier.dart';
 
 @RoutePage()
 class ViewSuppliersScreen extends StatefulWidget {

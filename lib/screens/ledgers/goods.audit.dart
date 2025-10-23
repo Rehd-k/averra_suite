@@ -60,7 +60,7 @@ class GoodsAuditState extends State<GoodsAudit> {
     Color(0xFFECEFF1), // Dec - Blue Grey
   ];
 
-  handleRangeChange(String select, DateTime picked) async {
+  Future<void> handleRangeChange(String select, DateTime picked) async {
     if (select == 'from') {
       setState(() {
         startDate = picked;
@@ -75,7 +75,7 @@ class GoodsAuditState extends State<GoodsAudit> {
     getRequisitions();
   }
 
-  handleDateReset() {
+  void handleDateReset() {
     setState(() {
       startDate = DateTime.now();
       endDate = DateTime.now();

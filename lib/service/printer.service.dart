@@ -47,7 +47,7 @@ class PrinterService {
     });
   }
 
-  stopScan() {
+  void stopScan() {
     _flutterThermalPrinterPlugin.stopScan();
   }
 
