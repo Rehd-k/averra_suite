@@ -30,11 +30,8 @@ class CreateDepartment extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.only(top: 50, left: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: Theme.of(context).colorScheme.surface,
-        ),
+        padding: EdgeInsets.only(top: 50, left: 10, right: 10),
+
         child: Form(
           key: formKey,
           child: Column(
@@ -106,13 +103,16 @@ class CreateDepartment extends StatelessWidget {
                 },
               ),
               SizedBox(height: 10),
-              MultiSelectContainer(
-                items: settings['roles']!.map<MultiSelectCard>((entry) {
-                  return MultiSelectCard(value: entry, label: entry);
-                }).toList(),
-                onChange: (allSelectedItems, selectedItem) {
-                  addOrRemoveAccess(selectedItem);
-                },
+              SizedBox(
+                width: double.infinity,
+                child: MultiSelectContainer(
+                  items: settings['roles']!.map<MultiSelectCard>((entry) {
+                    return MultiSelectCard(value: entry, label: entry);
+                  }).toList(),
+                  onChange: (allSelectedItems, selectedItem) {
+                    addOrRemoveAccess(selectedItem);
+                  },
+                ),
               ),
               SizedBox(height: 10),
               ElevatedButton(

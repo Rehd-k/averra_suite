@@ -105,6 +105,16 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: DepartmentRequest.page),
       ],
     ),
+
+    AutoRoute(
+      page: KitchenNavigationRoute.page,
+      children: [
+        AutoRoute(page: CartRoute.page),
+        AutoRoute(page: DepartmentRequest.page),
+        AutoRoute(page: Wip.page),
+        AutoRoute(page: FinishedGoods.page),
+      ],
+    ),
     AutoRoute(
       page: SuperviorNavigationRoute.page,
       children: [

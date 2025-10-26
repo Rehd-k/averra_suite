@@ -1,43 +1,18 @@
 import 'package:flutter/material.dart';
 
-import '../../../service/api.service.dart';
+class AddCategory extends StatelessWidget {
+  final GlobalKey<FormState> formKey;
+  final TextEditingController nameController;
+  final TextEditingController descriptionController;
+  final void Function(BuildContext context) onSubmit;
 
-class AddCategory extends StatefulWidget {
-  final Function()? updateCategory;
-  const AddCategory({super.key, required this.updateCategory});
-
-  @override
-  AddCategoryState createState() => AddCategoryState();
-}
-
-class AddCategoryState extends State<AddCategory> {
-  final apiService = ApiService();
-  final _formKey = GlobalKey<FormState>();
-
-  final nameController = TextEditingController();
-
-  final descriptionController = TextEditingController();
-
-  @override
-  void dispose() {
-    descriptionController.dispose();
-    nameController.dispose();
-    super.dispose();
-  }
-
-  Future<void> handleSubmit(BuildContext context) async {
-    try {
-      final dynamic response = await apiService.post('category', {
-        'title': nameController.text,
-        'description': descriptionController.text,
-      });
-
-      if (response.statusCode! >= 200 && response.statusCode! <= 300) {
-        widget.updateCategory!();
-      } else {}
-      // ignore: empty_catches
-    } catch (e) {}
-  }
+  const AddCategory({
+    super.key,
+    required this.formKey,
+    required this.nameController,
+    required this.descriptionController,
+    required this.onSubmit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +25,7 @@ class AddCategoryState extends State<AddCategory> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
-            key: _formKey,
+            key: formKey,
             child: Column(
               children: <Widget>[
                 TextFormField(
@@ -73,7 +48,7 @@ class AddCategoryState extends State<AddCategory> {
                     return null;
                   },
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 TextFormField(
                   controller: descriptionController,
                   decoration: InputDecoration(
@@ -88,18 +63,10 @@ class AddCategoryState extends State<AddCategory> {
                     ),
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 ElevatedButton(
-                  onPressed: () {
-                    handleSubmit(context);
-                    if (_formKey.currentState!.validate()) {
-                      // Process data
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Processing Data')),
-                      );
-                    }
-                  },
-                  child: Text('Submit'),
+                  onPressed: () => onSubmit(context),
+                  child: const Text('Submit'),
                 ),
               ],
             ),

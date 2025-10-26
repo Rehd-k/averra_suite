@@ -34,44 +34,48 @@ class ViewDepartments extends StatelessWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columns: const [
-          DataColumn(label: Text('Title')),
-          DataColumn(label: Text('Description')),
-          DataColumn(label: Text('Type')),
-          DataColumn(label: Text('Initiator')),
-          DataColumn(label: Text('Created At')),
-          DataColumn(label: Text('Actions')),
-        ],
-        rows: filteredDepartments.map<DataRow>((department) {
-          return DataRow(
-            cells: [
-              DataCell(Text(capitalizeFirstLetter(department['title'] ?? ''))),
-              DataCell(Text(department['description'] ?? '')),
-              DataCell(Text(capitalizeFirstLetter(department['type'] ?? ''))),
-              DataCell(Text(department['initiator'] ?? '')),
-              DataCell(Text(formatDate(department['createdAt']))),
-              DataCell(
-                Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.edit_attributes),
-                      onPressed: () {
-                        deleteDepartment(department['_id']);
-                      },
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete_forever_outlined),
-                      onPressed: () {
-                        deleteDepartment(department['_id']);
-                      },
-                    ),
-                  ],
+      child: Card(
+        child: DataTable(
+          columns: const [
+            DataColumn(label: Text('Title')),
+            DataColumn(label: Text('Description')),
+            DataColumn(label: Text('Type')),
+            DataColumn(label: Text('Initiator')),
+            DataColumn(label: Text('Created At')),
+            DataColumn(label: Text('Actions')),
+          ],
+          rows: filteredDepartments.map<DataRow>((department) {
+            return DataRow(
+              cells: [
+                DataCell(
+                  Text(capitalizeFirstLetter(department['title'] ?? '')),
                 ),
-              ),
-            ],
-          );
-        }).toList(),
+                DataCell(Text(department['description'] ?? '')),
+                DataCell(Text(capitalizeFirstLetter(department['type'] ?? ''))),
+                DataCell(Text(department['initiator'] ?? '')),
+                DataCell(Text(formatDate(department['createdAt']))),
+                DataCell(
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.edit_attributes),
+                        onPressed: () {
+                          deleteDepartment(department['_id']);
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.delete_forever_outlined),
+                        onPressed: () {
+                          deleteDepartment(department['_id']);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
+        ),
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:toastification/toastification.dart';
 
+import '../../components/emptylist.dart';
 import '../../service/api.service.dart';
 import '../../service/toast.service.dart';
 import 'send.finished.dart';
@@ -30,10 +31,12 @@ class FinishedGoodsState extends State<FinishedGoods> {
   String fromPoint = '';
   String fromPointName = '';
 
-  void getProductsFromDepartment(query) async {
+  void getProductsFromDepartment(String query) async {
     if (fromPoint.isNotEmpty) {
       try {
-        var result = await apiService.get('work-in-progress');
+        var result = await apiService.get(
+          'work-in-progress?filter={"at":"$query"}',
+        );
         setState(() {
           departmentFront = result.data;
           workInProgress = result.data['workInProgress'];
@@ -55,9 +58,10 @@ class FinishedGoodsState extends State<FinishedGoods> {
     setState(() {
       fromPointName = res;
       fromPoint = value;
+      workInProgress = [];
     });
 
-    getProductsFromDepartment('');
+    getProductsFromDepartment(value);
   }
 
   void getDepartments() async {
@@ -138,6 +142,15 @@ class FinishedGoodsState extends State<FinishedGoods> {
         Expanded(
           child: loading
               ? const Center(child: CircularProgressIndicator())
+              : workInProgress.isEmpty
+              ? Center(
+                  child: EmptyComponent(
+                    icon: Icons.remove_shopping_cart_outlined,
+                    message: "No On Going Progress",
+                    subMessage: "",
+                    reload: getDepartments,
+                  ),
+                )
               : GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: crossAxisCount,

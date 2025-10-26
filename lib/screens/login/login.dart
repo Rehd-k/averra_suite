@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:ui';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +10,6 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import '../../app_router.gr.dart';
 // import '../../helpers/notification.token.dart';
 import '../../components/theme_switch_button.dart';
-import '../../helpers/notification.token.dart';
 import '../../helpers/title_bar.dart';
 import '../../service/api.service.dart';
 import '../../service/token.service.dart';
@@ -27,7 +29,7 @@ class _LoginFormState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final service = NotificationService();
+  // final service = NotificationService();
 
   late String token;
   late FocusNode usernameFocus;
@@ -48,6 +50,10 @@ class _LoginFormState extends State<LoginScreen> {
     getSettingnsAndBranch();
     usernameFocus = FocusNode();
     passwordFocus = FocusNode();
+
+    if (Platform.isWindows) {
+      // setupWindowsNotifications();
+    }
   }
 
   @override
@@ -136,9 +142,13 @@ class _LoginFormState extends State<LoginScreen> {
         context.router.replaceAll([
           ManagerNavigationRoute(children: [DashbaordManagerRoute()]),
         ]);
-      } else if (role == 'accounting') {
+      } else if (role == 'accountant') {
         context.router.replaceAll([
           AccountingNavigationRoute(children: [AccountingDashboardRoute()]),
+        ]);
+      } else if (role == 'chef') {
+        context.router.replaceAll([
+          KitchenNavigationRoute(children: [CartRoute()]),
         ]);
       }
 
@@ -192,67 +202,83 @@ class _LoginFormState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isSmallScreen = MediaQuery.of(context).size.width < 600;
     return Scaffold(
-      // appBar: widget.isGod == true
-      //     ? AppBar(title: const Text('God Login'))
-      //     : null,
+      appBar: widget.isGod == true
+          ? AppBar(title: const Text('God Login'))
+          : null,
       body: Column(
         children: [
-          WindowTitleBarBox(
-            child: Row(
-              children: [
-                Expanded(child: MoveWindow(child: Text(''))),
-                ThemeSwitchButton(),
-                const WindowButtons(),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Container(
-              color: Theme.of(context).cardColor,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return Row(
-                    children: [
-                      Expanded(
-                        flex: constraints.maxWidth > 600 ? 4 : 1,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: !showForm
-                              ? const Center(child: CircularProgressIndicator())
-                              : LoginForm(
-                                  formKey: _formKey,
-                                  userController: _userController,
-                                  passwordController: _passwordController,
-                                  submit: _submit,
-                                  passwordErrorMessage: passwordErrorMessage,
-                                  usernameErrorMessage: usernameErrorMessage,
-                                  usernameFocus: usernameFocus,
-                                  passwordFocus: passwordFocus,
-                                  emptyErrorMessage: emptyErrorMessage,
-                                  hidePassword: hidePassword,
-                                  toggleHideShowPassword:
-                                      toggleHideShowPassword,
-                                  isLoading: isLoading,
-                                  branches: branches,
-                                  handleAddLocation: handleAddLocation,
-                                  isGod: widget.isGod ?? false,
-                                ),
-                        ),
-                      ),
-                      constraints.maxWidth > 600
-                          ? Expanded(
-                              flex: 7,
-                              child: Image(
-                                image: AssetImage('assets/images/banner.png'),
-                                fit: BoxFit.fill,
-                              ),
-                            )
-                          : Container(),
-                    ],
-                  );
-                },
+          if (Platform.isWindows)
+            WindowTitleBarBox(
+              child: Row(
+                children: [
+                  Expanded(child: MoveWindow(child: Text('Log In'))),
+                  const CircleAvatar(child: Icon(Icons.person_outlined)),
+                  const ThemeSwitchButton(),
+                  IconButton(
+                    icon: const Icon(Icons.logout_outlined, size: 12),
+                    onPressed: () {
+                      JwtService().logout();
+                      context.router.replaceAll([LoginRoute()]);
+                    },
+                  ),
+                  const WindowButtons(),
+                ],
               ),
+            ),
+
+          Expanded(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // 🖼️ Background image
+                Image.asset(
+                  'assets/images/banner.png', // <-- put your image in assets folder
+                  fit: BoxFit.cover,
+                ),
+
+                // 🌫️ Blur filter
+                BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                  child: Container(
+                    color: Colors.black.withOpacity(
+                      0.3,
+                    ), // optional dark overlay
+                  ),
+                ),
+
+                // 🪟 Foreground login card
+                Center(
+                  child: SizedBox(
+                    width: isSmallScreen ? double.infinity : 400,
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: !showForm
+                            ? const Center(child: CircularProgressIndicator())
+                            : LoginForm(
+                                formKey: _formKey,
+                                userController: _userController,
+                                passwordController: _passwordController,
+                                submit: _submit,
+                                passwordErrorMessage: passwordErrorMessage,
+                                usernameErrorMessage: usernameErrorMessage,
+                                usernameFocus: usernameFocus,
+                                passwordFocus: passwordFocus,
+                                emptyErrorMessage: emptyErrorMessage,
+                                hidePassword: hidePassword,
+                                toggleHideShowPassword: toggleHideShowPassword,
+                                isLoading: isLoading,
+                                branches: branches,
+                                handleAddLocation: handleAddLocation,
+                                isGod: widget.isGod ?? false,
+                              ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -260,3 +286,15 @@ class _LoginFormState extends State<LoginScreen> {
     );
   }
 }
+
+// class LoginPage extends StatelessWidget {
+//   const LoginPage({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body:
+
+//     );
+//   }
+// }

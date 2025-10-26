@@ -5,12 +5,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/service/token.service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-
 
 import '../../helpers/financial_string_formart.dart';
 import '../../service/api.service.dart';
 import 'cart_section.dart';
+import 'orders.section.dart';
 import 'product_grid.dart';
 import 'product_service.dart';
 
@@ -42,6 +43,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
   List departments = [];
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
+  String cartId = '';
 
   late final _pagingController = PagingController<int, dynamic>(
     getNextPageKey: (state) => ProductService().checkAndFetchProducts(
@@ -63,7 +65,15 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
     apiCount++;
   }
 
-  void voidDoApiCheck(productsCount, totalProductsAmount) {
+  // Future<void> updateSingleSettled() async {
+  //   await apiService.patch('cart/$cartId', orderItem);
+
+  //   setState(() {
+  //     orderItem = res.data;
+  //   });
+  // }
+
+  void voidDoApiCheck(List<dynamic> productsCount, totalProductsAmount) {
     localproducts = productsCount;
     setState(() {
       numberOfProducts = totalProductsAmount;
@@ -178,21 +188,67 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
 
   void saveCartToStorage() async {
     if (cart.isNotEmpty) {
-      var res = await apiService.post('cart', cart);
+      var res = await apiService.post('cart', {
+        "cart": cart,
+        "total": getCartTotal(),
+      });
       setState(() {
         savedCarts.add(res.data);
         cart = [];
-        
       });
-  
     }
   }
 
   void loadCartFromStorage(String id) async {
     var res = await apiService.get('cart/$id');
+
+    // Normalize response to a Map (handle case where API returns a list)
+    var data = res.data;
+    if (data is List && data.isNotEmpty) {
+      data = data.first;
+    }
+
+    // If products are nested inside "from", flatten them into a single "products" list
+    if (data is Map && data.containsKey('from')) {
+      final List<Map<String, dynamic>> flattened = [];
+
+      for (final group in (data['from'] as List<dynamic>)) {
+        if (group is Map && group.containsKey('products')) {
+          for (final p in (group['products'] as List<dynamic>)) {
+            if (p is Map) {
+              final int quantity = (p['quantity'] is int)
+                  ? p['quantity']
+                  : (int.tryParse('${p['quantity']}') ?? 1);
+              final num price = p['price'] ?? 0;
+              flattened.add({
+                'productId': p['productId'] ?? p['_id'] ?? '',
+                'title': p['title'] ?? '',
+                'price': price,
+                'quantity': quantity,
+                'total': p['total'] ?? (price * quantity),
+                'cost': p['cost'] ?? 0,
+                'from': p['from'] ?? group['department'] ?? '',
+                'maxQuantity': p['maxQuantity'] ?? 1000,
+                // Preserve any other fields if needed
+                ...p,
+              });
+            }
+          }
+        }
+      }
+
+      // Ensure the response has a "products" key that the rest of the code expects
+      data['products'] = flattened;
+      // Put normalized data back on res.data if it's mutable
+      if (res is Map) {
+        // no-op
+      } else {
+        res.data = data;
+      }
+    }
     setState(() {
+      cartId = id;
       cart = List<Map<String, dynamic>>.from(res.data['products']);
-      // savedCarts.removeAt(index);
     });
   }
 
@@ -200,7 +256,6 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
     var res = await apiService.get(
       'cart?filter={"initiator" : "${JwtService().decodedToken?['username']}"}&startDate=$startDate&endDate=$endDate',
     );
-    print(res.data);
     savedCarts = res.data;
   }
 
@@ -214,6 +269,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
   void emptycart() {
     setState(() {
       cart = [];
+      cartId = '';
     });
   }
 
@@ -264,6 +320,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
   Widget build(BuildContext context) {
     double width = MediaQuery.sizeOf(context).width;
     bool smallScreen = width <= 1200;
+    final key = GlobalKey<ExpandableFabState>();
     return KeyboardListener(
       focusNode: _scannerFocusNode,
       onKeyEvent: (event) async {
@@ -325,67 +382,119 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
               ),
               onPressed: _toggleFocus,
             ),
-            ...savedCarts.map((res) {
-              // Get the index
-              // String value = res.value;
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: savedCartsIcon(res['_id']),
-              );
-            }),
+
+            TextButton(
+              child: Text('Orders : ${savedCarts.length.toString()}'),
+              onPressed: () {
+                {
+                  final state = key.currentState;
+                  if (state != null) {
+                    state.toggle();
+                  }
+                }
+              },
+            ),
           ],
         ),
+        floatingActionButtonLocation: ExpandableFab.location,
 
-        floatingActionButton: smallScreen
-            ? FloatingActionButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                    isScrollControlled: true,
-                    context: context,
-                    builder: (context) => Container(
+        floatingActionButton: ExpandableFab(
+          distance: 50,
+          key: key,
+          type: ExpandableFabType.up,
+          children: [
+            FloatingActionButton.small(
+              heroTag: null,
+              child: const Icon(Icons.list_alt_outlined),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) => StatefulBuilder(
+                    builder: (context, setModalState) => OrdersSection(
+                      ordersSections: savedCarts,
+                      loadCartFromStorage: (id) {
+                        loadCartFromStorage(id);
+                        setModalState(() {});
+                      },
+                      removeCartFromStorage: (id) {
+                        removeCartFromStorage(id);
+                        setModalState(() {});
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+            FloatingActionButton.small(
+              onPressed: () {
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  context: context,
+                  builder: (context) => StatefulBuilder(
+                    builder: (context, setModalState) => Container(
                       padding: const EdgeInsets.all(8.0),
                       height: MediaQuery.of(context).size.height * 0.98,
                       child: CartSection(
                         isSmallScreen: smallScreen,
-                        saveCart: saveCartToStorage,
-                        emptyCart: emptycart,
+                        saveCart: () {
+                          saveCartToStorage();
+                          setModalState(() {});
+                        },
+                        emptyCart: () {
+                          emptycart();
+                          setModalState(() {});
+                        },
                         cart: cart,
                         cartTotal: getCartTotal(),
-                        decrementCartQuantity: decrementCartQuantity,
-                        incrementCartQuantity: incrementCartQuantity,
-                        removeFromCart: removeFromCart,
+                        decrementCartQuantity: (product) {
+                          decrementCartQuantity(product);
+                          setModalState(() {});
+                        },
+                        incrementCartQuantity: (product) {
+                          incrementCartQuantity(product);
+                          setModalState(() {});
+                        },
+                        removeFromCart: (product) {
+                          removeFromCart(product);
+                          setModalState(() {});
+                        },
                         handleComplete: handleSubmited,
+                        cartId: cartId,
                       ),
                     ),
-                  );
-                },
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    const Icon(Icons.shopping_cart_outlined, size: 40),
-                    if (cart.isNotEmpty)
-                      Positioned(
-                        child: Container(
-                          alignment: Alignment.center,
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            '${cart.length}',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onPrimary,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  ),
+                );
+              },
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Icon(Icons.shopping_cart_outlined, size: 40),
+                  if (cart.isNotEmpty)
+                    Positioned(
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${cart.length}',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
                           ),
                         ),
                       ),
-                  ],
-                ),
-              )
-            : null,
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+
         body: Padding(
           padding: EdgeInsets.only(top: 8.0, right: smallScreen ? 0 : 10.0),
           child: Row(
@@ -466,6 +575,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
               smallScreen
                   ? SizedBox.shrink()
                   : CartSection(
+                      cartId: cartId,
                       isSmallScreen: smallScreen,
                       cart: cart,
                       cartTotal: getCartTotal(),
@@ -479,47 +589,6 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  InkWell savedCartsIcon(String id) {
-    return InkWell(
-      onTap: () {
-        loadCartFromStorage(id);
-      },
-      child: Stack(
-        clipBehavior: Clip.none, // Ensures the close icon is not clipped
-        alignment: Alignment.topRight,
-        children: [
-          CircleAvatar(
-            radius: 16, // Increased size for visibility
-
-            child: Icon(
-              Icons.shopping_cart,
-              color: Theme.of(context).colorScheme.onPrimary,
-              size: 16, // Adjust icon size
-            ),
-          ),
-          Positioned(
-            right: -4, // Adjust position
-            top: -4, // Adjust position
-            child: InkWell(
-              onTap: () {
-                removeCartFromStorage(id);
-              },
-              child: CircleAvatar(
-                radius: 8, // Small red circle
-                backgroundColor: Colors.red, // Red background
-                child: Icon(
-                  Icons.close,
-                  size: 10, // Adjust size of X icon
-                  color: Colors.white, // White color for X icon
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

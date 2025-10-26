@@ -3,103 +3,34 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
-import '../../../service/api.service.dart';
-import 'add_category.dart';
 
-class ViewCategory extends StatefulWidget {
-  final Function()? updateCategory;
-  const ViewCategory({super.key, this.updateCategory});
+class ViewCategory extends StatelessWidget {
+  final int rowsPerPage;
+  final void Function(int) onRowsPerPageChanged;
+  final String sortBy;
+  final bool ascending;
+  final int Function(String) getColumnIndex;
+  final void Function(String, bool) onSortChanged;
+  final void Function(String) filterProducts;
+  final List Function() getFilteredAndSortedRows;
+  final TextEditingController searchController;
+  final void Function(Map<String, dynamic>) updateCategory;
+  final VoidCallback? onExtract; // optional
 
-  @override
-  ViewCategoryState createState() => ViewCategoryState();
-}
-
-class ViewCategoryState extends State<ViewCategory> {
-  final apiService = ApiService();
-  List filteredCategories = [];
-  late List categories = [];
-  final TextEditingController _searchController = TextEditingController();
-  bool isLoading = true;
-  int rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
-  String searchQuery = "";
-  String sortBy = "title";
-  bool ascending = true;
-
-  @override
-  void initState() {
-    super.initState();
-    getProductsList();
-    filteredCategories = List.from(categories);
-  }
-
-  // Search logic
-  void filterProducts(String query) {
-    setState(() {
-      filteredCategories = categories.where((category) {
-        return category.values.any(
-          (value) =>
-              value.toString().toLowerCase().contains(query.toLowerCase()),
-        );
-      }).toList();
-    });
-  }
-
-  Future updateCategoryList() async {
-    setState(() {
-      isLoading = true;
-    });
-    var dbcategories = await apiService.get(
-      'category?skip=${categories.length}',
-    );
-    setState(() {
-      categories.addAll(dbcategories.data);
-      filteredCategories = List.from(categories);
-      isLoading = false;
-    });
-  }
-
-  Future getProductsList() async {
-    var dbcategories = await apiService.get('category');
-    setState(() {
-      categories = dbcategories.data;
-      filteredCategories = List.from(categories);
-      isLoading = false;
-    });
-  }
-
-  List getFilteredAndSortedRows() {
-    List filteredCategories = categories.where((product) {
-      return product.values.any(
-        (value) =>
-            value.toString().toLowerCase().contains(searchQuery.toLowerCase()),
-      );
-    }).toList();
-
-    filteredCategories.sort((a, b) {
-      if (ascending) {
-        return a[sortBy].toString().compareTo(b[sortBy].toString());
-      } else {
-        return b[sortBy].toString().compareTo(a[sortBy].toString());
-      }
-    });
-
-    return filteredCategories;
-  }
-
-  int getColumnIndex(String columnName) {
-    switch (columnName) {
-      case 'title':
-        return 0;
-      case 'createdAt':
-        return 1;
-      case 'price':
-        return 2;
-      case 'quantity':
-        return 3;
-      default:
-        return 0;
-    }
-  }
+  const ViewCategory({
+    super.key,
+    required this.rowsPerPage,
+    required this.onRowsPerPageChanged,
+    required this.sortBy,
+    required this.ascending,
+    required this.getColumnIndex,
+    required this.onSortChanged,
+    required this.filterProducts,
+    required this.getFilteredAndSortedRows,
+    required this.searchController,
+    required this.updateCategory,
+    this.onExtract,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +38,7 @@ class ViewCategoryState extends State<ViewCategory> {
     bool smallScreen = width <= 1200;
     return Column(
       children: [
-        smallScreen ? searchBox(smallScreen) : Container(),
+        smallScreen ? searchBox(context, smallScreen) : Container(),
         Expanded(
           child: PaginatedDataTable2(
             fixedCornerColor: Theme.of(context).colorScheme.onSecondary,
@@ -117,15 +48,11 @@ class ViewCategoryState extends State<ViewCategory> {
             sortAscending: ascending,
             rowsPerPage: rowsPerPage,
             onRowsPerPageChanged: (value) {
-              setState(() {
-                rowsPerPage = value ?? rowsPerPage;
-              });
+              onRowsPerPageChanged(value ?? rowsPerPage);
             },
-            // empty: Text('No Products Yet'),
-            // minWidth: 500,
             actions: [
               IconButton.filledTonal(
-                onPressed: () {},
+                onPressed: onExtract,
                 icon: Icon(Icons.exit_to_app, size: 10),
                 tooltip: 'Extract',
               ),
@@ -138,23 +65,20 @@ class ViewCategoryState extends State<ViewCategory> {
                         expand: true,
                         context: context,
                         backgroundColor: Colors.transparent,
-                        builder: (context) =>
-                            AddCategory(updateCategory: widget.updateCategory),
+                        builder: (context) => SizedBox(),
+                        // AddCategory(updateCategory: updateCategory),
                       ),
                       label: Text('Add Product'),
                       icon: Icon(Icons.add_box_outlined),
                     ),
                   )
-                : Row(children: [searchBox(smallScreen)]),
+                : Row(children: [searchBox(context, smallScreen)]),
             columns: [
               DataColumn2(
                 label: Text("Title"),
                 size: ColumnSize.L,
-                onSort: (index, ascending) {
-                  setState(() {
-                    sortBy = 'title';
-                    this.ascending = ascending;
-                  });
+                onSort: (index, asc) {
+                  onSortChanged('title', asc);
                 },
               ),
               DataColumn2(label: Text("Description"), size: ColumnSize.L),
@@ -162,11 +86,8 @@ class ViewCategoryState extends State<ViewCategory> {
               DataColumn2(
                 label: Text('Added On'),
                 size: ColumnSize.L,
-                onSort: (index, ascending) {
-                  setState(() {
-                    sortBy = 'createdAt';
-                    this.ascending = ascending;
-                  });
+                onSort: (index, asc) {
+                  onSortChanged('createdAt', asc);
                 },
               ),
               DataColumn2(label: Text('Actions')),
@@ -182,11 +103,11 @@ class ViewCategoryState extends State<ViewCategory> {
     );
   }
 
-  SizedBox searchBox(bool smallScreen) {
+  Widget searchBox(BuildContext context, bool smallScreen) {
     return SizedBox(
       width: smallScreen ? double.infinity : 250,
       child: TextField(
-        controller: _searchController,
+        controller: searchController,
         decoration: InputDecoration(
           hintText: "Search...",
           fillColor: Theme.of(context).colorScheme.surface,
@@ -194,10 +115,12 @@ class ViewCategoryState extends State<ViewCategory> {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
           suffixIcon: IconButton(
             icon: Icon(Icons.search),
-            onPressed: () => filterProducts(_searchController.text),
+            onPressed: () => filterProducts(searchController.text),
           ),
         ),
-        onChanged: (query) => {filterProducts(query), searchQuery = query},
+        onChanged: (query) {
+          filterProducts(query);
+        },
       ),
     );
   }
@@ -219,16 +142,17 @@ class CategoryDataSource extends DataTableSource {
     final category = categories[index];
     return DataRow(
       cells: [
-        DataCell(Text(category['title'])),
-        DataCell(Text(category['description'])),
-        DataCell(Text(category['initiator'])),
-        DataCell(Text(formatDate(category['createdAt']))),
+        DataCell(Text(category['title'] ?? '')),
+        DataCell(Text(category['description'] ?? '')),
+        DataCell(Text(category['initiator'] ?? '')),
+        DataCell(
+          Text(formatDate(category['createdAt'] ?? '1970-01-01T00:00:00Z')),
+        ),
         DataCell(
           Column(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              // OutlinedButton(onPressed: () {}, child: Text('Update'))
-              // OutlinedButton(onPressed: () {}, child: Text('Delete'))
+              // action buttons can be provided by parent via callbacks if needed
             ],
           ),
         ),

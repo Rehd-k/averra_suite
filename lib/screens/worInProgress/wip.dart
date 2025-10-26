@@ -6,6 +6,7 @@ import 'package:toastification/toastification.dart';
 
 import '../../service/api.service.dart';
 import '../../service/toast.service.dart';
+import '../../service/token.service.dart';
 
 @RoutePage()
 class Wip extends StatefulWidget {
@@ -17,6 +18,7 @@ class Wip extends StatefulWidget {
 
 class WipState extends State<Wip> {
   final ApiService apiService = ApiService();
+  final JwtService jwtService = JwtService();
   TextEditingController controller = TextEditingController();
   List<FocusNode> focusNodes = [];
   List<FocusNode> priceFocusNodes = [];
@@ -302,6 +304,12 @@ class WipState extends State<Wip> {
 
   @override
   void initState() {
+    isWip = true;
+    if (jwtService.decodedToken?['role'] == 'chef') {
+      setState(() {
+        isWip = true;
+      });
+    }
     getDepartments();
     super.initState();
   }
@@ -320,58 +328,59 @@ class WipState extends State<Wip> {
         : 400.0;
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 20),
-                child: SizedBox(
-                  width: buttonWidth,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            handleIsWIP(false);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isWip ? null : Colors.green,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(20),
-                                bottomLeft: Radius.circular(20),
+        if (!['bar', 'chef'].contains(jwtService.decodedToken?['role']))
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Align(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 20),
+                  child: SizedBox(
+                    width: buttonWidth,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              handleIsWIP(false);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isWip ? null : Colors.green,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(20),
+                                  bottomLeft: Radius.circular(20),
+                                ),
                               ),
                             ),
+                            child: const Text("Raw Materials"),
                           ),
-                          child: const Text("Raw Materials"),
                         ),
-                      ),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            handleIsWIP(true);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isWip ? Colors.green : null,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(
-                                topRight: Radius.circular(20),
-                                bottomRight: Radius.circular(20),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              handleIsWIP(true);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isWip ? Colors.green : null,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                  topRight: Radius.circular(20),
+                                  bottomRight: Radius.circular(20),
+                                ),
                               ),
                             ),
+                            child: const Text("W.I.P"),
                           ),
-                          child: const Text("W.I.P"),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         SizedBox(height: 10),
         Row(
           children: [

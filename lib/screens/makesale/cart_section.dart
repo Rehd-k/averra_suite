@@ -15,6 +15,7 @@ class CartSection extends StatelessWidget {
   final Function(String) removeFromCart;
   final Function() handleComplete;
   final bool isSmallScreen;
+  final String cartId;
 
   const CartSection({
     super.key,
@@ -27,6 +28,7 @@ class CartSection extends StatelessWidget {
     required this.emptyCart,
     required this.handleComplete,
     required this.isSmallScreen,
+    required this.cartId,
   });
 
   @override
@@ -120,8 +122,7 @@ class CartSection extends StatelessWidget {
                     if (cart.isEmpty) {
                       doShowToast('Nothing To Save', ToastificationType.info);
                     } else {
-                      doShowToast('Done', ToastificationType.info);
-                      saveCart();
+                      cartId == '' ? () {} : saveCart();
                     }
                   },
                   child: Container(
@@ -131,7 +132,7 @@ class CartSection extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Save/Send',
+                          cartId == '' ? 'Send' : 'Update',
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.surface,
                           ),

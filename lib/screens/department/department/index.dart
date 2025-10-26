@@ -88,6 +88,7 @@ class DepartmentIndexState extends State<DepartmentIndex> {
         apiService.get('department'),
         apiService.get('settings'),
       ]);
+      print(allDepartment);
       setState(() {
         departments = allDepartment[0].data;
         settings = allDepartment[1].data[0];
@@ -161,21 +162,27 @@ class DepartmentIndexState extends State<DepartmentIndex> {
     bool smallScreen = width <= 1200;
     return Scaffold(
       body: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!smallScreen)
             Expanded(
               flex: 1,
-              child: CreateDepartment(
-                formKey: formKey,
-                title: title,
-                description: description,
-                active: active,
-                type: type,
-                setType: setType,
-                updateActive: updateActive,
-                handleSubmitData: handleSubmitData,
-                settings: settings,
-                addOrRemoveAccess: addOrRemoveAccess,
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CreateDepartment(
+                    formKey: formKey,
+                    title: title,
+                    description: description,
+                    active: active,
+                    type: type,
+                    setType: setType,
+                    updateActive: updateActive,
+                    handleSubmitData: handleSubmitData,
+                    settings: settings,
+                    addOrRemoveAccess: addOrRemoveAccess,
+                  ),
+                ),
               ),
             ),
           SizedBox(width: smallScreen ? 0 : 20),

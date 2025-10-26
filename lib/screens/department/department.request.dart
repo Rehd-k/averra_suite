@@ -226,6 +226,12 @@ class DepartmentRequestState extends State<DepartmentRequest> {
 
   @override
   void initState() {
+    goodsFrom = 'RawGoods';
+    if (jwtService.decodedToken?['role'] == 'chef') {
+      setState(() {
+        goodsFrom = 'RawGoods';
+      });
+    }
     getDepartments();
     super.initState();
   }
@@ -243,7 +249,7 @@ class DepartmentRequestState extends State<DepartmentRequest> {
     return Column(
       // mainAxisSize: MainAxisSize.min,
       children: [
-        jwtService.decodedToken?['role'] != 'bar'
+        !['bar', 'chef'].contains(jwtService.decodedToken?['role'])
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

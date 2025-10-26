@@ -54,7 +54,10 @@ class AddUserState extends State<AddUser> {
 
   final reportingManager = TextEditingController();
 
+  final shiftSchedule = TextEditingController();
+
   late List branches = [];
+  late List departments = [];
   late String locations;
   late FocusNode usernameFocus;
   bool showForm = false;
@@ -68,6 +71,7 @@ class AddUserState extends State<AddUser> {
     gender.dispose();
     nationality.dispose();
     maritalStatus.dispose();
+    shiftSchedule.dispose();
     super.dispose();
   }
 
@@ -75,6 +79,7 @@ class AddUserState extends State<AddUser> {
   void initState() {
     super.initState();
     getLocations();
+    getDepartments();
   }
 
   void getLocations() async {
@@ -83,6 +88,13 @@ class AddUserState extends State<AddUser> {
       showForm = true;
       branches = responce.data;
       branches.insert(0, {'_id': 'all', 'name': 'All Locations'});
+    });
+  }
+
+  void getDepartments() async {
+    var responce = await apiService.get('/department');
+    setState(() {
+      departments = responce.data;
     });
   }
 
@@ -137,6 +149,8 @@ class AddUserState extends State<AddUser> {
         'role': role.text,
         'location': locations,
         'email': email.text,
+        'shiftSchedule': shiftSchedule.text,
+        'department': department.text,
       });
       _showToast('User Added Successfully', ToastificationType.success);
     }
@@ -389,29 +403,40 @@ class AddUserState extends State<AddUser> {
                             ),
                             SizedBox(
                               width: cardWidth,
-                              child: TextFormField(
-                                controller: department,
-                                keyboardType: TextInputType.datetime,
+                              child: DropdownButtonFormField<Map<String, dynamic>>(
                                 decoration: InputDecoration(
                                   labelText: 'Department',
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(5.0),
-                                    ),
-                                    borderSide: BorderSide(color: Colors.blue),
-                                  ),
-                                  labelStyle: TextStyle(
-                                    color: Theme.of(context).hintColor,
-                                    fontSize: 15,
+                                    borderRadius: BorderRadius.circular(10.0),
                                   ),
                                 ),
+                                items: departments
+                                    .map<
+                                      DropdownMenuItem<Map<String, dynamic>>
+                                    >((branch) {
+                                      return DropdownMenuItem<
+                                        Map<String, dynamic>
+                                      >(
+                                        value:
+                                            branch, // Assuming 'id' is the key for the value
+                                        child: Text(
+                                          capitalizeFirstLetter(
+                                            branch['title'],
+                                          ),
+                                        ), // Assuming 'name' is the key for the display text
+                                      );
+                                    })
+                                    .toList(),
+                                onChanged: (value) {
+                                  department.text = value?['_id']!;
+                                },
                               ),
                             ),
 
                             SizedBox(
                               width: cardWidth,
                               child: TextFormField(
-                                controller: department,
+                                controller: shiftSchedule,
                                 keyboardType: TextInputType.datetime,
                                 decoration: InputDecoration(
                                   labelText: 'Shift Shedule',
@@ -440,22 +465,23 @@ class AddUserState extends State<AddUser> {
                                     borderRadius: BorderRadius.circular(10.0),
                                   ),
                                 ),
-                                items: ['Nigeria', 'Ghana']
-                                    .map<DropdownMenuItem<String>>((branch) {
-                                      return DropdownMenuItem<String>(
-                                        value: branch
-                                            .toString(), // Assuming 'id' is the key for the value
-                                        child: Text(
-                                          capitalizeFirstLetter(branch),
-                                        ), // Assuming 'name' is the key for the display text
-                                      );
-                                    })
-                                    .toList(),
+                                items: ['Nigeria'].map<DropdownMenuItem<String>>((
+                                  branch,
+                                ) {
+                                  return DropdownMenuItem<String>(
+                                    value: branch
+                                        .toString(), // Assuming 'id' is the key for the value
+                                    child: Text(
+                                      capitalizeFirstLetter(branch),
+                                    ), // Assuming 'name' is the key for the display text
+                                  );
+                                }).toList(),
                                 onChanged: (value) {
                                   nationality.text = value!;
                                 },
                               ),
                             ),
+
                             SizedBox(
                               width: cardWidth,
                               child: DropdownButtonFormField<String>(
@@ -522,11 +548,14 @@ class AddUserState extends State<AddUser> {
                                       'waiter',
                                       'bar',
                                       'supervisor',
-                                      'accounting',
+                                      'accountant',
+                                      'chef',
                                     ].map((category) {
                                       return DropdownMenuItem<String>(
                                         value: category,
-                                        child: Text(category),
+                                        child: Text(
+                                          capitalizeFirstLetter(category),
+                                        ),
                                       );
                                     }).toList(),
                               ),

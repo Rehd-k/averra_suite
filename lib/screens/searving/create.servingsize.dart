@@ -5,6 +5,8 @@ class CreateServingsize extends StatelessWidget {
   final TextEditingController title;
   final TextEditingController shortHand;
   final Function handleSubmitData;
+  final String id;
+  final Function updateservingsize;
 
   const CreateServingsize({
     super.key,
@@ -12,17 +14,14 @@ class CreateServingsize extends StatelessWidget {
     required this.title,
     required this.shortHand,
     required this.handleSubmitData,
+    required this.id,
+    required this.updateservingsize,
   });
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Container(
-        padding: EdgeInsets.only(top: 50, left: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: Theme.of(context).colorScheme.surface,
-        ),
+      child: Card(
         child: Form(
           key: formKey,
           child: Column(
@@ -64,15 +63,23 @@ class CreateServingsize extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 10),
-
-              ElevatedButton(
-                onPressed: () {
-                  if (formKey.currentState!.validate()) {
-                    handleSubmitData();
-                  }
-                },
-                child: Text('Submit'),
-              ),
+              id == ''
+                  ? ElevatedButton(
+                      onPressed: () {
+                        if (formKey.currentState!.validate()) {
+                          handleSubmitData();
+                        }
+                      },
+                      child: Text('Submit'),
+                    )
+                  : OutlinedButton(
+                      onPressed: () {
+                        if (formKey.currentState!.validate()) {
+                          updateservingsize();
+                        }
+                      },
+                      child: Text('Update'),
+                    ),
             ],
           ),
         ),

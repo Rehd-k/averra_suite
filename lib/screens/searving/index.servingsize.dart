@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:averra_suite/helpers/snackbar.handler.dart';
 import 'package:averra_suite/screens/searving/create.servingsize.dart';
 import 'package:averra_suite/screens/searving/view.servingsize.dart';
 import 'package:averra_suite/service/toast.service.dart';
@@ -31,19 +32,29 @@ class IndexServingsizeState extends State<IndexServingsizeScreen> {
   String sortBy = "title";
   bool ascending = true;
   bool active = true;
+  String id = '';
 
   void handleSubmitData() async {
-    showToast('loading...', ToastificationType.info);
+    showBeautifulSnackBar(
+      context,
+      'Adding ${title.text} to Serving Sizes',
+      onAction: () {},
+    );
     try {
       await apiService.post('servingsize', {
         'title': title.text,
         'shortHand': shortHand.text,
       });
-      showToast('New Serving Added', ToastificationType.success);
       title.clear();
       shortHand.clear();
 
       getServingsizes();
+
+      showBeautifulSnackBar(
+        context,
+        'Added ${title.text} to Serving Sizes',
+        onAction: () {},
+      );
     } catch (e) {
       showToast('Error $e', ToastificationType.error);
     }
@@ -53,6 +64,9 @@ class IndexServingsizeState extends State<IndexServingsizeScreen> {
     try {
       var allServings = await apiService.get('servingsize');
       setState(() {
+        id = '';
+        title.clear();
+        shortHand.clear();
         sizes = allServings.data;
         filteredsizes = List.from(sizes);
         isLoading = false;
@@ -83,6 +97,26 @@ class IndexServingsizeState extends State<IndexServingsizeScreen> {
     });
   }
 
+  Future updateservingsize() async {
+    showBeautifulSnackBar(
+      context,
+      'Updating ${title.text} at Serving Sizes',
+      onAction: () {},
+    );
+    await apiService.patch('servingsize/$id', {
+      'title': title.text,
+      'shortHand': shortHand.text,
+    });
+    getServingsizes();
+
+    showBeautifulSnackBar(
+      context,
+      'Updated ${title.text} at Serving Sizes',
+      onAction: () {},
+      type: SnackBarType.success,
+    );
+  }
+
   List getFilteredAndSortedRows() {
     List filteredservingsize = sizes.where((product) {
       return product.values.any(
@@ -100,6 +134,14 @@ class IndexServingsizeState extends State<IndexServingsizeScreen> {
     });
 
     return filteredservingsize;
+  }
+
+  void selectForUpdate(Map<String, dynamic> servingsize) {
+    setState(() {
+      title.text = servingsize['title'];
+      shortHand.text = servingsize['shortHand'];
+      id = servingsize['id'];
+    });
   }
 
   @override
@@ -123,7 +165,34 @@ class IndexServingsizeState extends State<IndexServingsizeScreen> {
       return CircularProgressIndicator();
     }
     return Scaffold(
+      floatingActionButton: smallScreen
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (context) => Padding(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: CreateServingsize(
+                      formKey: formKey,
+                      title: title,
+                      shortHand: shortHand,
+                      handleSubmitData: handleSubmitData,
+                      id: id,
+                      updateservingsize: updateservingsize,
+                    ),
+                  ),
+                );
+              },
+              label: Text('Add Serving Size'),
+              icon: Icon(Icons.add),
+            )
+          : null,
       body: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           if (!smallScreen)
             Expanded(
@@ -133,6 +202,8 @@ class IndexServingsizeState extends State<IndexServingsizeScreen> {
                 title: title,
                 shortHand: shortHand,
                 handleSubmitData: handleSubmitData,
+                id: id,
+                updateservingsize: updateservingsize,
               ),
             ),
           SizedBox(width: smallScreen ? 0 : 20),
@@ -148,6 +219,7 @@ class IndexServingsizeState extends State<IndexServingsizeScreen> {
                 deleteServingsize: deleteservingsize,
                 filterServingsize: filterServings,
                 filteredServingsize: filteredsizes,
+                selectForUpdate: selectForUpdate,
               ),
             ),
           ),

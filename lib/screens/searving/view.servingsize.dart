@@ -13,6 +13,7 @@ class ViewServingsize extends StatelessWidget {
   final Function filterServingsize;
   final Function getFilteredAndSortedRows;
   final Function deleteServingsize;
+  final Function selectForUpdate;
   const ViewServingsize({
     super.key,
     required this.searchController,
@@ -23,6 +24,7 @@ class ViewServingsize extends StatelessWidget {
     required this.deleteServingsize,
     required this.filteredServingsize,
     required this.filterServingsize,
+    required this.selectForUpdate,
   });
 
   @override
@@ -55,7 +57,11 @@ class ViewServingsize extends StatelessWidget {
                     IconButton(
                       icon: Icon(Icons.edit_attributes),
                       onPressed: () {
-                        deleteServingsize(department['_id']);
+                        selectForUpdate({
+                          "title": department['title'],
+                          "shortHand": department['shortHand'],
+                          "id": department['_id'],
+                        });
                       },
                     ),
                     IconButton(

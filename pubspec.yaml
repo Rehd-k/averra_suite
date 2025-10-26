@@ -70,6 +70,7 @@ dependencies:
   firebase_messaging: ^16.0.2
   flutter_local_notifications: ^19.5.0
   web_socket_channel: ^3.0.3
+  flutter_expandable_fab: ^2.5.2
 
 dev_dependencies:
   flutter_test:
@@ -83,6 +84,8 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   auto_route_generator: ^10.2.3
   build_runner: ^2.5.4
+  msix: ^3.16.12
+ 
   
 
 # For information on the generic Dart part of this file, see the
@@ -113,17 +116,40 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/Poppins-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Poppins-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Poppins-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Poppins-Black.ttf
+          weight: 900
+        - asset: assets/fonts/Poppins-Italic.ttf
+          style: italic
+        - asset: assets/fonts/Poppins-BoldItalic.ttf
+          weight: 700
+          style: italic
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+msix_config:
+    display_name: Averra Suite
+    publisher_display_name: Vessel
+    identity_name: com.vessel.avs
+    app_description: Averra Suite Desktop Application
+    msix_version: 1.0.0.0
+    logo_path: windows/runner/resources/icon.ico  # Your app icon
+    capabilities: internetClient  # For WebSockets

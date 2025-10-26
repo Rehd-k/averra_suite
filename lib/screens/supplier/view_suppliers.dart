@@ -254,8 +254,15 @@ class SuppliersDataSource extends DataTableSource {
           Column(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              // OutlinedButton(onPressed: () {}, child: Text('Update'))
-              // OutlinedButton(onPressed: () {}, child: Text('Delete'))
+              OutlinedButton(
+                onPressed: () {
+                  context.router.push(
+                    SupplierDetailsRoute(supplierId: supplier['_id']),
+                  );
+                },
+                child: Text('Update'),
+              ),
+              OutlinedButton(onPressed: () {}, child: Text('Delete')),
             ],
           ),
         ),

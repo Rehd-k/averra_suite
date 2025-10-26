@@ -44,9 +44,15 @@ class _OrderItemState extends State<OrderItem> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(formatBackendTime(orderItem['updatedAt'])),
+                      Text(
+                        formatBackendTime(orderItem['updatedAt']),
+                        style: TextStyle(fontSize: 12),
+                      ),
                       const Text('Table 15'),
-                      Text('From  - ${orderItem['initiator']}'),
+                      Text(
+                        'From  - ${orderItem['initiator']}',
+                        style: TextStyle(fontSize: 12),
+                      ),
                     ],
                   ),
                 ),
@@ -59,21 +65,26 @@ class _OrderItemState extends State<OrderItem> {
             height: 400,
             child: ListView(
               children: [
-                ...orderItem['products']
-                    .map(
-                      (order) => ListTile(
-                        leading: Text('X ${order['quantity']}'),
-                        title: Text(order['title']),
-                        trailing: Switch(
-                          value: order['settled'] ?? false,
-                          onChanged: (bool newValue) {
-                            order['settled'] = newValue;
-                            updateSingleSettled();
-                          },
+                for (final fromDept in orderItem['from'])
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ...((fromDept['products'] ?? []) as List).map<Widget>(
+                        (product) => ListTile(
+                          leading: Text('X ${product['quantity']}'),
+                          title: Text(product['title']),
+                          trailing: Switch(
+                            value: product['settled'] ?? false,
+                            onChanged: (bool newValue) {
+                              product['settled'] = newValue;
+                              updateSingleSettled();
+                            },
+                          ),
                         ),
                       ),
-                    )
-                    .toList(),
+                      const Divider(),
+                    ],
+                  ),
               ],
             ),
           ),
