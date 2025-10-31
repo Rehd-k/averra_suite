@@ -2,15 +2,17 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:toastification/toastification.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 
 import '../../app_router.gr.dart';
-// import '../../helpers/notification.token.dart';
 import '../../components/theme_switch_button.dart';
+import '../../helpers/noti_service.dart';
+import '../../helpers/notification.token.dart';
 import '../../helpers/title_bar.dart';
+import '../../helpers/webSocket.connect.dart';
 import '../../service/api.service.dart';
 import '../../service/token.service.dart';
 import 'form.dart';
@@ -29,7 +31,9 @@ class _LoginFormState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  // final service = NotificationService();
+  final LocalNotificationService localNotificationService =
+      LocalNotificationService();
+  final ws = WebSocketService();
 
   late String token;
   late FocusNode usernameFocus;
@@ -47,13 +51,10 @@ class _LoginFormState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    localNotificationService.initNotification();
     getSettingnsAndBranch();
     usernameFocus = FocusNode();
     passwordFocus = FocusNode();
-
-    if (Platform.isWindows) {
-      // setupWindowsNotifications();
-    }
   }
 
   @override
@@ -112,15 +113,17 @@ class _LoginFormState extends State<LoginScreen> {
       token = response.data['access_token'];
       String role = response.data['role'];
       String id = response.data['sub'];
-      debugPrint(response.data.toString());
-      // String? fcmToken = await service.getToken();
-      // debugPrint('FCM Token: $fcmToken');
-      // if (fcmToken != null) {
-      //   await service.registerToken(fcmToken, id); // From auth
-      // }
-      // service.handleMessages();
-      if (!mounted) return;
+      if (Platform.isAndroid) {
+        final service = NotificationService();
+        String? fcmToken = await service.getToken();
+        if (fcmToken != null) {
+          await service.registerToken(fcmToken, id); // From auth
+        }
+        service.handleMessages();
+      }
+      ws.init(id);
 
+      if (!mounted) return;
       JwtService().setToken = token;
       if (role == 'god' || role == 'admin') {
         context.router.replaceAll([
@@ -150,43 +153,35 @@ class _LoginFormState extends State<LoginScreen> {
         context.router.replaceAll([
           KitchenNavigationRoute(children: [CartRoute()]),
         ]);
+      } else if (role == 'store keeper') {
+        context.router.replaceAll([
+          StoreNavigationRoute(children: [SendProducts()]),
+        ]);
       }
 
       setState(() {
         loggedIn = true;
       });
-      // } else {
-      //   if (response.data['statusCode'] == 401) {
-      //     var result = response.data['message'];
-      //     if (result == 'Invalid password') {
-      //       setState(() {
-      //         passwordErrorMessage = result;
-      //         isLoading = false;
-      //       });
+    } on ApiException catch (e) {
+      var response = e.response;
 
-      //       passwordFocus.requestFocus();
-      //     }
-      //     if (result == 'User not found in this location') {
-      //       setState(() {
-      //         usernameErrorMessage = result;
-      //         isLoading = false;
-      //       });
-
-      //       usernameFocus.requestFocus();
-      //     }
-      //   } else {}
-      // }
-    } on DioException catch (e, _) {
-      if (e.type == DioExceptionType.connectionError) {
+      var result = response?.data['message'];
+      if (result == 'Invalid password') {
         setState(() {
+          passwordErrorMessage = result;
           isLoading = false;
         });
-      }
 
-      setState(() {
-        isLoading = false;
-      });
-    } catch (e) {
+        passwordFocus.requestFocus();
+      }
+      if (result == 'User not found in this location') {
+        setState(() {
+          usernameErrorMessage = result;
+          isLoading = false;
+        });
+
+        usernameFocus.requestFocus();
+      }
       setState(() {
         isLoading = false;
       });
@@ -213,7 +208,22 @@ class _LoginFormState extends State<LoginScreen> {
             WindowTitleBarBox(
               child: Row(
                 children: [
-                  Expanded(child: MoveWindow(child: Text('Log In'))),
+                  Expanded(
+                    child: MoveWindow(
+                      child: Row(
+                        children: [
+                          SizedBox(width: 20),
+                          SvgPicture.asset(
+                            height: 40,
+                            width: 40,
+                            'assets/vectors/logo.svg',
+                          ),
+                          SizedBox(width: 10),
+                          Text('Averra Suite'),
+                        ],
+                      ),
+                    ),
+                  ),
                   const CircleAvatar(child: Icon(Icons.person_outlined)),
                   const ThemeSwitchButton(),
                   IconButton(

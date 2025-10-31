@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../../app_router.gr.dart';
 import '../../components/theme_switch_button.dart';
@@ -62,7 +63,7 @@ final List<MenuItem> menuData = [
   ),
   MenuItem(
     icon: Icons.data_array_outlined,
-    title: 'Sells Report',
+    title: 'Sales Report',
     link: SuperviorNavigationRoute(children: [IncomeReportsRoute()]),
   ),
   MenuItem(
@@ -92,6 +93,37 @@ final List<MenuItem> menuData = [
       ),
     ],
   ),
+
+  MenuItem(
+    title: 'Other Income',
+    icon: Icons.pending_actions,
+    link: SuperviorNavigationRoute(),
+    children: [
+      MenuItem(
+        icon: Icons.dashboard_customize_outlined,
+        title: 'Dashbaord',
+        link: SuperviorNavigationRoute(children: [OtherIncomesDashbaord()]),
+      ),
+      MenuItem(
+        icon: Icons.add,
+        title: 'Add New',
+        link: SuperviorNavigationRoute(children: [AddOtherIncomeRoute()]),
+      ),
+      MenuItem(
+        icon: Icons.category_outlined,
+        title: 'Categories',
+        link: SuperviorNavigationRoute(
+          children: [OtherIncomeCategoriesRoute()],
+        ),
+      ),
+      MenuItem(
+        icon: Icons.dashboard_customize_outlined,
+        title: 'View Other Income',
+        link: SuperviorNavigationRoute(children: [ViewOtherIncomes()]),
+      ),
+    ],
+  ),
+
   MenuItem(
     icon: Icons.point_of_sale_outlined,
     title: 'Goods',
@@ -141,6 +173,18 @@ final List<MenuItem> menuData = [
       ),
     ],
   ),
+
+  MenuItem(
+    icon: Icons.list_alt,
+    title: 'Stock Movement',
+    link: SuperviorNavigationRoute(children: [DepartmentHistory()]),
+  ),
+
+  MenuItem(
+    icon: Icons.list_alt,
+    title: 'Stock Summary',
+    link: SuperviorNavigationRoute(children: [DisplayStockRoute()]),
+  ),
 ];
 
 @RoutePage()
@@ -149,43 +193,49 @@ class SuperviorNavigationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // LayoutBuilder is often a better choice for responsive UI that depends
-    // on the available space for a specific widget.
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isLargeScreen = constraints.maxWidth > 1200;
-
-        return Scaffold(
-          // Only show the AppBar and the hamburger menu icon on smaller screens
-          appBar: isLargeScreen
-              ? null
-              : AppBar(
-                  title: const Text(
-                    "Admin Panel",
-                    style: TextStyle(fontSize: 10),
-                  ),
-                  actions: [
-                    const ThemeSwitchButton(),
-                    IconButton(
-                      icon: const Icon(Icons.logout_outlined, size: 10),
-                      onPressed: () {
-                        JwtService().logout();
-                        context.router.replaceAll([LoginRoute()]);
-                      },
-                    ),
-                  ],
+    return Scaffold(
+      // Only show the AppBar and the hamburger menu icon on smaller screens
+      appBar: (Platform.isAndroid || Platform.isIOS)
+          ? AppBar(
+              title: const Text("Admin Panel", style: TextStyle(fontSize: 10)),
+              actions: [
+                const ThemeSwitchButton(),
+                IconButton(
+                  icon: const Icon(Icons.logout_outlined, size: 10),
+                  onPressed: () {
+                    JwtService().logout();
+                    context.router.replaceAll([LoginRoute()]);
+                  },
                 ),
-          // Use a Drawer for smaller screens
-          drawer: isLargeScreen ? null : const Drawer(child: MenuList()),
-          body: 
-
-          Column(
+              ],
+            )
+          : null,
+      // Use a Drawer for smaller screens
+      drawer: (Platform.isAndroid || Platform.isIOS)
+          ? const Drawer(child: MenuList())
+          : null,
+      body: Column(
         children: [
           if (Platform.isWindows)
             WindowTitleBarBox(
               child: Row(
                 children: [
-                  Expanded(child: MoveWindow(child: Text('Logged In'))),
+                  Expanded(
+                    child: MoveWindow(
+                      child: Row(
+                        children: [
+                          SizedBox(width: 20),
+                          SvgPicture.asset(
+                            height: 40,
+                            width: 40,
+                            'assets/vectors/logo.svg',
+                          ),
+                          SizedBox(width: 10),
+                          Text('Averra Suite'),
+                        ],
+                      ),
+                    ),
+                  ),
                   const CircleAvatar(child: Icon(Icons.person_outlined)),
                   const ThemeSwitchButton(),
                   IconButton(
@@ -199,25 +249,23 @@ class SuperviorNavigationScreen extends StatelessWidget {
                 ],
               ),
             ),
-        
-          Expanded(child: 
-          Row(
-            children: [
-              // Show the permanent side menu on large screens
-              if (isLargeScreen)
-                const SizedBox(
-                  width: 190, // A common width for side navigation
-                  child: MenuList(),
-                ),
-              // This is the main content area that will be displayed
-              Expanded(child: const SafeArea(child: AutoRouter())),
-            ],
+
+          Expanded(
+            child: Row(
+              children: [
+                // Show the permanent side menu on large screens
+                if (Platform.isWindows)
+                  const SizedBox(
+                    width: 190, // A common width for side navigation
+                    child: MenuList(),
+                  ),
+                // This is the main content area that will be displayed
+                Expanded(child: const SafeArea(child: AutoRouter())),
+              ],
+            ),
           ),
-          )
-        ])
-       
-        );
-      },
+        ],
+      ),
     );
   }
 }
@@ -240,55 +288,60 @@ class MenuListState extends State<MenuList> {
   Widget build(BuildContext context) {
     final isLargeScreen = MediaQuery.of(context).size.width > 1200;
 
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        DrawerHeader(
-          decoration: BoxDecoration(
-            color: Theme.of(context).appBarTheme.backgroundColor,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: const CircleAvatar(
-                      child: Icon(Icons.person_outlined),
+    return Container(
+      color: Theme.of(context).appBarTheme.backgroundColor,
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).appBarTheme.backgroundColor,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: const CircleAvatar(
+                        child: Icon(Icons.person_outlined),
+                      ),
                     ),
-                  ),
-                  // On large screens, the ThemeSwitchButton is here because there's no AppBar.
-                  if (isLargeScreen)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const ThemeSwitchButton(),
-                        IconButton(
-                          icon: const Icon(Icons.logout_outlined, size: 10),
-                          onPressed: () {
-                            jwtService.logout();
-                            context.router.replaceAll([LoginRoute()]);
-                          },
-                        ),
-                      ],
+                    // On large screens, the ThemeSwitchButton is here because there's no AppBar.
+                    if (isLargeScreen)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const ThemeSwitchButton(),
+                          IconButton(
+                            icon: const Icon(Icons.logout_outlined, size: 10),
+                            onPressed: () {
+                              jwtService.logout();
+                              context.router.replaceAll([LoginRoute()]);
+                            },
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      capitalizeFirstLetter(
+                        jwtService.decodedToken?['username'],
+                      ),
                     ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    capitalizeFirstLetter(jwtService.decodedToken?['username']),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        // Generate the list of menu items dynamically
-        ...menuData.map((item) => _buildMenuItem(item)),
-      ],
+          // Generate the list of menu items dynamically
+          ...menuData.map((item) => _buildMenuItem(item)),
+        ],
+      ),
     );
   }
 

@@ -32,7 +32,6 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
 
   Future<void> getVendorDetails() async {
     var vendor = await apiService.get('supplier/$supplierId');
-    print('vendor.data: ${vendor.data}, page : 35');
     setState(() {
       supplierDetails = vendor.data;
     });

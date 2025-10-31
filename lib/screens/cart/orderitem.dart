@@ -5,7 +5,12 @@ import '../../helpers/financial_string_formart.dart';
 
 class OrderItem extends StatefulWidget {
   final Map<String, dynamic> orderItem;
-  const OrderItem({super.key, required this.orderItem});
+  final Function sendNotification;
+  const OrderItem({
+    super.key,
+    required this.orderItem,
+    required this.sendNotification,
+  });
 
   @override
   State<OrderItem> createState() => _OrderItemState();
@@ -48,7 +53,7 @@ class _OrderItemState extends State<OrderItem> {
                         formatBackendTime(orderItem['updatedAt']),
                         style: TextStyle(fontSize: 12),
                       ),
-                      const Text('Table 15'),
+                      Text('Order #${orderItem['orderNo']}'),
                       Text(
                         'From  - ${orderItem['initiator']}',
                         style: TextStyle(fontSize: 12),
@@ -90,7 +95,11 @@ class _OrderItemState extends State<OrderItem> {
           ),
           FilledButton.tonal(
             onPressed: () {
-              // Handle button press
+              widget.sendNotification(
+                orderItem['initiator'],
+                'Order ${orderItem['orderNo']} is Ready',
+                'Order Ready',
+              );
             },
             child: Text(
               'Notify ${capitalizeFirstLetter(orderItem['initiator'])}',

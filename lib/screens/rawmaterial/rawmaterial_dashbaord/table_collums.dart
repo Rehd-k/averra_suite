@@ -1,14 +1,14 @@
 final columnDefs = [
   {'name': 'Quantity', 'sortable': true, 'type': 'number', 'field': 'quantity'},
-  {'name': 'Sold', 'sortable': true, 'type': 'sold', 'field': 'sold'},
-  {'name': 'Price', 'sortable': true, 'type': 'money', 'field': 'price'},
-  {
-    'name': 'Serving Size',
-    'sortable': true,
-    'type': 'money',
-    'field': 'servingPrice',
-  },
+  {'name': 'Used', 'sortable': true, 'type': 'sold', 'field': 'used'},
+  {'name': 'Cost', 'sortable': true, 'type': 'money', 'field': 'cost'},
 
+  // {
+  //   'name': 'Serving Size',
+  //   'sortable': true,
+  //   'type': 'money',
+  //   'field': 'servingPrice',
+  // },
   {'name': 'Total', 'sortable': true, 'type': 'money', 'field': 'total'},
   {'name': 'Discount', 'sortable': true, 'type': 'money', 'field': 'discount'},
   {
@@ -23,7 +23,7 @@ final columnDefs = [
     'type': 'date',
     'field': 'purchaseDate',
   },
-  {'name': 'Status', 'sortable': false, 'type': 'text', 'field': 'status'},
+  // {'name': 'Status', 'sortable': false, 'type': 'text', 'field': 'status'},
   {
     'name': 'Delivery Date',
     'sortable': true,

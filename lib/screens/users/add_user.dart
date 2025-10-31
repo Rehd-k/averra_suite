@@ -542,14 +542,15 @@ class AddUserState extends State<AddUser> {
                                 items:
                                     [
                                       'admin',
-                                      'manager',
-                                      'cashier',
-                                      'staff',
-                                      'waiter',
-                                      'bar',
-                                      'supervisor',
                                       'accountant',
+                                      'bar',
+                                      'cashier',
                                       'chef',
+                                      'manager',
+                                      'staff',
+                                      'supervisor',
+                                      'store keeper',
+                                      'waiter',
                                     ].map((category) {
                                       return DropdownMenuItem<String>(
                                         value: category,

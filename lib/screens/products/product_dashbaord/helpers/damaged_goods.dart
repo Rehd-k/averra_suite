@@ -9,7 +9,6 @@ Future<void> showDamagedGoodsForm(
   String from,
   num goodRemaining,
 ) async {
-  print('$handleDamagedGoods $id, $goodRemaining, $from');
   DateTime selectedDate = DateTime.now();
   final quantityController = TextEditingController();
   final reasonController = TextEditingController();

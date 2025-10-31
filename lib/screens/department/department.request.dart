@@ -65,6 +65,7 @@ class DepartmentRequestState extends State<DepartmentRequest> {
     var toDepartments = [];
     var result = await apiService.get('department?active=${true}');
     for (var element in result.data) {
+      print(jwtService.decodedToken?['role']);
       if (element['access'].contains(jwtService.decodedToken?['role'])) {
         toDepartments.add(element);
       }
@@ -353,7 +354,7 @@ class DepartmentRequestState extends State<DepartmentRequest> {
                   items:
                       [
                         {'title': 'Click To Select', '_id': ''},
-                        ...departmentFronts,
+                        ...toDepartmentFronts,
                       ].map<DropdownMenuItem<String>>((value) {
                         return DropdownMenuItem<String>(
                           value: value['_id'],

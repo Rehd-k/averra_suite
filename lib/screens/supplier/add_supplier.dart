@@ -64,7 +64,7 @@ class AddSupplierState extends State<AddSupplier> {
     _notesController.clear();
   }
 
-  void handleStatusChange(value) {
+  void handleStatusChange(String value) {
     status = value;
   }
 
@@ -167,7 +167,7 @@ class AddSupplierState extends State<AddSupplier> {
                             ],
 
                             onChanged: (value) {
-                              handleStatusChange(value);
+                              handleStatusChange(value!);
                             },
                           ),
                         ),

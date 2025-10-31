@@ -63,7 +63,7 @@ class CashStatementState extends State<CashStatementScreen> {
     getCashFlow();
   }
 
-  Future<void> handleFilter(value) async {
+  Future<void> handleFilter(String? value) async {
     if (value != null) {
       setState(() {
         selectedBank = banks.firstWhere(

@@ -11,6 +11,7 @@ import '../../components/smallinfo.card.dart';
 
 import '../../service/api.service.dart';
 import 'add_expneses.dart';
+import 'categories.dart';
 
 @RoutePage()
 class ViewExpenses extends StatefulWidget {
@@ -66,6 +67,26 @@ class ViewExpensesState extends State<ViewExpenses> {
       endDate = DateTime.now();
     });
     getExpenses();
+  }
+
+  IconData sendIcon(String iconStrinng) {
+    final cat = categories.firstWhere(
+      (c) =>
+          c['title']?.toString().toLowerCase() ==
+          iconStrinng.toString().toLowerCase(),
+      orElse: () => <String, dynamic>{},
+    );
+    final icon = cat['icon'];
+
+    try {
+      final map = hospitalityIcons as Map;
+      if (map.containsKey(icon)) {
+        final v = map[icon];
+        return v;
+      }
+    } catch (_) {}
+
+    return Icons.help_outline;
   }
 
   Future<void> getCategories() async {
@@ -298,7 +319,9 @@ class ViewExpensesState extends State<ViewExpenses> {
                                       child: Stack(
                                         children: [
                                           SmallinfoCard(
-                                            icon: Icon(Icons.abc_outlined),
+                                            icon: Icon(
+                                              sendIcon(res['category']),
+                                            ),
                                             title:
                                                 "${capitalizeFirstLetter(res['category'])} ---- from ${capitalizeFirstLetter(res['initiator'])} ",
 
@@ -437,7 +460,6 @@ class ViewExpensesState extends State<ViewExpenses> {
               ),
             ),
           ),
-      
       ],
     );
   }

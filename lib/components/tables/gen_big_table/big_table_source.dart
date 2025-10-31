@@ -475,8 +475,12 @@ class MyAsyncDataSource extends AsyncDataTableSource {
           tooltip: 'View Details',
           splashRadius: 18,
           onPressed: () {
-            var userinfo = JwtService().decodedToken;
-            if (userinfo?['role'] == 'admin' || userinfo?['role'] == 'god') {
+            if ([
+              'god',
+              'admin',
+              'manager',
+              'accounting',
+            ].contains(JwtService().decodedToken!['role'])) {
               context.router.push(
                 RawMaterialDashboard(
                   rawmaterialId: rowData['_id'],
@@ -548,12 +552,6 @@ class MyAsyncDataSource extends AsyncDataTableSource {
         _data = List<TableDataModel>.from(result['rows'] as List);
         _totalRows = result['totalRows'] as int;
         _currentPageOffset = startIndex;
-
-        // ikenna remove this later because they all have thier id
-        // Ensure unique IDs for selection (add if missing)
-        for (var row in _data) {
-          row.putIfAbsent('_id', () => UniqueKey().toString());
-        }
       } else {}
 
       // Adjust total rows if backend indicates end of data
@@ -568,14 +566,13 @@ class MyAsyncDataSource extends AsyncDataTableSource {
       final rows = _data.asMap().entries.map((entry) {
         final index = entry.key + startIndex;
         final rowData = entry.value;
-
+   
         // Ensure the row has an ID for the key and selection
         final String rowId =
             rowData['_id'] as String? ?? UniqueKey().toString();
         if (!rowData.containsKey('_id')) {
           rowData['_id'] = rowId; // Add ID if missing
         }
-
         return DataRow(
           color: WidgetStateProperty.resolveWith(
             (states) => getRowColor(rowData),
@@ -592,7 +589,8 @@ class MyAsyncDataSource extends AsyncDataTableSource {
       }).toList();
 
       return AsyncRowsResponse(_totalRows, rows);
-    } catch (_) {
+    } catch (error) {
+      print(error);
       return AsyncRowsResponse(0, []); // Return empty on error
     }
   }

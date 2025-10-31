@@ -55,7 +55,7 @@ class _SendFinishedState extends State<SendFinished> {
     }
   }
 
-  void selectProduct(suggestion) {
+  void selectProduct(Map suggestion) {
     setState(() {
       selectedProduct = suggestion;
     });

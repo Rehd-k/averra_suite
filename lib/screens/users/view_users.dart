@@ -147,7 +147,7 @@ class ViewUsersState extends State<ViewUsers> {
     });
   }
 
-  void handlePageChange(pageNumber) {
+  void handlePageChange(int pageNumber) {
     setState(() {
       selectedPageNumber = pageNumber;
     });
@@ -159,7 +159,7 @@ class ViewUsersState extends State<ViewUsers> {
     });
   }
 
-  void handleSelectDepartment(value) {
+  void handleSelectDepartment(String value) {
     setState(() {
       department = value;
     });

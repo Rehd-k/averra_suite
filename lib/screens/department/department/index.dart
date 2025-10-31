@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/components/tables/gen_big_table/big_table_source.dart';
+import 'package:averra_suite/helpers/financial_string_formart.dart';
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
@@ -17,6 +18,8 @@ class DepartmentIndex extends StatefulWidget {
 
 class DepartmentIndexState extends State<DepartmentIndex> {
   final formKey = GlobalKey<FormState>();
+  final smallKey = GlobalKey<FormState>();
+  final updateFromKey = GlobalKey<FormState>();
   final ApiService apiService = ApiService();
   final TextEditingController title = TextEditingController();
   final TextEditingController description = TextEditingController();
@@ -32,7 +35,7 @@ class DepartmentIndexState extends State<DepartmentIndex> {
   bool ascending = true;
   bool active = true;
   String type = 'Store';
-  List<String> access = [];
+  List<dynamic> access = [];
 
   void updateActive() {
     if (active) {
@@ -88,7 +91,6 @@ class DepartmentIndexState extends State<DepartmentIndex> {
         apiService.get('department'),
         apiService.get('settings'),
       ]);
-      print(allDepartment);
       setState(() {
         departments = allDepartment[0].data;
         settings = allDepartment[1].data[0];
@@ -119,6 +121,34 @@ class DepartmentIndexState extends State<DepartmentIndex> {
       filtereddepartments = List.from(departments);
       isLoading = false;
     });
+  }
+
+  Future updateDeparment(String id) async {
+    print(id);
+    await apiService.patch('department/$id', {
+      'title': title.text,
+      'description': description.text,
+      'type': type,
+      'access': access,
+    });
+    getDepartments();
+  }
+
+  void openUpdateDeparment(
+    BuildContext context,
+    String departmentId,
+    Map<String, dynamic> currentDepartmentValue,
+  ) {
+    title.text = currentDepartmentValue['title'];
+    description.text = currentDepartmentValue['description'];
+    type = capitalizeFirstLetter(currentDepartmentValue['type']);
+    access = currentDepartmentValue['access'];
+    createNewDepartment(
+      context,
+      updateFromKey,
+      valueToUpdate: currentDepartmentValue,
+      doDepartmentUpdate: updateDeparment,
+    );
   }
 
   List getFilteredAndSortedRows() {
@@ -161,6 +191,20 @@ class DepartmentIndexState extends State<DepartmentIndex> {
     double width = MediaQuery.sizeOf(context).width;
     bool smallScreen = width <= 1200;
     return Scaffold(
+      floatingActionButton: smallScreen
+          ? FloatingActionButton(
+              onPressed: () {
+                setState(() {
+                  title.clear();
+                  description.clear();
+                  type = 'Store';
+                  active = true;
+                });
+                createNewDepartment(context, smallKey);
+              },
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -197,10 +241,38 @@ class DepartmentIndexState extends State<DepartmentIndex> {
               deleteDepartment: deletedepartment,
               filteredDepartments: filtereddepartments,
               filterDepartment: filterDepartments,
+              openUpdateDepartment: openUpdateDeparment,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Future<dynamic> createNewDepartment(
+    BuildContext context,
+    GlobalKey<FormState>? smallkey, {
+    Map<String, dynamic>? valueToUpdate,
+    Function? doDepartmentUpdate,
+  }) {
+    return showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return CreateDepartment(
+          formKey: smallkey ?? formKey,
+          title: title,
+          description: description,
+          active: active,
+          type: type,
+          setType: setType,
+          updateActive: updateActive,
+          handleSubmitData: handleSubmitData,
+          settings: settings,
+          addOrRemoveAccess: addOrRemoveAccess,
+          departmentValue: valueToUpdate,
+          doDepartmentUpdate: doDepartmentUpdate,
+        );
+      },
     );
   }
 }

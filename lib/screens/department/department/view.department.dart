@@ -13,6 +13,7 @@ class ViewDepartments extends StatelessWidget {
   final Function filterDepartment;
   final Function getFilteredAndSortedRows;
   final Function deleteDepartment;
+  final Function openUpdateDepartment;
   const ViewDepartments({
     super.key,
     required this.searchController,
@@ -23,6 +24,7 @@ class ViewDepartments extends StatelessWidget {
     required this.deleteDepartment,
     required this.filteredDepartments,
     required this.filterDepartment,
+    required this.openUpdateDepartment,
   });
 
   @override
@@ -60,7 +62,11 @@ class ViewDepartments extends StatelessWidget {
                       IconButton(
                         icon: Icon(Icons.edit_attributes),
                         onPressed: () {
-                          deleteDepartment(department['_id']);
+                          openUpdateDepartment(
+                            context,
+                            department['_id'],
+                            department,
+                          );
                         },
                       ),
                       IconButton(

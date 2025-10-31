@@ -65,13 +65,16 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
     apiCount++;
   }
 
-  // Future<void> updateSingleSettled() async {
-  //   await apiService.patch('cart/$cartId', orderItem);
-
-  //   setState(() {
-  //     orderItem = res.data;
-  //   });
-  // }
+  Future<void> updateSingleSettled() async {
+    await apiService.patch('cart/update/$cartId', {
+      "_id": cartId,
+      "cart": cart,
+      "total": getCartTotal(),
+    });
+    setState(() {
+      cart = [];
+    });
+  }
 
   void voidDoApiCheck(List<dynamic> productsCount, totalProductsAmount) {
     localproducts = productsCount;
@@ -145,7 +148,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
           cart[cartIndex]['quantity']--;
           cart[cartIndex]['total'] =
               cart[cartIndex]['quantity'] * cart[cartIndex]['price'];
-
+          cart[cartIndex]['settled'] = false;
           //  handle increase Product Qunaity
         } else {
           removeFromCart(productId);
@@ -162,6 +165,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
           cart[cartIndex]['quantity']++;
           cart[cartIndex]['total'] =
               cart[cartIndex]['quantity'] * cart[cartIndex]['price'];
+          cart[cartIndex]['settled'] = false;
         }
       }
     });
@@ -460,6 +464,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
                         },
                         handleComplete: handleSubmited,
                         cartId: cartId,
+                        updateSingleSettled: updateSingleSettled,
                       ),
                     ),
                   ),
@@ -585,6 +590,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
                       saveCart: saveCartToStorage,
                       emptyCart: emptycart,
                       handleComplete: handleSubmited,
+                      updateSingleSettled: updateSingleSettled,
                     ),
             ],
           ),

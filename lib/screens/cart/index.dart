@@ -28,8 +28,21 @@ class _CartState extends State<CartScreen> {
     {'title': 'settled'},
   ];
 
+  Future<void> sendNotification(
+    String recipient,
+    String message,
+    String title,
+  ) async {
+    print("$message - $recipient - $title");
+    await apiService.post('notifications/recipient', {
+      "message": message,
+      "recipient": recipient,
+      "title": title,
+    });
+  }
+
   Future<void> getOrders() async {
-      var res = await apiService.get(
+    var res = await apiService.get(
       'cart?filter={"department" : "${jwtService.decodedToken?['department']}", "status" : "$settled"}&startDate=$startDate&endDate=$endDate',
     );
     print(res);
@@ -141,7 +154,10 @@ class _CartState extends State<CartScreen> {
                           ...orders.map(
                             (order) => SizedBox(
                               width: cardWidth,
-                              child: OrderItem(orderItem: order),
+                              child: OrderItem(
+                                orderItem: order,
+                                sendNotification: sendNotification,
+                              ),
                             ),
                           ),
                         ],

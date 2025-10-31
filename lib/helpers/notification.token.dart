@@ -27,19 +27,12 @@ class NotificationService {
       FirebaseMessaging.onBackgroundMessage(
         _firebaseMessagingBackgroundHandler,
       );
-    } else {
-      print("FCM not supported on this platform");
-    }
+    } else {}
     return null;
   }
 
   Future<void> registerToken(String token, String userId) async {
-    // Call this on login
-    try {
-      await apiService.patch('user/$userId', {'fcmToken': token});
-    } catch (e) {
-      print('Error sending token: $e');
-    }
+    await apiService.patch('user/$userId', {'fcmToken': token});
   }
 
   // Handle incoming notifications
@@ -49,7 +42,6 @@ class NotificationService {
         message.notification?.title ?? 'No Title',
         message.notification?.body ?? 'No Body',
       );
-      print('Got a message: ${message.notification?.title}');
       // Show in-app alert here (e.g., using SnackBar)
     });
   }
@@ -59,6 +51,5 @@ class NotificationService {
     RemoteMessage message,
   ) async {
     await Firebase.initializeApp();
-    print("Handling a background message: ${message.messageId}");
   }
 }

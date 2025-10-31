@@ -3,9 +3,11 @@ import 'package:averra_suite/service/toast.service.dart';
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
+import '../../components/filter.pill.dart';
 import '../../components/request.card.dart';
 import '../../service/api.service.dart';
 import '../../service/date_range_helper.dart';
+import '../../service/token.service.dart';
 
 class RequestModel {
   final String id;
@@ -79,22 +81,32 @@ class DepartmentHistory extends StatefulWidget {
 
 class DepartmentHistoryState extends State<DepartmentHistory> {
   ApiService apiService = ApiService();
+  final JwtService jwtService = JwtService();
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
   String select = '';
   String from = '';
   String to = '';
-  final List<RequestModel> _requests = [];
-  // int _currentPage = 0;
-  // static const int _limit = 10;
+  late List<RequestModel> _requests = [];
+
+  late List departmentFronts = [];
+  bool loading = true;
+
   bool _isLoading = false;
   bool _hasMore = true;
   final ScrollController _scrollController = ScrollController();
   String? showFilter = 'all';
+  String status = 'all';
+  String department = 'Select';
+  late List statuses = [
+    {'title': "all"},
+    {'title': "true"},
+    {'title': "false"},
+  ];
 
   Future<Map<String, dynamic>> fetchRequests(int page) async {
     final response = await apiService.get(
-      'department-history?filter={"from" : {"\$regex" : "${from.toLowerCase()}"}, "to" : {"\$regex" : "${to.toLowerCase()}"}}&skip=$page&sort={"createdAt":-1}&startDate=$startDate&endDate=$endDate',
+      'department-history?filter={"department":"$department","confirmed":"$status"}&skip=$page&sort={"createdAt":-1}&startDate=$startDate&endDate=$endDate',
     );
 
     final data = response.data;
@@ -159,16 +171,47 @@ class DepartmentHistoryState extends State<DepartmentHistory> {
     });
   }
 
+  void handleSelectStatus(value) {
+    setState(() {
+      _requests = [];
+      status = value;
+    });
+    _loadMore();
+  }
+
+  void handleSelectDepartment(value) {
+    setState(() {
+      _requests = [];
+      department = value;
+    });
+    _loadMore();
+  }
+
+  void getDepartments() async {
+    var toDepartments = [];
+    var result = await apiService.get('department?active=${true}');
+    for (var element in result.data) {
+      if (element['access'].contains(jwtService.decodedToken?['role'])) {
+        toDepartments.add(element);
+      }
+    }
+    setState(() {
+      departmentFronts = toDepartments;
+      loading = false;
+
+      _loadMore();
+    });
+  }
+
   @override
   void initState() {
-    _loadMore();
+    getDepartments();
+
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
               _scrollController.position.maxScrollExtent - 200 &&
           !_isLoading &&
-          _hasMore) {
-        _loadMore();
-      }
+          _hasMore) {}
     });
     super.initState();
   }
@@ -203,30 +246,23 @@ class DepartmentHistoryState extends State<DepartmentHistory> {
                   ),
                 ),
 
-                // Add other filters here if needed
-                // DropdownButtonFormField<String>(
-                //   value: showFilter,
-                //   decoration: InputDecoration(
-                //     labelText: 'Filter',
-                //     border: OutlineInputBorder(),
-                //   ),
-                //   onChanged: (String? newValue) {
-                //     setState(() {
-                //       showFilter = newValue;
-                //     });
-                //   },
-                //   items: ['all', 'approved', 'unapproved']
-                //       .map<DropdownMenuItem<String>>((value) {
-                //         return DropdownMenuItem<String>(
-                //           value: value,
-                //           child: Text(capitalizeFirstLetter(value)),
-                //         );
-                //       })
-                //       .toList(),
-                //   validator: (value) =>
-                //       value == null ? 'Please select an option' : null,
-                // ),
-                Text('data'),
+                FiltersDropdown(
+                  pillIcon: Icons.pending_actions,
+                  selected: status == 'true'
+                      ? 'approved'
+                      : status == 'false'
+                      ? 'pending'
+                      : 'all',
+                  menuList: statuses,
+                  doSelect: handleSelectStatus,
+                ),
+
+                FiltersDropdown(
+                  pillIcon: Icons.pending_actions,
+                  selected: department,
+                  menuList: departmentFronts,
+                  doSelect: handleSelectDepartment,
+                ),
               ],
             ),
           ),

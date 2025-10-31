@@ -10,11 +10,14 @@ import 'package:toastification/toastification.dart';
 
 import '../../../components/error.dart';
 import '../../../components/finance_card.dart';
+import '../../../components/tables/gen_big_table/big_table.dart';
 import '../../../components/tables/gen_big_table/big_table_source.dart';
 import '../../../service/api.service.dart';
 import '../../ledgers/day_ledger.dart';
 import 'add_order.dart';
+import 'header.dart';
 import 'helpers/damaged_goods.dart';
+import 'helpers/edit_product.dart';
 import 'table_collums.dart';
 
 @RoutePage()
@@ -42,7 +45,7 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
   late String rawmaterialId;
   late Map data;
   bool loading = true;
-  bool loadingTable = true;
+  bool loadingTable = false;
   bool loadingCharts = true;
   late List purchases;
   List<FlSpot> spots = [];
@@ -65,7 +68,7 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
   String initialSort = 'createdAt';
   int rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
   String searchQuery = "";
-  final List<TableDataModel> _selectedRows = [];
+  List<TableDataModel> _selectedRows = [];
 
   // Convert maps to ColumnDefinition objects
   late List<ColumnDefinition> _columnDefinitions;
@@ -169,7 +172,7 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
   }
 
   Future<void> handleDamagedGoods(data) async {
-    await apiService.put('purchases/doDamage/${data['_id']}', {
+    await apiService.put('rm-purchases/doDamage/${data['_id']}', {
       ...data,
       "rawmaterialId": rawmaterialId,
     });
@@ -182,10 +185,10 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
 
     if (data['quantity'] <= quantityRemening) {}
 
-    // await apiService.put('purchases/return/${data['_id']}', {
-    //   ...data,
-    //   "rawmaterialId": rawmaterialId,
-    // });
+    await apiService.put('rm-purchases/return/${data['_id']}', {
+      ...data,
+      "rawmaterialId": rawmaterialId,
+    });
   }
 
   Future<void> handleRangeChange(String? select, DateTime? picked) async {
@@ -216,7 +219,7 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
       "$sortField": (sortAscending ?? true) ? 'asc' : 'desc',
     });
     var dbrawmaterial = await apiService.get(
-      'purchases?filter={"rawmaterialId":"$rawmaterialId", "$searchFeild" : "","supplier":"$selectedSupplier", "status" :  "${selectedStatus?.toLowerCase()}"}&sort=$sorting&startDate=$_fromDate&endDate=$_toDate&skip=$offset&limit=$limit',
+      'rm-purchases?filter={"rawmaterialId":"$rawmaterialId", "$searchFeild" : "","supplier":"$selectedSupplier", "status" :  "${selectedStatus?.toLowerCase()}"}&sort=$sorting&startDate=$_fromDate&endDate=$_toDate&skip=$offset&limit=$limit',
     );
 
     var {'purchases': purchases, 'totalDocuments': totalDocuments} =
@@ -228,7 +231,6 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
     // --- Pagination Logic (Mock) ---
     final totalRows = totalDocuments;
     final paginatedData = data.toList();
-
     return {
       'rows': paginatedData, // Return the list of maps
       'totalRows': totalRows,
@@ -313,16 +315,17 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
             if (isBigScreen)
               IconButton(
                 tooltip: 'Edit RawMaterial',
-                onPressed: () => {},
-                // showBarModalBottomSheet(
-                //   expand: true,
-                //   context: context,
-                //   backgroundColor: Colors.transparent,
-                //   builder: (context) => EditRawMaterial(
-                //     updatePageInfo: getAllData,
-                //     rawmaterialId: widget.rawmaterialId,
-                //   ),
-                // ),
+                onPressed: () => {
+                  showBarModalBottomSheet(
+                    expand: true,
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => EditRawMaterial(
+                      updatePageInfo: () {},
+                      rawmaterialId: widget.rawmaterialId,
+                    ),
+                  ),
+                },
                 icon: Icon(Icons.edit_note_outlined),
               ),
             if (isBigScreen)
@@ -536,31 +539,31 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
                   height: showDetails ? 200 : 0,
                   child: Column(
                     children: [
-                      // RawMaterialHeader(
-                      //   selectedField: searchFeild,
-                      //   selectedSupplier: selectedSupplier,
-                      //   selectedStatus: selectedStatus,
-                      //   onFieldChange: (value) {
-                      //     setState(() {
-                      //       searchFeild = value;
-                      //     });
-                      //   },
-                      //   onSupplierChange: (value) {
-                      //     setState(() {
-                      //       selectedSupplier = value;
-                      //     });
-                      //   },
-                      //   onSelectStatus: (value) {
-                      //     setState(() {
-                      //       selectedStatus = value;
-                      //     });
-                      //   },
-                      //   suppliers: suppliers,
-                      //   handleRangeChange: handleRangeChange,
-                      //   fromDate: _fromDate,
-                      //   toDate: _toDate,
-                      //   handleDateReset: handleDateReset,
-                      // ),
+                      ProductHeader(
+                        selectedField: searchFeild,
+                        selectedSupplier: selectedSupplier,
+                        selectedStatus: selectedStatus,
+                        onFieldChange: (value) {
+                          setState(() {
+                            searchFeild = value;
+                          });
+                        },
+                        onSupplierChange: (value) {
+                          setState(() {
+                            selectedSupplier = value;
+                          });
+                        },
+                        onSelectStatus: (value) {
+                          setState(() {
+                            selectedStatus = value;
+                          });
+                        },
+                        suppliers: suppliers,
+                        handleRangeChange: handleRangeChange,
+                        fromDate: _fromDate,
+                        toDate: _toDate,
+                        handleDateReset: handleDateReset,
+                      ),
                     ],
                   ),
                 ),
@@ -579,46 +582,46 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
                       : cardsInfo(isBigScreen, data),
                 ),
                 SizedBox(height: 16),
-                // SizedBox(
-                //   height: 600,
-                //   child: loadingTable
-                //       ? CircularProgressIndicator()
-                //       : ReusableAsyncPaginatedDataTable(
-                //           columnDefinitions:
-                //               _columnDefinitions, // Pass definitions
-                //           fetchDataCallback: _fetchServerData,
-                //           onSelectionChanged: (selected) {
-                //             _selectedRows = selected;
-                //           },
-                //           header: const Text(
-                //             'Purchases',
-                //             style: TextStyle(fontSize: 10),
-                //           ),
-                //           initialSortField: initialSort,
-                //           initialSortAscending: true,
-                //           rowsPerPage: 15,
-                //           availableRowsPerPage: const [10, 15, 25, 50],
-                //           showCheckboxColumn: true,
-                //           fixedLeftColumns: 1, // Fix the 'Title' column
-                //           minWidth: 2500, // Increase minWidth for more columns
-                //           empty: const Center(
-                //             child: CircularProgressIndicator(),
-                //           ),
-                //           border: TableBorder.all(
-                //             color: Colors.grey.shade100,
-                //             width: 1,
-                //           ),
-                //           columnSpacing: 30,
-                //           dataRowHeight: 50,
-                //           headingRowHeight: 60,
-                //           doDamagedGoods: (rowData) {
-                //             handleDamagedGoodsClicked(rowData);
-                //           },
-                //           doReturnGoods: (rowData) {
-                //             handleReturndGoods(rowData);
-                //           },
-                //         ),
-                // ),
+                SizedBox(
+                  height: 600,
+                  child: loadingTable
+                      ? CircularProgressIndicator()
+                      : ReusableAsyncPaginatedDataTable(
+                          columnDefinitions:
+                              _columnDefinitions, // Pass definitions
+                          fetchDataCallback: _fetchServerData,
+                          onSelectionChanged: (selected) {
+                            _selectedRows = selected;
+                          },
+                          header: const Text(
+                            'Purchases',
+                            style: TextStyle(fontSize: 10),
+                          ),
+                          initialSortField: initialSort,
+                          initialSortAscending: true,
+                          rowsPerPage: 15,
+                          availableRowsPerPage: const [10, 15, 25, 50],
+                          showCheckboxColumn: true,
+                          fixedLeftColumns: 1, // Fix the 'Title' column
+                          minWidth: 2500, // Increase minWidth for more columns
+                          empty: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                          border: TableBorder.all(
+                            color: Colors.grey.shade100,
+                            width: 1,
+                          ),
+                          columnSpacing: 30,
+                          dataRowHeight: 50,
+                          headingRowHeight: 60,
+                          doDamagedGoods: (rowData) {
+                            handleDamagedGoodsClicked(rowData);
+                          },
+                          doReturnGoods: (rowData) {
+                            handleReturnGoodsClicked(rowData);
+                          },
+                        ),
+                ),
               ],
             ),
           ),

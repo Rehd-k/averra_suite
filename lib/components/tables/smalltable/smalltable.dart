@@ -18,24 +18,33 @@ class SmallTable extends StatelessWidget {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: DataTable(
-          columns:
-              columns.map((column) => DataColumn(label: Text(column))).toList(),
+          columns: columns
+              .map((column) => DataColumn(label: Text(column)))
+              .toList(),
           rows: [
             ...rows.map((res) {
               // Map<String, dynamic> row = entry.value;
               return DataRow(
                 cells: [
                   DataCell(Text(res['name'].toString())),
-                  DataCell(Text(res['lastPurchaseDate'] != null
-                      ? formatDate(res['lastPurchaseDate'].toString())
-                      : 'No Purchase Yet')),
-                  DataCell(Text(res['lastPurchaseAmount'] != null
-                      ? res['lastPurchaseAmount'].toString()
-                      : '0')),
-                  DataCell(Text(res['total_spent'].toString()))
+                  DataCell(
+                    Text(
+                      res['lastPurchaseDate'] != null
+                          ? formatDate(res['lastPurchaseDate'].toString())
+                          : 'No Purchase Yet',
+                    ),
+                  ),
+                  DataCell(
+                    Text(
+                      res['lastPurchaseAmount'] != null
+                          ? res['lastPurchaseAmount'].toString()
+                          : '0',
+                    ),
+                  ),
+                  DataCell(Text(res['total_spent'].toString())),
                 ],
               );
-            })
+            }),
           ],
           border: TableBorder.all(style: BorderStyle.none),
         ),

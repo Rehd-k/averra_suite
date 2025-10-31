@@ -86,4 +86,5 @@ class SupplierTable extends StatelessWidget {
       ),
     );
   }
+
 }

@@ -142,7 +142,7 @@ class SendToBranchState extends State<SendToBranchScreen> {
     }
   }
 
-  void deselectProductFromSugestion(modelState) {
+  void deselectProductFromSugestion(dynamic modelState) {
     setState(() {
       selectedProduct = null;
     });
@@ -151,7 +151,7 @@ class SendToBranchState extends State<SendToBranchScreen> {
     }
   }
 
-  void onchange(modelState) {
+  void onchange(dynamic modelState) {
     setState(() {});
     if (modelState != null) {
       modelState(() {});
@@ -168,7 +168,7 @@ class SendToBranchState extends State<SendToBranchScreen> {
     });
   }
 
-  void addToList(modelState) {
+  void addToList(dynamic modelState) {
     if (selectedProduct == null) {
       showToast('Select Product First', ToastificationType.info);
       return;

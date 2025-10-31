@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../../app_router.gr.dart';
 import '../../components/theme_switch_button.dart';
@@ -28,7 +29,7 @@ class MenuItem {
 
 final List<MenuItem> menuData = [
   MenuItem(
-    icon: Icons.local_shipping_outlined,
+    icon: Icons.dashboard_customize_outlined,
     title: 'Dashboard',
     link: ManagerNavigationRoute(children: [DashbaordManagerRoute()]),
   ),
@@ -84,7 +85,7 @@ final List<MenuItem> menuData = [
   ),
   MenuItem(
     icon: Icons.data_array_outlined,
-    title: 'Sells Report',
+    title: 'Sales Report',
     link: ManagerNavigationRoute(children: [IncomeReportsRoute()]),
   ),
   MenuItem(
@@ -163,6 +164,29 @@ final List<MenuItem> menuData = [
       ),
     ],
   ),
+  MenuItem(
+    icon: Icons.store_mall_directory_outlined, // Changed to a more fitting icon
+    title: 'Department',
+    link: DepartmentNavigation(), // This route might be a parent/wrapper
+    children: [
+      MenuItem(
+        icon: Icons.perm_identity_outlined,
+        title: 'Details',
+        link: DepartmentIndex(),
+      ),
+      MenuItem(
+        icon: Icons.local_shipping_outlined,
+        title: 'Move Products',
+        link: SendProducts(),
+      ),
+
+      MenuItem(
+        icon: Icons.list_alt,
+        title: 'Stock Movement',
+        link: DepartmentHistory(),
+      ),
+    ],
+  ),
 ];
 
 @RoutePage()
@@ -171,72 +195,81 @@ class ManagerNavigationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // LayoutBuilder is often a better choice for responsive UI that depends
-    // on the available space for a specific widget.
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isLargeScreen = constraints.maxWidth > 1200;
-
-        return Scaffold(
-          // Only show the AppBar and the hamburger menu icon on smaller screens
-          appBar: isLargeScreen
-              ? null
-              : AppBar(
-                  title: const Text(
-                    "Admin Panel",
-                    style: TextStyle(fontSize: 10),
-                  ),
-                  actions: [
-                    const ThemeSwitchButton(),
-                    IconButton(
-                      icon: const Icon(Icons.logout_outlined, size: 10),
-                      onPressed: () {
-                        JwtService().logout();
-                        context.router.replaceAll([LoginRoute()]);
-                      },
+    return Scaffold(
+      appBar: (Platform.isAndroid || Platform.isIOS)
+          ? AppBar(
+              title: const Text("Admin Panel", style: TextStyle(fontSize: 10)),
+              actions: [
+                const ThemeSwitchButton(),
+                IconButton(
+                  icon: const Icon(Icons.logout_outlined, size: 10),
+                  onPressed: () {
+                    JwtService().logout();
+                    context.router.replaceAll([LoginRoute()]);
+                  },
+                ),
+              ],
+            )
+          : null,
+      // Use a Drawer for smaller screens
+      drawer: (Platform.isAndroid || Platform.isIOS)
+          ? const Drawer(child: MenuList())
+          : null,
+      body: Column(
+        children: [
+          if (Platform.isWindows)
+            WindowTitleBarBox(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: MoveWindow(
+                      child: Row(
+                        children: [
+                          SizedBox(width: 20),
+                          SvgPicture.asset(
+                            height: 40,
+                            width: 40,
+                            'assets/vectors/logo.svg',
+                          ),
+                          SizedBox(width: 10),
+                          Text('Averra Suite'),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-          // Use a Drawer for smaller screens
-          drawer: isLargeScreen ? null : const Drawer(child: MenuList()),
-          body: Column(
-            children: [
-              if (Platform.isWindows)
-                WindowTitleBarBox(
-                  child: Row(
-                    children: [
-                      Expanded(child: MoveWindow(child: Text('Logged In'))),
-                      const CircleAvatar(child: Icon(Icons.person_outlined)),
-                      const ThemeSwitchButton(),
-                      IconButton(
-                        icon: const Icon(Icons.logout_outlined, size: 12),
-                        onPressed: () {
-                          JwtService().logout();
-                          context.router.replaceAll([LoginRoute()]);
-                        },
-                      ),
-                      const WindowButtons(),
-                    ],
                   ),
-                ),
-              Expanded(
-                child: Row(
-                  children: [
-                    // Show the permanent side menu on large screens
-                    if (isLargeScreen)
-                      const SizedBox(
-                        width: 190, // A common width for side navigation
-                        child: MenuList(),
-                      ),
-                    // This is the main content area that will be displayed
-                    Expanded(child: const SafeArea(child: AutoRouter())),
-                  ],
-                ),
+                  IconButton(
+                    icon: Icon(Icons.person_outlined, size: 10),
+                    iconSize: 10,
+                    onPressed: () {},
+                  ),
+                  const ThemeSwitchButton(),
+                  IconButton(
+                    icon: const Icon(Icons.logout_outlined, size: 12),
+                    onPressed: () {
+                      JwtService().logout();
+                      context.router.replaceAll([LoginRoute()]);
+                    },
+                  ),
+                  const WindowButtons(),
+                ],
               ),
-            ],
+            ),
+          Expanded(
+            child: Row(
+              children: [
+                // Show the permanent side menu on large screens
+                if (Platform.isWindows)
+                  const SizedBox(
+                    width: 190, // A common width for side navigation
+                    child: MenuList(),
+                  ),
+                // This is the main content area that will be displayed
+                Expanded(child: const SafeArea(child: AutoRouter())),
+              ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }

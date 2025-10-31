@@ -13,9 +13,7 @@ import 'service/navigation.service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(
     ChangeNotifierProvider(
@@ -42,7 +40,7 @@ class MyApp extends StatelessWidget {
     final themeProvider = context.watch<ThemeProvider>();
     return MaterialApp.router(
       routerConfig: NavigationService.router.config(),
-      title: 'Flutter Demo',
+      title: 'Averra Suite',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeProvider.themeMode,

@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import '../../app_router.gr.dart';
 import '../../components/theme_switch_button.dart';
+import '../../helpers/financial_string_formart.dart';
 import '../../helpers/title_bar.dart';
 import '../../service/token.service.dart';
 
@@ -22,20 +24,11 @@ class _BarNavigationScreenState extends State<BarNavigationScreen> {
   // Map bottom navigation bar indices to routes
   final List<PageRouteInfo> _routes = [CartRoute(), DepartmentRequest()];
 
-  // Capitalize first letter of username
-  String capitalizeFirstLetter(String? text) {
-    if (text == null || text.isEmpty) return '';
-    return text[0].toUpperCase() + text.substring(1);
-  }
-
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.sizeOf(context).width;
-    bool isBigScreen = width >= 1200;
     return Scaffold(
-      appBar: isBigScreen
-          ? null
-          : AppBar(
+      appBar: (Platform.isAndroid || Platform.isIOS)
+          ? AppBar(
               automaticallyImplyLeading: false,
               title: Text(
                 capitalizeFirstLetter(JwtService().decodedToken?['username']),
@@ -52,7 +45,8 @@ class _BarNavigationScreenState extends State<BarNavigationScreen> {
                   },
                 ),
               ],
-            ),
+            )
+          : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -81,7 +75,22 @@ class _BarNavigationScreenState extends State<BarNavigationScreen> {
             WindowTitleBarBox(
               child: Row(
                 children: [
-                  Expanded(child: MoveWindow(child: Text('Logged In'))),
+                  Expanded(
+                    child: MoveWindow(
+                      child: Row(
+                        children: [
+                          SizedBox(width: 20),
+                          SvgPicture.asset(
+                            height: 40,
+                            width: 40,
+                            'assets/vectors/logo.svg',
+                          ),
+                          SizedBox(width: 10),
+                          Text('Averra Suite'),
+                        ],
+                      ),
+                    ),
+                  ),
                   const CircleAvatar(child: Icon(Icons.person_outlined)),
                   const ThemeSwitchButton(),
                   IconButton(

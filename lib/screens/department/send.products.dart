@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../../../service/api.service.dart';
+import '../../service/token.service.dart';
 
 @RoutePage()
 class SendProducts extends StatefulWidget {
@@ -17,6 +18,7 @@ class SendProducts extends StatefulWidget {
 
 class SendProductsState extends State<SendProducts> {
   final ApiService apiService = ApiService();
+  final JwtService jwtService = JwtService();
   List<FocusNode> focusNodes = [];
   List<FocusNode> priceFocusNodes = [];
   List<TextEditingController> quantityControllers = [];
@@ -53,9 +55,17 @@ class SendProductsState extends State<SendProducts> {
   }
 
   void getDepartments() async {
+    var toDepartments = [];
     var res = await apiService.get('department?active=${true}');
+
+    for (var element in res.data) {
+      print(element['access'].contains(jwtService.decodedToken?['role']));
+      if (element['access'].contains(jwtService.decodedToken?['role'])) {
+        toDepartments.add(element);
+      }
+    }
     setState(() {
-      departmentFronts = res.data;
+      departmentFronts = toDepartments;
       loading = false;
     });
   }
@@ -334,7 +344,9 @@ class SendProductsState extends State<SendProducts> {
           ),
         ),
         if (fromPoint.isEmpty)
-          Expanded(child: Center(child: Text('Select A Point To Send From'))),
+          Expanded(
+            child: Center(child: Text('Select A Department To Send From')),
+          ),
 
         if (fromPoint.isNotEmpty && products.isEmpty)
           Expanded(

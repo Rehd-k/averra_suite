@@ -6,7 +6,7 @@ class SmallinfoCard extends StatelessWidget {
   final String title;
   final String subString;
   final String description;
-  final bool status;
+  final bool? status;
   final num amount;
   final bool isMoney;
   const SmallinfoCard({
@@ -15,7 +15,7 @@ class SmallinfoCard extends StatelessWidget {
     required this.title,
     required this.subString,
     required this.description,
-    required this.status,
+    this.status,
     required this.amount,
     required this.isMoney,
   });
@@ -31,7 +31,11 @@ class SmallinfoCard extends StatelessWidget {
       varticalPadding = 20.0;
     }
     return Card(
-      shadowColor: status ? Colors.greenAccent : Colors.redAccent,
+      shadowColor: status == null
+          ? Colors.greenAccent
+          : status == true
+          ? Colors.greenAccent
+          : Colors.redAccent,
       child: Padding(
         padding: EdgeInsets.only(
           top: varticalPadding,
@@ -41,10 +45,7 @@ class SmallinfoCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Expanded(
-              flex: 1,
-              child: status ? Icon(Icons.check_circle) : Icon(Icons.more_horiz),
-            ),
+            Expanded(flex: 1, child: icon),
             Expanded(
               flex: 3,
               child: Column(

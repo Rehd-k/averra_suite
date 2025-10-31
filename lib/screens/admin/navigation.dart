@@ -152,7 +152,7 @@ final List<MenuItem> menuData = [
       ),
       MenuItem(
         icon: Icons.data_array_outlined,
-        title: 'Sells Report',
+        title: 'Sales Report',
         link: IncomeReportsRoute(),
       ),
       MenuItem(
@@ -200,11 +200,12 @@ final List<MenuItem> menuData = [
       ),
       MenuItem(
         icon: Icons.list_alt,
-        title: 'History',
+        title: 'Stock Movement',
         link: DepartmentHistory(),
       ),
     ],
   ),
+
   MenuItem(
     title: 'Invoices',
     icon: Icons.inventory_2_rounded,

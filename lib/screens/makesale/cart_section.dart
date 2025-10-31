@@ -7,6 +7,7 @@ import '../../app_router.gr.dart';
 
 class CartSection extends StatelessWidget {
   final Function saveCart;
+  final Function updateSingleSettled;
   final Function emptyCart;
   final List<Map<String, dynamic>> cart;
   final double cartTotal;
@@ -29,6 +30,7 @@ class CartSection extends StatelessWidget {
     required this.handleComplete,
     required this.isSmallScreen,
     required this.cartId,
+    required this.updateSingleSettled,
   });
 
   @override
@@ -122,7 +124,7 @@ class CartSection extends StatelessWidget {
                     if (cart.isEmpty) {
                       doShowToast('Nothing To Save', ToastificationType.info);
                     } else {
-                      cartId == '' ? () {} : saveCart();
+                      cartId == '' ? saveCart() : updateSingleSettled();
                     }
                   },
                   child: Container(

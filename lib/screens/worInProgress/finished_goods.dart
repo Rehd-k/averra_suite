@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/helpers/financial_string_formart.dart';
+import 'package:averra_suite/service/token.service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:toastification/toastification.dart';
@@ -20,6 +21,7 @@ class FinishedGoods extends StatefulWidget {
 
 class FinishedGoodsState extends State<FinishedGoods> {
   final ApiService apiService = ApiService();
+  final JwtService jwtService = JwtService();
   TextEditingController titleController = TextEditingController();
   TextEditingController costController = TextEditingController();
   late List departmentFronts = [];
@@ -65,14 +67,21 @@ class FinishedGoodsState extends State<FinishedGoods> {
   }
 
   void getDepartments() async {
+    List toDepartments = [];
     var res = await apiService.get('department?active=true');
+    for (var element in res.data) {
+      print(jwtService.decodedToken?['role']);
+      if (element['access'].contains(jwtService.decodedToken?['role'])) {
+        toDepartments.add(element);
+      }
+    }
     setState(() {
-      departmentFronts = res.data;
+      departmentFronts = toDepartments;
       loading = false;
     });
   }
 
-  Future handleAddCost(id, String? removeId) async {
+  Future handleAddCost(String id, String? removeId) async {
     showToast('loading...', ToastificationType.info);
     num res = workInProgress.firstWhere(
       (department) => department['_id'] == id,

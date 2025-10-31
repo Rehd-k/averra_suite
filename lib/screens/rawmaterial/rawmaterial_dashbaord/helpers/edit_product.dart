@@ -3,24 +3,24 @@ import 'package:toastification/toastification.dart';
 
 import '../../../../service/api.service.dart';
 
-class EditProduct extends StatefulWidget {
+class EditRawMaterial extends StatefulWidget {
   final Function updatePageInfo;
-  final String? productId;
+  final String? rawmaterialId;
 
-  const EditProduct({
+  const EditRawMaterial({
     super.key,
     required this.updatePageInfo,
-    required this.productId,
+    required this.rawmaterialId,
   });
 
   @override
-  State<EditProduct> createState() => _EditProductState();
+  State<EditRawMaterial> createState() => _EditRawMaterialState();
 }
 
-class _EditProductState extends State<EditProduct> {
+class _EditRawMaterialState extends State<EditRawMaterial> {
   ApiService apiService = ApiService();
   final _formKey = GlobalKey<FormState>();
-  Map<String, dynamic> product = {};
+  Map<String, dynamic> rawmaterial = {};
   bool isLoading = true;
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
@@ -37,38 +37,38 @@ class _EditProductState extends State<EditProduct> {
   @override
   void initState() {
     super.initState();
-    getProduct();
+    getRawMaterial();
   }
 
-  Future<void> getProduct() async {
-    var prod = await apiService.get('products/findone/${widget.productId}');
+  Future<void> getRawMaterial() async {
+    var prod = await apiService.get('rawmaterial/${widget.rawmaterialId}');
 
     setState(() {
-      product = prod.data;
-      _titleController = TextEditingController(text: product['title']);
+      rawmaterial = prod.data;
+      _titleController = TextEditingController(text: rawmaterial['title']);
       _descriptionController = TextEditingController(
-        text: product['description'],
+        text: rawmaterial['description'],
       );
       _priceController = TextEditingController(
-        text: product['price'].toString(),
+        text: rawmaterial['price'].toString(),
       );
 
       _quantityController = TextEditingController(
-        text: product['quantity'].toString(),
+        text: rawmaterial['quantity'].toString(),
       );
-      _isAvailable = product['isAvailable'];
-      _roqController = TextEditingController(text: product['roq'].toString());
+      _isAvailable = rawmaterial['isAvailable'];
+      _roqController = TextEditingController(text: rawmaterial['roq'].toString());
       _weightController = TextEditingController(
-        text: product['weight'].toString(),
+        text: rawmaterial['weight'].toString(),
       );
-      _brandController = TextEditingController(text: product['brand']);
+      _brandController = TextEditingController(text: rawmaterial['brand']);
 
       _servingSize = TextEditingController(
-        text: product['servingQuantity']?.toString() ?? '0',
+        text: rawmaterial['servingQuantity']?.toString() ?? '0',
       );
 
       _servingPrice = TextEditingController(
-        text: product['servingPrice']?.toString() ?? '0',
+        text: rawmaterial['servingPrice']?.toString() ?? '0',
       );
 
       isLoading = false;
@@ -95,9 +95,9 @@ class _EditProductState extends State<EditProduct> {
     setState(() => _isLoading = true);
 
     try {
-      // Update product logic here
-      final updatedProduct = {
-        ...product,
+      // Update rawmaterial logic here
+      final updatedRawMaterial = {
+        ...rawmaterial,
         'title': _titleController.text,
         'description': _descriptionController.text,
         'price': double.parse(_priceController.text),
@@ -109,9 +109,9 @@ class _EditProductState extends State<EditProduct> {
         'servingQuantity': int.parse(_servingSize.text),
         'servingPrice': double.tryParse(_servingPrice.text) ?? 0.0,
       };
-      await apiService.put(
-        'products/update/${widget.productId}',
-        updatedProduct,
+      await apiService.patch(
+        'rawmaterial/${widget.rawmaterialId}',
+        updatedRawMaterial,
       );
 
       widget.updatePageInfo();
@@ -138,7 +138,7 @@ class _EditProductState extends State<EditProduct> {
           },
           icon: Icon(Icons.arrow_back_ios_outlined),
         ),
-        title: const Text('Edit Product'),
+        title: const Text('Edit RawMaterial'),
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
@@ -186,12 +186,12 @@ class _EditProductState extends State<EditProduct> {
                     TextFormField(
                       controller: _servingPrice,
                       decoration: InputDecoration(
-                        labelText: '${product['type']} Price',
+                        labelText: '${rawmaterial['type']} Price',
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter a ${product['type']} price';
+                          return 'Please enter a ${rawmaterial['type']} price';
                         }
                         if (double.tryParse(value) == null) {
                           return 'Please enter a valid number';
@@ -220,7 +220,7 @@ class _EditProductState extends State<EditProduct> {
                     TextFormField(
                       controller: _weightController,
                       decoration: const InputDecoration(
-                        labelText: 'Product Weight',
+                        labelText: 'RawMaterial Weight',
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
@@ -237,7 +237,7 @@ class _EditProductState extends State<EditProduct> {
                     TextFormField(
                       controller: _servingSize,
                       decoration: InputDecoration(
-                        labelText: 'Amount In ${product['type']}',
+                        labelText: 'Amount In ${rawmaterial['type']}',
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
@@ -270,7 +270,7 @@ class _EditProductState extends State<EditProduct> {
                       onPressed: _isLoading ? null : _handleSubmit,
                       child: _isLoading
                           ? const CircularProgressIndicator()
-                          : const Text('Update Product'),
+                          : const Text('Update RawMaterial'),
                     ),
                   ],
                 ),

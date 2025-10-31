@@ -3,9 +3,11 @@ import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import '../../app_router.gr.dart';
 import '../../components/theme_switch_button.dart';
 import '../../helpers/title_bar.dart';
+import '../../helpers/webSocket.connect.dart';
 import '../../service/token.service.dart';
 
 @RoutePage()
@@ -19,6 +21,7 @@ class KitchenNavigationScreen extends StatefulWidget {
 
 class _KitchenNavigationScreenState extends State<KitchenNavigationScreen> {
   int _selectedIndex = 0;
+  final ws = WebSocketService();
 
   // Map bottom navigation bar indices to routes
   final List<PageRouteInfo> _routes = [
@@ -36,19 +39,19 @@ class _KitchenNavigationScreenState extends State<KitchenNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.sizeOf(context).width;
-    bool isBigScreen = width >= 1200;
     return Scaffold(
-      appBar: isBigScreen
-          ? null
-          : AppBar(
+      appBar: (Platform.isAndroid || Platform.isIOS)
+          ? AppBar(
               automaticallyImplyLeading: false,
               title: Text(
                 capitalizeFirstLetter(JwtService().decodedToken?['username']),
                 style: const TextStyle(fontSize: 12),
               ),
               actions: [
-                const CircleAvatar(child: Icon(Icons.person_outlined)),
+                InkWell(
+                  child: Icon(Icons.person_outlined, size: 10),
+                  onTap: () {},
+                ),
                 const ThemeSwitchButton(),
                 IconButton(
                   icon: const Icon(Icons.logout_outlined, size: 12),
@@ -58,7 +61,8 @@ class _KitchenNavigationScreenState extends State<KitchenNavigationScreen> {
                   },
                 ),
               ],
-            ),
+            )
+          : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -99,8 +103,32 @@ class _KitchenNavigationScreenState extends State<KitchenNavigationScreen> {
                 color: Theme.of(context).cardColor,
                 child: Row(
                   children: [
-                    Expanded(child: MoveWindow(child: Text('Chef Module'))),
-                    const CircleAvatar(child: Icon(Icons.person_outlined)),
+                    Expanded(
+                      child: MoveWindow(
+                        child: Row(
+                          children: [
+                            SizedBox(width: 20),
+                            SvgPicture.asset(
+                              height: 40,
+                              width: 40,
+                              'assets/vectors/logo.svg',
+                            ),
+                            SizedBox(width: 10),
+                            Text('Averra Suite'),
+                          ],
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      child: Icon(Icons.person_outlined, size: 10),
+                      onTap: () {
+                        ws.sendNotification(
+                          toUserIds: [JwtService().decodedToken?['sub']],
+                          title: 'New Notification',
+                          payload: {"body": 'I want to go home'},
+                        );
+                      },
+                    ),
                     const ThemeSwitchButton(),
                     IconButton(
                       icon: const Icon(Icons.logout_outlined, size: 12),

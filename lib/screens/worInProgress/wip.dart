@@ -41,10 +41,10 @@ class WipState extends State<Wip> {
   bool isWip = false;
 
   void doSearch(String query) {
-    getProductsFromDepartment(query);
+    getProductsFromDepartment();
   }
 
-  void getProductsFromDepartment(query) async {
+  void getProductsFromDepartment() async {
     if (fromPoint != '') {
       try {
         var result = await apiService.get(
@@ -62,14 +62,21 @@ class WipState extends State<Wip> {
   }
 
   void getDepartments() async {
+    List toDepartments = [];
     var res = await apiService.get('department?active=${true}');
+    for (var element in res.data) {
+      print(jwtService.decodedToken?['role']);
+      if (element['access'].contains(jwtService.decodedToken?['role'])) {
+        toDepartments.add(element);
+      }
+    }
     setState(() {
-      departmentFronts = res.data;
+      departmentFronts = toDepartments;
       loading = false;
     });
   }
 
-  void selectTo(value) async {
+  void selectTo(String value) async {
     String res = departmentFronts.firstWhere(
       (department) => department['_id'] == value,
       orElse: () => {'title': 'Unknown'},
@@ -81,13 +88,13 @@ class WipState extends State<Wip> {
     });
   }
 
-  void selectProcess(value) async {
+  void selectProcess(String value) async {
     setState(() {
       process = value;
     });
   }
 
-  void selectFrom(value) async {
+  void selectFrom(String value) async {
     String res = departmentFronts.firstWhere(
       (department) => department['_id'] == value,
       orElse: () => {'title': 'Unknown'}, // fallback in case no match
@@ -108,7 +115,7 @@ class WipState extends State<Wip> {
       fromPointName = res;
       fromPoint = value;
     });
-    getProductsFromDepartment('');
+    getProductsFromDepartment();
   }
 
   void updateQuantity(int index, int? newQuantity) {
@@ -167,7 +174,7 @@ class WipState extends State<Wip> {
     updatePrice(index, newPrice);
   }
 
-  void selectProduct(suggestion) {
+  void selectProduct(Map suggestion) {
     suggestion['quantity'] > 0
         ? setState(() {
             final existingIndex = selectedProducts.indexWhere(
@@ -274,7 +281,7 @@ class WipState extends State<Wip> {
     });
   }
 
-  void sendToWorkInProgress(title) async {
+  void sendToWorkInProgress(String title) async {
     selectedProducts.map((item) {
       item['quantity'] = item['toSend'];
       final cost = item['toSend'] * item['unitCost'];
@@ -394,7 +401,7 @@ class WipState extends State<Wip> {
                     border: OutlineInputBorder(),
                   ),
                   onChanged: (String? newValue) {
-                    selectFrom(newValue);
+                    selectFrom(newValue!);
                   },
                   items:
                       [
@@ -423,7 +430,7 @@ class WipState extends State<Wip> {
                           border: OutlineInputBorder(),
                         ),
                         onChanged: (String? newValue) {
-                          selectProcess(newValue);
+                          selectProcess(newValue!);
                         },
                         items:
                             [
@@ -450,7 +457,7 @@ class WipState extends State<Wip> {
                           border: OutlineInputBorder(),
                         ),
                         onChanged: (String? newValue) {
-                          selectTo(newValue);
+                          selectTo(newValue!);
                         },
                         items:
                             [

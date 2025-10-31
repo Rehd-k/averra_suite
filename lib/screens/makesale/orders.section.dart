@@ -10,7 +10,7 @@ class OrdersSection extends StatelessWidget {
     super.key,
     required this.ordersSections,
     required this.loadCartFromStorage,
-    required this.removeCartFromStorage,
+    required this.removeCartFromStorage
   });
 
   @override
@@ -81,7 +81,8 @@ class OrdersSection extends StatelessWidget {
                                 iconSize: 10,
                                 tooltip: 'Activate',
                                 icon: Icon(Icons.login_outlined, size: 12),
-                                onPressed: () => loadCartFromStorage(item['_id']),
+                                onPressed: () =>
+                                    loadCartFromStorage(item['_id']),
                               ),
 
                               IconButton.filledTonal(

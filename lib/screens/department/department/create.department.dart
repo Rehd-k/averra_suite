@@ -12,6 +12,9 @@ class CreateDepartment extends StatelessWidget {
   final Function setType;
   final Map settings;
   final Function addOrRemoveAccess;
+  final Map<String, dynamic>? departmentValue;
+  final Function? doDepartmentUpdate;
+
   const CreateDepartment({
     super.key,
     required this.formKey,
@@ -24,6 +27,8 @@ class CreateDepartment extends StatelessWidget {
     required this.setType,
     required this.settings,
     required this.addOrRemoveAccess,
+    this.doDepartmentUpdate,
+    this.departmentValue,
   });
 
   @override
@@ -115,14 +120,23 @@ class CreateDepartment extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {
-                  if (formKey.currentState!.validate()) {
-                    handleSubmitData();
-                  }
-                },
-                child: Text('Submit'),
-              ),
+              departmentValue == null
+                  ? ElevatedButton(
+                      onPressed: () {
+                        if (formKey.currentState!.validate()) {
+                          handleSubmitData();
+                        }
+                      },
+                      child: Text('Submit'),
+                    )
+                  : ElevatedButton(
+                      onPressed: () {
+                        if (formKey.currentState!.validate()) {
+                          doDepartmentUpdate!(departmentValue?['_id']);
+                        }
+                      },
+                      child: Text('Update'),
+                    ),
             ],
           ),
         ),
