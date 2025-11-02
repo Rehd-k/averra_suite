@@ -31,7 +31,6 @@ class DisplayStockState extends State<DisplayStockTable> {
         ...res.data[0]['finishedGoods'],
         ...res.data[0]['RawGoods'],
       ];
-      print(mergedList);
       setState(() {
         isLoading = false;
         snapShots = mergedList;
@@ -55,7 +54,6 @@ class DisplayStockState extends State<DisplayStockTable> {
 
   @override
   Widget build(BuildContext context) {
-    print(snapShots);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: true,

@@ -20,7 +20,6 @@ class CategoryIndexState extends State<CategoryScreen> {
   final descriptionController = TextEditingController();
   List filteredCategories = [];
   late List categories = [];
-  final TextEditingController _searchController = TextEditingController();
   bool isLoading = true;
   int rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
   String searchQuery = "";
@@ -35,6 +34,7 @@ class CategoryIndexState extends State<CategoryScreen> {
   }
 
   Future<void> handleSubmit(BuildContext context) async {
+    if (!mounted) return;
     showBeautifulSnackBar(
       context,
       'Adding ${nameController.text} to categories',
@@ -48,7 +48,10 @@ class CategoryIndexState extends State<CategoryScreen> {
       categories.add(res.data);
       filteredCategories = List.from(categories);
     });
+
+    if (!mounted) return;
     showBeautifulSnackBar(
+      // ignore: use_build_context_synchronously
       context,
       'Added ${nameController.text} to categories',
       onAction: () {},

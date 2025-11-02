@@ -96,7 +96,7 @@ class ProductsIndexState extends State<ProductsScreen> {
     });
   }
 
-  void handleShowModal(barcode) {
+  void handleShowModal(dynamic barcode) {
     showModalBottomSheet(
       enableDrag: true,
       // Close the modal when tapping outside or inside AddProducts
@@ -123,7 +123,7 @@ class ProductsIndexState extends State<ProductsScreen> {
     });
   }
 
-  Future<void> checkProductExistence(barcode) async {
+  Future<void> checkProductExistence(dynamic barcode) async {
     var dbproducts = await apiService.get(
       'products?filter={"barcode" : {"\$regex" : "$barcode"}}',
     );
@@ -145,7 +145,7 @@ class ProductsIndexState extends State<ProductsScreen> {
     }
   }
 
-  void doQunnityFilter(v) {
+  void doQunnityFilter(dynamic v) {
     setState(() {
       quntfilter = v;
     });

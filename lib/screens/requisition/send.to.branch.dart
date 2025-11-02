@@ -124,7 +124,7 @@ class SendToBranchState extends State<SendToBranchScreen> {
     return List<Map>.from(filteredProducts);
   }
 
-  void selectProductFromSugestion(suggestion, modelState) {
+  void selectProductFromSugestion(dynamic suggestion, modelState) {
     var exists = selectedProducts.firstWhere(
       (element) => element['productId'] == suggestion['productId']['_id'],
       orElse: () => {},

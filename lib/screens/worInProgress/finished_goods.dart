@@ -70,7 +70,6 @@ class FinishedGoodsState extends State<FinishedGoods> {
     List toDepartments = [];
     var res = await apiService.get('department?active=true');
     for (var element in res.data) {
-      print(jwtService.decodedToken?['role']);
       if (element['access'].contains(jwtService.decodedToken?['role'])) {
         toDepartments.add(element);
       }

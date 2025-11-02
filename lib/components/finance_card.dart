@@ -2,7 +2,7 @@ import 'package:averra_suite/helpers/financial_string_formart.dart';
 import 'package:flutter/material.dart';
 
 class FinanceCard extends StatelessWidget {
-  final num amount;
+  final dynamic amount;
   final String title;
   final Icon icon;
   final bool isFinancial;

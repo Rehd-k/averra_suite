@@ -236,16 +236,23 @@ class SuperviorNavigationScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const CircleAvatar(child: Icon(Icons.person_outlined)),
-                  const ThemeSwitchButton(),
-                  IconButton(
-                    icon: const Icon(Icons.logout_outlined, size: 12),
-                    onPressed: () {
-                      JwtService().logout();
-                      context.router.replaceAll([LoginRoute()]);
-                    },
+                  Row(
+                    spacing: 20,
+                    children: [
+                      const InkWell(
+                        child: Icon(Icons.person_outlined, size: 12),
+                      ),
+                      const ThemeSwitchButton(),
+                      InkWell(
+                        child: const Icon(Icons.logout_outlined, size: 12),
+                        onTap: () {
+                          JwtService().logout();
+                          context.router.replaceAll([LoginRoute()]);
+                        },
+                      ),
+                      const WindowButtons(),
+                    ],
                   ),
-                  const WindowButtons(),
                 ],
               ),
             ),

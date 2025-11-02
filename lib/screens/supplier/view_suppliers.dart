@@ -251,18 +251,34 @@ class SuppliersDataSource extends DataTableSource {
         DataCell(Text(supplier['initiator'])),
         DataCell(Text(formatDate(supplier['createdAt']))),
         DataCell(
-          Column(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              OutlinedButton(
-                onPressed: () {
+              InkWell(
+                onTap: () {
                   context.router.push(
                     SupplierDetailsRoute(supplierId: supplier['_id']),
                   );
                 },
-                child: Text('Update'),
+                child: Tooltip(
+                  message: 'Open',
+                  child: Icon(Icons.open_in_full_outlined, size: 12),
+                ),
               ),
-              OutlinedButton(onPressed: () {}, child: Text('Delete')),
+              InkWell(
+                onTap: () {},
+                child: Tooltip(
+                  message: 'Deactivate',
+                  child: Icon(Icons.remove_circle_outline, size: 12),
+                ),
+              ),
+              InkWell(
+                onTap: () {},
+                child: Tooltip(
+                  message: 'Delete',
+                  child: Icon(Icons.delete_forever_outlined, size: 12),
+                ),
+              ),
             ],
           ),
         ),

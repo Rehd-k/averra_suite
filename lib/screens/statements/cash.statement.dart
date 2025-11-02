@@ -141,6 +141,7 @@ class CashStatementState extends State<CashStatementScreen> {
       };
       await apiService.post('cashflow', data);
       showToast('Added', ToastificationType.success);
+      if (!mounted) return;
       Navigator.pop(context);
     }
   }

@@ -15,7 +15,7 @@ import 'package:averra_suite/accounts/accounting/accounting.dashboard.dart'
 import 'package:averra_suite/accounts/accounting/navigation.dart' as _i2;
 import 'package:averra_suite/accounts/bar/navigation.dart' as _i11;
 import 'package:averra_suite/accounts/kitchen/navigation.dart' as _i35;
-import 'package:averra_suite/accounts/manager/dashbaord.manager.dart' as _i21;
+import 'package:averra_suite/accounts/manager/dashboard/dashboard.dart' as _i21;
 import 'package:averra_suite/accounts/manager/navigation.dart' as _i39;
 import 'package:averra_suite/accounts/store/store.navigation.dart' as _i54;
 import 'package:averra_suite/accounts/supervior/dashbaord.supervior.dart'
@@ -49,11 +49,11 @@ import 'package:averra_suite/screens/locations/index.dart' as _i36;
 import 'package:averra_suite/screens/login/login.dart' as _i37;
 import 'package:averra_suite/screens/makesale/checkout.dart' as _i17;
 import 'package:averra_suite/screens/makesale/index.dart' as _i38;
-import 'package:averra_suite/screens/otherIncome/add_otherIcome.dart' as _i5;
-import 'package:averra_suite/screens/otherIncome/categories.dart' as _i40;
-import 'package:averra_suite/screens/otherIncome/otherIncomr.dashbaord.dart'
+import 'package:averra_suite/screens/otherincome/addotherincome.dart' as _i5;
+import 'package:averra_suite/screens/otherincome/categories.dart' as _i40;
+import 'package:averra_suite/screens/otherincome/otherIncomr.dashbaord.dart'
     as _i41;
-import 'package:averra_suite/screens/otherIncome/viewotherIncomes.dart' as _i62;
+import 'package:averra_suite/screens/otherincome/viewotherincomes.dart' as _i62;
 import 'package:averra_suite/screens/products/category/index.dart' as _i15;
 import 'package:averra_suite/screens/products/index.dart' as _i45;
 import 'package:averra_suite/screens/products/product_dashbaord/product_dashboard.dart'
@@ -673,18 +673,55 @@ class CustomerRoute extends _i68.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i21.DashbaordManagerScreen]
-class DashbaordManagerRoute extends _i68.PageRouteInfo<void> {
-  const DashbaordManagerRoute({List<_i68.PageRouteInfo>? children})
-    : super(DashbaordManagerRoute.name, initialChildren: children);
+class DashbaordManagerRoute
+    extends _i68.PageRouteInfo<DashbaordManagerRouteArgs> {
+  DashbaordManagerRoute({
+    _i69.Key? key,
+    dynamic Function()? onResult,
+    List<_i68.PageRouteInfo>? children,
+  }) : super(
+         DashbaordManagerRoute.name,
+         args: DashbaordManagerRouteArgs(key: key, onResult: onResult),
+         initialChildren: children,
+       );
 
   static const String name = 'DashbaordManagerRoute';
 
   static _i68.PageInfo page = _i68.PageInfo(
     name,
     builder: (data) {
-      return const _i21.DashbaordManagerScreen();
+      final args = data.argsAs<DashbaordManagerRouteArgs>(
+        orElse: () => const DashbaordManagerRouteArgs(),
+      );
+      return _i21.DashbaordManagerScreen(
+        key: args.key,
+        onResult: args.onResult,
+      );
     },
   );
+}
+
+class DashbaordManagerRouteArgs {
+  const DashbaordManagerRouteArgs({this.key, this.onResult});
+
+  final _i69.Key? key;
+
+  final dynamic Function()? onResult;
+
+  @override
+  String toString() {
+    return 'DashbaordManagerRouteArgs{key: $key, onResult: $onResult}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DashbaordManagerRouteArgs) return false;
+    return key == other.key;
+  }
+
+  @override
+  int get hashCode => key.hashCode;
 }
 
 /// generated route for

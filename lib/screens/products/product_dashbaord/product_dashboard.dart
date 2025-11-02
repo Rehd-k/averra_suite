@@ -131,7 +131,7 @@ class ProductDashboardState extends State<ProductDashboard> {
     }
   }
 
-  Future getChartData(dateRange) async {
+  Future getChartData(dynamic dateRange) async {
     final range = getDateRange(dateRange);
     final response = await apiService.get(
       'sales/getchart/$productId?filter={"sorter":"$dateRange"}&startDate=${range.startDate}&endDate=${range.endDate}',
@@ -183,7 +183,7 @@ class ProductDashboardState extends State<ProductDashboard> {
     debugPrint(_selectedRows.toString());
   }
 
-  Future<void> handleDamagedGoodsClicked(rowData) async {
+  Future<void> handleDamagedGoodsClicked(dynamic rowData) async {
     if (returnedSelection.isEmpty) {
       if (rowData['quantity'] == getSold(rowData['sold'])) {
         doAlerts('This batch have been sold out');
@@ -199,7 +199,7 @@ class ProductDashboardState extends State<ProductDashboard> {
     }
   }
 
-  Future<void> handleReturnGoodsClicked(rowData) async {
+  Future<void> handleReturnGoodsClicked(dynamic rowData) async {
     if (returnedSelection.isEmpty) {
       if (rowData['quantity'] == getSold(rowData['sold'])) {
         doAlerts('This batch have been sold out');
@@ -215,14 +215,14 @@ class ProductDashboardState extends State<ProductDashboard> {
     }
   }
 
-  Future<void> handleDamagedGoods(data) async {
+  Future<void> handleDamagedGoods(dynamic data) async {
     await apiService.put('purchases/doDamage/${data['_id']}', {
       ...data,
       "productId": productId,
     });
   }
 
-  Future<void> handleReturndGoods(data) async {
+  Future<void> handleReturndGoods(dynamic data) async {
     await apiService.put('purchases/return/${data['_id']}', {
       ...data,
       "productId": productId,
@@ -633,7 +633,6 @@ class ProductDashboardState extends State<ProductDashboard> {
                         toDate: _toDate,
                         handleDateReset: handleDateReset,
                       ),
-                    
                     ],
                   ),
                 ),

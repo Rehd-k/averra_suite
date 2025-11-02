@@ -171,7 +171,7 @@ class DepartmentHistoryState extends State<DepartmentHistory> {
     });
   }
 
-  void handleSelectStatus(value) {
+  void handleSelectStatus(dynamic value) {
     setState(() {
       _requests = [];
       status = value;
@@ -179,7 +179,7 @@ class DepartmentHistoryState extends State<DepartmentHistory> {
     _loadMore();
   }
 
-  void handleSelectDepartment(value) {
+  void handleSelectDepartment(dynamic value) {
     setState(() {
       _requests = [];
       department = value;

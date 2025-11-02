@@ -68,7 +68,7 @@ class AddBankState extends State<AddBank> {
     }
   }
 
-  void addOrRemoveAccess(value) async {
+  void addOrRemoveAccess(dynamic value) async {
     if (access.contains(value)) {
       access.remove(value);
     } else {

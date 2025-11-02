@@ -66,6 +66,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   late double total;
   bool isPaid = false;
   late Map newTransaction;
+  bool isCredit = false;
 
   // Mock bank data - replace with your backend data
   List<dynamic> banks = [];
@@ -214,6 +215,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     });
   }
 
+  void doCreditSale() async {
+    Map<String, dynamic> info = {
+      'customer': selectedName?['_id'],
+      'issuedDate': DateTime.now().toIso8601String(),
+      'dueDate': DateTime(
+        DateTime.now().year,
+        DateTime.now().month + 1,
+        0,
+      ).toIso8601String(),
+      'invoiceNumber':
+          'INV-${DateTime.now().millisecondsSinceEpoch.toString().padLeft(10, '0').substring(0, 10)}'
+              .toLowerCase(),
+      'items': widget.cart,
+      'discount': discount,
+      'totalAmount': total,
+      'bank': bank?['_id'],
+      'tax': 0, //add selected tax values later,
+      'previouslyPaidAmount': 0,
+      'note': 'Thank you for your business',
+    };
+
+    var responce = await apiService.post('invoice', info);
+
+    setState(() {
+      isCredit = true;
+      newTransaction = responce.data;
+    });
+    widget.handleComplete();
+  }
+
   Future<List<Map>> _fetchNames(String query) async {
     final response = await apiService.get(
       'customer?filter={"nameOrPhonenumber": "${nameController.text}"}',
@@ -320,9 +351,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           ),
                     SizedBox(height: 20),
                     SizedBox(
-                      width: isDesktop
-                          ? constraints.maxWidth / 2
-                          : double.infinity,
+                      width: double.infinity,
                       height: 50,
                       child: isPaid
                           ? Row(
@@ -356,22 +385,56 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 //     child: Text('Send Receipt'))
                               ],
                             )
-                          : ElevatedButton(
-                              onPressed: balance == 0
-                                  ? () {
-                                      handleSubit();
-                                    }
-                                  : null,
-                              style: ElevatedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                          : isCredit
+                          ? ElevatedButton(
+                              child: Text('Done'),
+                              onPressed: () {},
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: ElevatedButton(
+                                    onPressed: balance == 0
+                                        ? () {
+                                            handleSubit();
+                                          }
+                                        : null,
+                                    style: ElevatedButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      backgroundColor: balance == 0
+                                          ? null
+                                          : Colors.red,
+                                      disabledBackgroundColor: Colors.red,
+                                    ),
+                                    child: Text('Complete Payment'),
+                                  ),
                                 ),
-                                backgroundColor: balance == 0
-                                    ? null
-                                    : Colors.red,
-                                disabledBackgroundColor: Colors.red,
-                              ),
-                              child: Text('Complete Payment'),
+                                SizedBox(width: 10),
+                                Expanded(
+                                  flex: 1,
+                                  child: ElevatedButton(
+                                    onPressed: amountPaid < 1
+                                        ? () {
+                                            doCreditSale();
+                                          }
+                                        : null,
+                                    style: ElevatedButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      backgroundColor: amountPaid < 1
+                                          ? null
+                                          : Colors.grey,
+                                      disabledBackgroundColor: Colors.grey,
+                                    ),
+                                    child: Text('Credit Sale'),
+                                  ),
+                                ),
+                              ],
                             ),
                     ),
                   ],

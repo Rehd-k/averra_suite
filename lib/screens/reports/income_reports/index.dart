@@ -109,7 +109,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
     }
   }
 
-  void handleUpdate(updateInfo) {
+  void handleUpdate(dynamic updateInfo) {
     setState(() {
       transactionUpdate = updateInfo;
       updateTransaction();
@@ -126,7 +126,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
     );
   }
 
-  void handleShowDetails(details, isBigScreen) {
+  void handleShowDetails(dynamic details, isBigScreen) {
     selectedItem = details;
     if (isBigScreen) {
       setState(() {

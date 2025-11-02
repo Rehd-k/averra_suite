@@ -171,31 +171,31 @@ class ViewExpensesState extends State<ViewExpenses> {
     }
   }
 
-  void handleSelectCategory(value) {
+  void handleSelectCategory(dynamic value) {
     setState(() {
       category = value;
     });
     getExpenses();
   }
 
-  void handleSelectStatus(value) {
+  void handleSelectStatus(dynamic value) {
     setState(() {
       status = value;
     });
     getExpenses();
   }
 
-  Future<void> handleDelete(id) async {
+  Future<void> handleDelete(String id) async {
     await apiService.delete('expense/$id');
     getExpenses();
   }
 
-  Future<void> handleUpdate(id, update) async {
+  Future<void> handleUpdate(String id, update) async {
     await apiService.patch('expense/$id', update);
     getExpenses();
   }
 
-  void handlePageChange(pageNumber) {
+  void handlePageChange(dynamic pageNumber) {
     setState(() {
       selectedPageNumber = pageNumber;
     });

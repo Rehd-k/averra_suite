@@ -1,10 +1,9 @@
 import 'dart:io';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/service/api.service.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../app_router.gr.dart';
 import '../../components/theme_switch_button.dart';
@@ -22,23 +21,20 @@ class WaiterNavigationScreen extends StatefulWidget {
 class _WaiterNavigationScreenState extends State<WaiterNavigationScreen> {
   int _selectedIndex = 0;
 
-  // Map bottom navigation bar indices to routes
   final List<PageRouteInfo> _routes = [
     MakeSaleRoute(),
     CustomerRoute(),
     IncomeReportsRoute(),
   ];
+
+  final _innerRouterKey = GlobalKey<AutoRouterState>();
+
   @override
   Widget build(BuildContext context) {
-    // LayoutBuilder is often a better choice for responsive UI that depends
-    // on the available space for a specific widget.
-
     return Scaffold(
-      // Only show the AppBar and the hamburger menu icon on smaller screens
       appBar: (Platform.isAndroid || Platform.isIOS)
           ? AppBar(
               title: const Text("Admin Panel", style: TextStyle(fontSize: 10)),
-
               actions: [
                 CircleAvatar(
                   child: IconButton(
@@ -68,9 +64,10 @@ class _WaiterNavigationScreenState extends State<WaiterNavigationScreen> {
         currentIndex: _selectedIndex,
         onTap: (index) {
           if (index != _selectedIndex) {
-            setState(() {
-              _selectedIndex = index;
-            });
+            setState(() => _selectedIndex = index);
+            _innerRouterKey.currentState!.controller!.replaceAll([
+              _routes[index],
+            ]);
           }
         },
         items: const [
@@ -91,7 +88,6 @@ class _WaiterNavigationScreenState extends State<WaiterNavigationScreen> {
           ),
         ],
       ),
-
       body: Column(
         children: [
           if (Platform.isWindows)
@@ -102,37 +98,40 @@ class _WaiterNavigationScreenState extends State<WaiterNavigationScreen> {
                     child: MoveWindow(
                       child: Row(
                         children: [
-                          SizedBox(width: 20),
+                          const SizedBox(width: 20),
                           SvgPicture.asset(
+                            'assets/vectors/logo.svg',
                             height: 40,
                             width: 40,
-                            'assets/vectors/logo.svg',
                           ),
-                          SizedBox(width: 10),
-                          Text('Averra Suite'),
+                          const SizedBox(width: 10),
+                          const Text('Averra Suite'),
                         ],
                       ),
                     ),
                   ),
-                  const CircleAvatar(child: Icon(Icons.person_outlined)),
-                  const ThemeSwitchButton(),
-                  IconButton(
-                    icon: const Icon(Icons.logout_outlined, size: 12),
-                    onPressed: () {
-                      JwtService().logout();
-                      context.router.replaceAll([LoginRoute()]);
-                    },
+                  Row(
+                    spacing: 20,
+                    children: [
+                      const InkWell(
+                        child: Icon(Icons.person_outlined, size: 12),
+                      ),
+                      const ThemeSwitchButton(),
+                      InkWell(
+                        child: const Icon(Icons.logout_outlined, size: 12),
+                        onTap: () {
+                          JwtService().logout();
+                          context.router.replaceAll([LoginRoute()]);
+                        },
+                      ),
+                      const WindowButtons(),
+                    ],
                   ),
-                  const WindowButtons(),
                 ],
               ),
             ),
-
-          Expanded(
-            child: AutoRouter.declarative(
-              routes: (_) => [_routes[_selectedIndex]],
-            ),
-          ),
+          // ✅ Imperative router (not declarative)
+          Expanded(child: AutoRouter(key: _innerRouterKey)),
         ],
       ),
     );

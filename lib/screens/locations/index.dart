@@ -44,6 +44,7 @@ class LocationIndexState extends State<LocationIndex> {
         'closingHours': closingController.text,
         'firm_name': firmNameController.text,
       });
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Added')));

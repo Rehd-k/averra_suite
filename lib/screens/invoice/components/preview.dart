@@ -9,10 +9,7 @@ import 'infinite_table.dart';
 class InvoicePage extends StatelessWidget {
   final Invoice invoice;
 
-  const InvoicePage({
-    super.key,
-    required this.invoice,
-  });
+  const InvoicePage({super.key, required this.invoice});
 
   String formatDate(String isoDate) {
     final DateTime parsedDate = DateTime.parse(isoDate);
@@ -28,8 +25,10 @@ class InvoicePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextButton(
-              child: Text("INVOICE",
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+              child: Text(
+                "INVOICE",
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              ),
               onPressed: () async {},
             ),
             SizedBox(height: 16),
@@ -59,11 +58,12 @@ class InvoicePage extends StatelessWidget {
                 _invoiceMeta("DATE", formatDate(invoice.issueDate)),
                 _invoiceMeta("DUE DATE", formatDate(invoice.dueDate)),
                 _invoiceMeta(
-                    "AMOUNT DUE",
-                    invoice.total
-                        .toString()
-                        .formatToFinancial(isMoneySymbol: true),
-                    highlight: true),
+                  "AMOUNT DUE",
+                  invoice.total.toString().formatToFinancial(
+                    isMoneySymbol: true,
+                  ),
+                  highlight: true,
+                ),
               ],
             ),
             SizedBox(height: 24),
@@ -75,22 +75,26 @@ class InvoicePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                      "SUBTOTAL: ${(((invoice.total + invoice.discount) - invoice.tax)).toString().formatToFinancial(isMoneySymbol: true)}",
-                      style: TextStyle(fontSize: 16)),
+                    "SUBTOTAL: ${(((invoice.total + invoice.discount) - invoice.tax)).toString().formatToFinancial(isMoneySymbol: true)}",
+                    style: TextStyle(fontSize: 16),
+                  ),
                   Text(
-                      "TAX : ${invoice.tax.toString().formatToFinancial(isMoneySymbol: true)}",
-                      style: TextStyle(fontSize: 16)),
+                    "TAX : ${invoice.tax.toString().formatToFinancial(isMoneySymbol: true)}",
+                    style: TextStyle(fontSize: 16),
+                  ),
                   Text(
-                      "Total : ${invoice.tax.toString().formatToFinancial(isMoneySymbol: true)}",
-                      style: TextStyle(fontSize: 16)),
+                    "Total : ${invoice.tax.toString().formatToFinancial(isMoneySymbol: true)}",
+                    style: TextStyle(fontSize: 16),
+                  ),
                   Text(
-                      "Discount : ${invoice.discount.toString().formatToFinancial(isMoneySymbol: true)}",
-                      style: TextStyle(fontSize: 16)),
+                    "Discount : ${invoice.discount.toString().formatToFinancial(isMoneySymbol: true)}",
+                    style: TextStyle(fontSize: 16),
+                  ),
                   SizedBox(height: 8),
                   Text(
-                      "Grand Total: ${invoice.total.toString().formatToFinancial(isMoneySymbol: true)}",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    "Grand Total: ${invoice.total.toString().formatToFinancial(isMoneySymbol: true)}",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
             ),
@@ -118,17 +122,21 @@ class InvoicePage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: TextStyle(color: Colors.teal)),
-        Text(value,
-            style: TextStyle(
-                fontWeight: highlight ? FontWeight.bold : FontWeight.normal)),
+        Text(
+          value,
+          style: TextStyle(
+            fontWeight: highlight ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildInvoiceTable(items) {
+  Widget _buildInvoiceTable(dynamic items) {
     return Table(
       border: TableBorder.symmetric(
-          inside: BorderSide(width: 0.5, color: Colors.grey)),
+        inside: BorderSide(width: 0.5, color: Colors.grey),
+      ),
       columnWidths: {
         0: FlexColumnWidth(3),
         1: FlexColumnWidth(2),
@@ -136,8 +144,12 @@ class InvoicePage extends StatelessWidget {
         3: FlexColumnWidth(2),
       },
       children: [
-        _buildTableRow(['DESCRIPTION', 'RATE', 'QTY', 'AMOUNT'],
-            isHeader: true),
+        _buildTableRow([
+          'DESCRIPTION',
+          'RATE',
+          'QTY',
+          'AMOUNT',
+        ], isHeader: true),
         ...items.map((item) {
           return _buildTableRow([
             item['title'],
@@ -159,7 +171,8 @@ class InvoicePage extends StatelessWidget {
           child: Text(
             cell,
             style: TextStyle(
-                fontWeight: isHeader ? FontWeight.bold : FontWeight.normal),
+              fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
         );
       }).toList(),

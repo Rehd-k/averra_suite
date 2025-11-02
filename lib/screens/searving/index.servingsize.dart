@@ -49,7 +49,7 @@ class IndexServingsizeState extends State<IndexServingsizeScreen> {
       shortHand.clear();
 
       getServingsizes();
-
+      if (!mounted) return;
       showBeautifulSnackBar(
         context,
         'Added ${title.text} to Serving Sizes',
@@ -108,7 +108,7 @@ class IndexServingsizeState extends State<IndexServingsizeScreen> {
       'shortHand': shortHand.text,
     });
     getServingsizes();
-
+    if (!mounted) return;
     showBeautifulSnackBar(
       context,
       'Updated ${title.text} at Serving Sizes',

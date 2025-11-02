@@ -97,7 +97,7 @@ class RawMaterialIndexState extends State<RawMaterialIndex> {
     });
   }
 
-  void handleShowModal(barcode) {
+  void handleShowModal(dynamic barcode) {
     showModalBottomSheet(
       enableDrag: true,
       // Close the modal when tapping outside or inside AddProducts
@@ -124,7 +124,7 @@ class RawMaterialIndexState extends State<RawMaterialIndex> {
     });
   }
 
-  Future<void> checkProductExistence(barcode) async {
+  Future<void> checkProductExistence(dynamic barcode) async {
     var dbproducts = await apiService.get(
       'rawmaterial?filter={"barcode" : {"\$regex" : "$barcode"}}',
     );

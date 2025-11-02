@@ -232,6 +232,12 @@ class MyAsyncDataSource extends AsyncDataTableSource {
       );
     }
 
+    if (colDef.field == 'Suppliertitle') {
+      return DataCell(
+        Text(capitalizeFirstLetter(rowData['productId']['title'])),
+      );
+    }
+
     // Special handling for 'Actions' column (or any column needing widgets)
     if (colDef.field == 'purchases_actions') {
       return DataCell(
@@ -566,7 +572,7 @@ class MyAsyncDataSource extends AsyncDataTableSource {
       final rows = _data.asMap().entries.map((entry) {
         final index = entry.key + startIndex;
         final rowData = entry.value;
-   
+
         // Ensure the row has an ID for the key and selection
         final String rowId =
             rowData['_id'] as String? ?? UniqueKey().toString();
@@ -590,7 +596,6 @@ class MyAsyncDataSource extends AsyncDataTableSource {
 
       return AsyncRowsResponse(_totalRows, rows);
     } catch (error) {
-      print(error);
       return AsyncRowsResponse(0, []); // Return empty on error
     }
   }

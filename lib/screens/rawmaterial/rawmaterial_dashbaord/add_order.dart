@@ -99,7 +99,7 @@ class AddOrderState extends State<AddOrder> {
     });
   }
 
-  Future callDialog(debt) => showDialog(
+  Future callDialog(dynamic debt) => showDialog(
     context: context,
     builder: (BuildContext context) {
       String message;
@@ -273,7 +273,7 @@ class AddOrderState extends State<AddOrder> {
     });
   }
 
-  void selectBank(value) {
+  void selectBank(dynamic value) {
     setState(() {
       bank = value;
     });

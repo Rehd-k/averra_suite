@@ -24,7 +24,7 @@ void showBeautifulSnackBar(
     ),
     if (glowBase != null)
       BoxShadow(
-        color: glowBase.withOpacity(0.22),
+        color: glowBase.withAlpha(220),
         blurRadius: 24,
         spreadRadius: 1,
         offset: const Offset(0, 0),
@@ -45,8 +45,8 @@ void showBeautifulSnackBar(
         boxShadow: shadows,
         border: Border.all(
           color: glowBase != null
-              ? glowBase.withOpacity(0.18)
-              : Theme.of(context).dividerColor.withOpacity(0.12),
+              ? glowBase.withAlpha(180)
+              : Theme.of(context).dividerColor.withAlpha(120),
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -65,8 +65,7 @@ void showBeautifulSnackBar(
                 if (onAction != null) onAction();
               },
               style: TextButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 minimumSize: const Size(0, 0),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 shape: RoundedRectangleBorder(

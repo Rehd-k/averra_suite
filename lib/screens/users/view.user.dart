@@ -68,6 +68,7 @@ class ViewUserState extends State<ViewUser> {
         ),
       );
 
+      if (!mounted) return;
       if (response.statusCode == 200 || response.statusCode == 201) {
         ScaffoldMessenger.of(
           context,

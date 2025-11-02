@@ -65,25 +65,24 @@ class DepartmentRequestState extends State<DepartmentRequest> {
     var toDepartments = [];
     var result = await apiService.get('department?active=${true}');
     for (var element in result.data) {
-      print(jwtService.decodedToken?['role']);
       if (element['access'].contains(jwtService.decodedToken?['role'])) {
         toDepartments.add(element);
       }
     }
     setState(() {
-      departmentFronts = result.data;
+      departmentFronts = toDepartments;
       toDepartmentFronts = toDepartments;
       loading = false;
     });
   }
 
-  void selectTo(value) async {
+  void selectTo(dynamic value) async {
     setState(() {
       toPoint = value;
     });
   }
 
-  void selectFrom(value) async {
+  void selectFrom(dynamic value) async {
     String res = departmentFronts.firstWhere(
       (department) => department['_id'] == value,
       orElse: () => {'title': 'Unknown'}, // fallback in case no match

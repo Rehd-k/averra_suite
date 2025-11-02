@@ -1,6 +1,8 @@
 // websocket_service.dart
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
+// ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 import 'noti_service.dart';
@@ -50,7 +52,7 @@ class WebSocketService {
     _socket = null;
 
     _socket = IO.io(
-      'http://192.168.1.180:3000', // <-- replace with prod URL
+      'http://localhost:3000', // <-- replace with prod URL
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .setQuery({'userId': _userId!})
@@ -64,26 +66,23 @@ class WebSocketService {
     // ────── Event listeners (once per connection) ──────
     _socket!
       ..onConnect((_) {
-        print('WebSocket connected – user: $_userId');
         _reconnectTimer?.cancel();
         _reconnectTimer = null;
       })
-      ..onConnectError((err) => print('Connect error: $err'))
-      ..onError((err) => print('Socket error: $err'))
+      ..onConnectError((err) => log('Connect error: $err'))
+      ..onError((err) => log('Socket error: $err'))
       ..onDisconnect((_) {
-        print('WebSocket disconnected');
         _scheduleReconnect();
       })
-      ..onReconnect((attempt) => print('Reconnected (attempt $attempt)'))
-      ..onReconnectError((err) => print('Reconnect error: $err'))
-      ..onReconnectFailed((_) => print('Reconnect failed permanently'));
+      ..onReconnect((attempt) => log('Reconnected (attempt $attempt)'))
+      ..onReconnectError((err) => log('Reconnect error: $err'))
+      ..onReconnectFailed((_) => log('Reconnect failed permanently'));
 
     // ────── Custom events ──────
     _socket!
       ..on('privateMessage', (data) {
         final map = _safeJson(data);
         _privateMessageController.add(map);
-        print('Private msg from ${map['from']}: ${map['message']}');
       })
       ..on('notification', (data) {
         final map = _safeJson(data);
@@ -92,7 +91,6 @@ class WebSocketService {
           map['title'],
           map['payload']['body'],
         );
-        print('Notification: ${map['title'] ?? ''}');
       });
   }
 
@@ -100,7 +98,6 @@ class WebSocketService {
   void _scheduleReconnect() {
     if (_reconnectTimer != null) return;
     _reconnectTimer = Timer(_reconnectDelay, () {
-      print('Attempting reconnect...');
       _socket?.connect();
     });
   }
@@ -109,7 +106,6 @@ class WebSocketService {
   /// Send a private chat message
   void sendPrivateMessage(String toUserId, String message) {
     if (!isConnected) {
-      print('Socket not connected – message queued');
       // optional: queue in memory / local DB
       return;
     }
@@ -140,7 +136,6 @@ class WebSocketService {
     _socket?.disconnect();
     _socket?.dispose();
     _socket = null;
-    print('WebSocket service disposed');
   }
 
   // ────── Helper ──────

@@ -40,18 +40,18 @@ class OtherIncomeCategoriesState extends State<OtherIncomeCategoriesScreen> {
   ApiService apiService = ApiService();
   late List categories = [];
 
-  void selectIcon(icon) {
+  void selectIcon(dynamic icon) {
     setState(() {
       selectedIconName = icon;
     });
   }
 
-  Future<void> handleUpdate(id, update) async {
+  Future<void> handleUpdate(String id, update) async {
     await apiService.patch('otherIncome/category/update/$id', update);
     getCategories();
   }
 
-  Future<void> handleDelete(id) async {
+  Future<void> handleDelete(String id) async {
     await apiService.delete('otherIncome/category/delete/$id');
     getCategories();
   }
@@ -138,7 +138,8 @@ class OtherIncomeCategoriesState extends State<OtherIncomeCategoriesScreen> {
                       icon: Icons.category_outlined,
                       message: "No Categores Yet",
                       reload: getCategories,
-                      subMessage: 'Add Categories to Start Logging OtherIncomes',
+                      subMessage:
+                          'Add Categories to Start Logging OtherIncomes',
                     )
                   : SingleChildScrollView(
                       child: Padding(

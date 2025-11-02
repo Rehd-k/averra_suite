@@ -5,6 +5,7 @@ import 'package:averra_suite/helpers/financial_string_formart.dart';
 import 'package:averra_suite/service/token.service.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../../app_router.gr.dart';
 import '../../components/theme_switch_button.dart';
@@ -288,8 +289,39 @@ class AdminNavigation extends StatelessWidget {
                 WindowTitleBarBox(
                   child: Row(
                     children: [
-                      Expanded(child: MoveWindow(child: Text('Logged In'))),
-                      const WindowButtons(),
+                      Expanded(
+                        child: MoveWindow(
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 20),
+                              SvgPicture.asset(
+                                'assets/vectors/logo.svg',
+                                height: 40,
+                                width: 40,
+                              ),
+                              const SizedBox(width: 10),
+                              const Text('Averra Suite'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Row(
+                        spacing: 20,
+                        children: [
+                          const InkWell(
+                            child: Icon(Icons.person_outlined, size: 12),
+                          ),
+                          const ThemeSwitchButton(),
+                          InkWell(
+                            child: const Icon(Icons.logout_outlined, size: 12),
+                            onTap: () {
+                              JwtService().logout();
+                              context.router.replaceAll([LoginRoute()]);
+                            },
+                          ),
+                          const WindowButtons(),
+                        ],
+                      ),
                     ],
                   ),
                 ),

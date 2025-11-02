@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../helpers/financial_string_formart.dart';
 
 Column buildProductInput(
-  productController,
+  dynamic productController,
   onchange,
   fetchProducts,
   selectProduct,
@@ -39,7 +39,6 @@ Column buildProductInput(
               return ListView(
                 shrinkWrap: true,
                 children: snapshot.data!.map((suggestion) {
-                  print(suggestion);
                   dynamic servingQuantity;
                   if (suggestion['servingQuantity'] == 0 ||
                       suggestion['servingQuantity'] == null) {

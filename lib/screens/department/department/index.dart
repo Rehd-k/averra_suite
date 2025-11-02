@@ -49,7 +49,7 @@ class DepartmentIndexState extends State<DepartmentIndex> {
     }
   }
 
-  void setType(value) {
+  void setType(dynamic value) {
     setState(() {
       type = value;
     });
@@ -77,7 +77,7 @@ class DepartmentIndexState extends State<DepartmentIndex> {
     }
   }
 
-  void addOrRemoveAccess(value) async {
+  void addOrRemoveAccess(dynamic value) async {
     if (access.contains(value)) {
       access.remove(value);
     } else {
@@ -124,7 +124,6 @@ class DepartmentIndexState extends State<DepartmentIndex> {
   }
 
   Future updateDeparment(String id) async {
-    print(id);
     await apiService.patch('department/$id', {
       'title': title.text,
       'description': description.text,

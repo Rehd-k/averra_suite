@@ -43,7 +43,7 @@ class OtherIncomesDashbaordState extends State<OtherIncomesDashbaord> {
     getData(rangeLabel);
   }
 
-  Future getData(dateRange) async {
+  Future getData(dynamic dateRange) async {
     final range = getDateRange(dateRange);
 
     var futures = await Future.wait([
@@ -67,13 +67,13 @@ class OtherIncomesDashbaordState extends State<OtherIncomesDashbaord> {
     });
   }
 
-  Future getCardsData(range) {
+  Future getCardsData(dynamic range) {
     return apiService.get(
       'otherIncome/total?startDate=${range.startDate}&endDate=${range.endDate}',
     );
   }
 
-  Future getChartData(range) {
+  Future getChartData(dynamic range) {
     return apiService.get('otherIncome/chart?filter=$range');
   }
 

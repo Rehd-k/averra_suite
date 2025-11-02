@@ -52,7 +52,7 @@ class CreateRequisitionState extends State<CreateRequisition> {
     return List<Map>.from(products);
   }
 
-  void selectProductFromSugestion(suggestion, modelState) {
+  void selectProductFromSugestion(dynamic suggestion, dynamic modelState) {
     var exists = selectedProducts.firstWhere(
       (element) => element['productId'] == suggestion['_id'],
       orElse: () => {},
@@ -71,7 +71,7 @@ class CreateRequisitionState extends State<CreateRequisition> {
     }
   }
 
-  void deselectProductFromSugestion(modelState) {
+  void deselectProductFromSugestion(dynamic modelState) {
     setState(() {
       selectedProduct = null;
     });
@@ -80,7 +80,7 @@ class CreateRequisitionState extends State<CreateRequisition> {
     }
   }
 
-  void onchange(modelState) {
+  void onchange(dynamic modelState) {
     setState(() {});
     if (modelState != null) {
       modelState(() {});
@@ -97,7 +97,7 @@ class CreateRequisitionState extends State<CreateRequisition> {
     });
   }
 
-  void addToList(modelState) {
+  void addToList(dynamic modelState) {
     if (selectedProduct == null) {
       showToast('Select Product First', ToastificationType.info);
       return;
@@ -603,13 +603,13 @@ class CreateRequisitionState extends State<CreateRequisition> {
 }
 
 Widget buildProductsInput(
-  selectedProduct,
-  productController,
-  fetchProducts,
-  selectUserFromSugestion,
-  deselectUserFromSugestion,
-  onchange,
-  setModalState,
+  dynamic selectedProduct,
+  TextEditingController productController,
+  dynamic fetchProducts,
+  dynamic selectUserFromSugestion,
+  dynamic deselectUserFromSugestion,
+  dynamic onchange,
+  dynamic setModalState,
 ) {
   return selectedProduct == null
       ? Column(

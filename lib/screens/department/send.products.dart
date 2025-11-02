@@ -39,7 +39,7 @@ class SendProductsState extends State<SendProducts> {
     getProductsFromDepartment(query);
   }
 
-  void getProductsFromDepartment(query) async {
+  void getProductsFromDepartment(dynamic query) async {
     try {
       var result = await apiService.get(
         'department/$fromPoint?select=finishedGoods',
@@ -59,7 +59,6 @@ class SendProductsState extends State<SendProducts> {
     var res = await apiService.get('department?active=${true}');
 
     for (var element in res.data) {
-      print(element['access'].contains(jwtService.decodedToken?['role']));
       if (element['access'].contains(jwtService.decodedToken?['role'])) {
         toDepartments.add(element);
       }
@@ -70,13 +69,13 @@ class SendProductsState extends State<SendProducts> {
     });
   }
 
-  void selectTo(value) async {
+  void selectTo(dynamic value) async {
     setState(() {
       toPoint = value;
     });
   }
 
-  void selectFrom(value) async {
+  void selectFrom(dynamic value) async {
     String res = departmentFronts.firstWhere(
       (department) => department['_id'] == value,
       orElse: () => {'title': 'Unknown'}, // fallback in case no match

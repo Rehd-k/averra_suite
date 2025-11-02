@@ -33,7 +33,6 @@ class _CartState extends State<CartScreen> {
     String message,
     String title,
   ) async {
-    print("$message - $recipient - $title");
     await apiService.post('notifications/recipient', {
       "message": message,
       "recipient": recipient,
@@ -45,7 +44,6 @@ class _CartState extends State<CartScreen> {
     var res = await apiService.get(
       'cart?filter={"department" : "${jwtService.decodedToken?['department']}", "status" : "$settled"}&startDate=$startDate&endDate=$endDate',
     );
-    print(res);
     setState(() {
       orders = res.data;
     });

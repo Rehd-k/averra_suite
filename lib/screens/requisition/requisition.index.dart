@@ -70,7 +70,7 @@ class RequisitionIndexState extends State<RequisitionIndex> {
     showToast('Done', ToastificationType.success);
   }
 
-  Future<void> handleFilter(value) async {
+  Future<void> handleFilter(String? value) async {
     if (value != null) {
       setState(() {
         isApproved = value == 'UnFilled' ? false : true;

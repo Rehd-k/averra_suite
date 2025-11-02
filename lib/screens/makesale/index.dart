@@ -65,6 +65,17 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
     apiCount++;
   }
 
+  Future<void> updateAllSettled() async {
+    if (cartId != '') {
+      await apiService.patch('cart/confirm/$cartId', {'status': 'settled'});
+      getCartsFromStorage();
+    }
+    setState(() {
+      cart = [];
+      cartId = '';
+    });
+  }
+
   Future<void> updateSingleSettled() async {
     await apiService.patch('cart/update/$cartId', {
       "_id": cartId,
@@ -258,7 +269,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
 
   void getCartsFromStorage() async {
     var res = await apiService.get(
-      'cart?filter={"initiator" : "${JwtService().decodedToken?['username']}"}&startDate=$startDate&endDate=$endDate',
+      'cart?filter={"initiator" : "${JwtService().decodedToken?['username']}", "status" : "pending"}&startDate=$startDate&endDate=$endDate',
     );
     savedCarts = res.data;
   }
@@ -270,7 +281,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
     });
   }
 
-  void emptycart() {
+  Future<void> emptycart() async {
     setState(() {
       cart = [];
       cartId = '';
@@ -278,7 +289,7 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
   }
 
   void handleSubmited() async {
-    emptycart();
+    await updateAllSettled();
     // await getProductsList();
   }
 
@@ -429,74 +440,75 @@ class MakeSaleIndexState extends State<MakeSaleScreen> {
                 );
               },
             ),
-            FloatingActionButton.small(
-              onPressed: () {
-                showModalBottomSheet(
-                  isScrollControlled: true,
-                  context: context,
-                  builder: (context) => StatefulBuilder(
-                    builder: (context, setModalState) => Container(
-                      padding: const EdgeInsets.all(8.0),
-                      height: MediaQuery.of(context).size.height * 0.98,
-                      child: CartSection(
-                        isSmallScreen: smallScreen,
-                        saveCart: () {
-                          saveCartToStorage();
-                          setModalState(() {});
-                        },
-                        emptyCart: () {
-                          emptycart();
-                          setModalState(() {});
-                        },
-                        cart: cart,
-                        cartTotal: getCartTotal(),
-                        decrementCartQuantity: (product) {
-                          decrementCartQuantity(product);
-                          setModalState(() {});
-                        },
-                        incrementCartQuantity: (product) {
-                          incrementCartQuantity(product);
-                          setModalState(() {});
-                        },
-                        removeFromCart: (product) {
-                          removeFromCart(product);
-                          setModalState(() {});
-                        },
-                        handleComplete: handleSubmited,
-                        cartId: cartId,
-                        updateSingleSettled: updateSingleSettled,
+            if (smallScreen)
+              FloatingActionButton.small(
+                onPressed: () {
+                  showModalBottomSheet(
+                    isScrollControlled: true,
+                    context: context,
+                    builder: (context) => StatefulBuilder(
+                      builder: (context, setModalState) => Container(
+                        padding: const EdgeInsets.all(8.0),
+                        height: MediaQuery.of(context).size.height * 0.98,
+                        child: CartSection(
+                          isSmallScreen: smallScreen,
+                          saveCart: () {
+                            saveCartToStorage();
+                            setModalState(() {});
+                          },
+                          emptyCart: () {
+                            emptycart();
+                            setModalState(() {});
+                          },
+                          cart: cart,
+                          cartTotal: getCartTotal(),
+                          decrementCartQuantity: (product) {
+                            decrementCartQuantity(product);
+                            setModalState(() {});
+                          },
+                          incrementCartQuantity: (product) {
+                            incrementCartQuantity(product);
+                            setModalState(() {});
+                          },
+                          removeFromCart: (product) {
+                            removeFromCart(product);
+                            setModalState(() {});
+                          },
+                          handleComplete: handleSubmited,
+                          cartId: cartId,
+                          updateSingleSettled: updateSingleSettled,
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  const Icon(Icons.shopping_cart_outlined, size: 40),
-                  if (cart.isNotEmpty)
-                    Positioned(
-                      child: Container(
-                        alignment: Alignment.center,
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          '${cart.length}',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 10,
+                  );
+                },
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    const Icon(Icons.shopping_cart_outlined, size: 40),
+                    if (cart.isNotEmpty)
+                      Positioned(
+                        child: Container(
+                          alignment: Alignment.center,
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '${cart.length}',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
           ],
         ),
 

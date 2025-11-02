@@ -237,20 +237,23 @@ class ManagerNavigationScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.person_outlined, size: 10),
-                    iconSize: 10,
-                    onPressed: () {},
+                  Row(
+                    spacing: 20,
+                    children: [
+                      const InkWell(
+                        child: Icon(Icons.person_outlined, size: 12),
+                      ),
+                      const ThemeSwitchButton(),
+                      InkWell(
+                        child: const Icon(Icons.logout_outlined, size: 12),
+                        onTap: () {
+                          JwtService().logout();
+                          context.router.replaceAll([LoginRoute()]);
+                        },
+                      ),
+                      const WindowButtons(),
+                    ],
                   ),
-                  const ThemeSwitchButton(),
-                  IconButton(
-                    icon: const Icon(Icons.logout_outlined, size: 12),
-                    onPressed: () {
-                      JwtService().logout();
-                      context.router.replaceAll([LoginRoute()]);
-                    },
-                  ),
-                  const WindowButtons(),
                 ],
               ),
             ),
@@ -292,55 +295,60 @@ class MenuListState extends State<MenuList> {
   Widget build(BuildContext context) {
     final isLargeScreen = MediaQuery.of(context).size.width > 1200;
 
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        DrawerHeader(
-          decoration: BoxDecoration(
-            color: Theme.of(context).appBarTheme.backgroundColor,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: const CircleAvatar(
-                      child: Icon(Icons.person_outlined),
+    return Container(
+      color: Theme.of(context).appBarTheme.backgroundColor,
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).appBarTheme.backgroundColor,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: const CircleAvatar(
+                        child: Icon(Icons.person_outlined),
+                      ),
                     ),
-                  ),
-                  // On large screens, the ThemeSwitchButton is here because there's no AppBar.
-                  if (isLargeScreen)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const ThemeSwitchButton(),
-                        IconButton(
-                          icon: const Icon(Icons.logout_outlined, size: 10),
-                          onPressed: () {
-                            jwtService.logout();
-                            context.router.replaceAll([LoginRoute()]);
-                          },
-                        ),
-                      ],
+                    // On large screens, the ThemeSwitchButton is here because there's no AppBar.
+                    if (isLargeScreen)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const ThemeSwitchButton(),
+                          IconButton(
+                            icon: const Icon(Icons.logout_outlined, size: 10),
+                            onPressed: () {
+                              jwtService.logout();
+                              context.router.replaceAll([LoginRoute()]);
+                            },
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      capitalizeFirstLetter(
+                        jwtService.decodedToken?['username'],
+                      ),
                     ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    capitalizeFirstLetter(jwtService.decodedToken?['username']),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        // Generate the list of menu items dynamically
-        ...menuData.map((item) => _buildMenuItem(item)),
-      ],
+          // Generate the list of menu items dynamically
+          ...menuData.map((item) => _buildMenuItem(item)),
+        ],
+      ),
     );
   }
 

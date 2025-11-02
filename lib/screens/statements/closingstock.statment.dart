@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 
 class ClosingstockStatementScreen extends StatefulWidget {
-  const ClosingstockStatementScreen({ super.key });
+  const ClosingstockStatementScreen({super.key});
 
   @override
-  _ClosingstockStatementState createState() => _ClosingstockStatementState();
+  ClosingstockStatementState createState() => ClosingstockStatementState();
 }
 
-class _ClosingstockStatementState extends State<ClosingstockStatementScreen> {
+class ClosingstockStatementState extends State<ClosingstockStatementScreen> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      
-    );
+    return Container();
   }
 }

@@ -12,21 +12,24 @@ class ThemeSwitchButton extends StatelessWidget {
     // Watch for changes in the theme state to update the icon.
     final themeProvider = context.watch<ThemeProvider>();
 
-    return IconButton(
+    return InkWell(
       // Choose icon based on the current theme.
-      icon: Icon(
-        themeProvider.isDarkMode
-            ? Icons.wb_sunny_outlined
-            : Icons.nightlight_round,
-        size: 10,
-      ),
-      tooltip: 'Toggle Theme',
-      onPressed: () {
+      onTap: () {
         // Call the toggle function. 'read' is used here because we're
         // calling a function and don't need to rebuild this specific widget
         // when the state changes (the parent MaterialApp handles that).
         context.read<ThemeProvider>().toggleTheme();
       },
+      // Choose icon based on the current theme.
+      child: Tooltip(
+        message: 'Toggle Theme',
+        child: Icon(
+          themeProvider.isDarkMode
+              ? Icons.wb_sunny_outlined
+              : Icons.nightlight_round,
+          size: 10,
+        ),
+      ),
     );
   }
 }

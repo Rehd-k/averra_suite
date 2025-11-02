@@ -174,7 +174,6 @@ class AddInvoiceState extends State<AddInvoice> {
       'issuedDate': issueDate.toIso8601String(),
       'dueDate': dueDate.toIso8601String(),
       'invoiceNumber': referenceNumber.toLowerCase(),
-      'from': department,
       'items': selectedProducts,
       'discount': _calculateDiscount(),
       'totalAmount': _calculateDueAmount(),
@@ -202,7 +201,7 @@ class AddInvoiceState extends State<AddInvoice> {
     }
   }
 
-  Future<void> sharePdf(invoice) async {
+  Future<void> sharePdf(dynamic invoice) async {
     final file = await generateInvoicePdf(invoice);
     await SharePlus.instance.share(
       ShareParams(
@@ -279,7 +278,7 @@ class AddInvoiceState extends State<AddInvoice> {
     }
   }
 
-  void selectUserFromSugestion(suggestion) {
+  void selectUserFromSugestion(dynamic suggestion) {
     setState(() {
       selectedName = suggestion;
       nameController.clear();
@@ -306,7 +305,7 @@ class AddInvoiceState extends State<AddInvoice> {
     setState(() {});
   }
 
-  void selectProduct(suggestion) {
+  void selectProduct(dynamic suggestion) {
     suggestion['quantity'] > 0
         ? setState(() {
             final existingIndex = selectedProducts.indexWhere(
@@ -319,6 +318,7 @@ class AddInvoiceState extends State<AddInvoice> {
               quantityControllers.removeAt(existingIndex);
               focusNodes.removeAt(existingIndex);
             } else {
+              suggestion['from'] = department;
               suggestion['productId']['servingPrice'] =
                   suggestion['productId']['servingPrice'];
               suggestion['quantity'] = 1;
@@ -864,7 +864,7 @@ class AddInvoiceState extends State<AddInvoice> {
     );
   }
 
-  Card discountNote(isSmallScreen) {
+  Card discountNote(dynamic isSmallScreen) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),

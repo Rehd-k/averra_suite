@@ -46,7 +46,7 @@ class _AddSupplierContactState extends State<AddSupplierContact> {
         'otherContacts': [supplierData, ...widget.currentList],
       });
       widget.onUpdated(widget.currentList..add(supplierData));
-
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('saved successfully!')));

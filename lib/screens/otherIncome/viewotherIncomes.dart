@@ -1,16 +1,16 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:averra_suite/app_router.gr.dart';
 import 'package:averra_suite/helpers/financial_string_formart.dart';
 import 'package:averra_suite/service/date_range_helper.dart';
 import 'package:averra_suite/service/token.service.dart';
 import 'package:flutter/material.dart';
 import 'package:number_pagination/number_pagination.dart';
+import '../../app_router.gr.dart';
 import '../../components/emptylist.dart';
 import '../../components/filter.pill.dart';
 import '../../components/smallinfo.card.dart';
 
 import '../../service/api.service.dart';
-import 'add_otherIcome.dart';
+import 'addotherincome.dart';
 import 'categories.dart';
 
 @RoutePage()
@@ -139,19 +139,19 @@ class ViewOtherIncomesState extends State<ViewOtherIncomes> {
     }
   }
 
-  void handleSelectCategory(value) {
+  void handleSelectCategory(String value) {
     setState(() {
       category = value;
     });
     getOtherIncomes();
   }
 
-  Future<void> handleDelete(id) async {
+  Future<void> handleDelete(String id) async {
     await apiService.delete('otherIncome/$id');
     getOtherIncomes();
   }
 
-  Future<void> handleUpdate(id, update) async {
+  Future<void> handleUpdate(String id, update) async {
     await apiService.patch('otherIncome/$id', update);
     getOtherIncomes();
   }
@@ -176,7 +176,7 @@ class ViewOtherIncomesState extends State<ViewOtherIncomes> {
     return Icons.help_outline;
   }
 
-  void handlePageChange(pageNumber) {
+  void handlePageChange(int pageNumber) {
     setState(() {
       selectedPageNumber = pageNumber;
     });

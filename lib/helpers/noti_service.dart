@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class LocalNotificationService {
@@ -20,7 +18,7 @@ class LocalNotificationService {
           appName: 'Averra Suite',
           appUserModelId: 'com.vessel.avs',
           guid: 'c299e27a-6b7e-4374-b38a-b67fa5f232d4',
-          iconPath: 'assets/icon.ico',
+          iconPath: 'assets/images/logo.ico',
         );
 
     InitializationSettings initializationSettings = InitializationSettings(

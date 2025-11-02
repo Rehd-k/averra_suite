@@ -78,7 +78,7 @@ class PendingRequisitionState extends State<PendingRequisition> {
     getRequisitions();
   }
 
-  Future<void> handleFilter(value) async {
+  Future<void> handleFilter(String? value) async {
     if (value != null) {
       setState(() {
         isApproved = value == 'UnFilled' ? false : true;

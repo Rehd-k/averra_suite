@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../helpers/financial_string_formart.dart';
 
-Widget buildNameInput(selectedName, nameController, fetchNames,
-    selectUserFromSugestion, deselectUserFromSugestion, onchange) {
+Widget buildNameInput(
+  dynamic selectedName,
+  nameController,
+  fetchNames,
+  selectUserFromSugestion,
+  deselectUserFromSugestion,
+  onchange,
+) {
   return selectedName == null
       ? Column(
           children: [
@@ -32,8 +38,9 @@ Widget buildNameInput(selectedName, nameController, fetchNames,
                     return CircularProgressIndicator();
                   } else if (snapshot.hasError) {
                     return Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text('Error: ${snapshot.error}'));
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text('Error: ${snapshot.error}'),
+                    );
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return Padding(
                       padding: const EdgeInsets.only(top: 8.0),
@@ -46,9 +53,11 @@ Widget buildNameInput(selectedName, nameController, fetchNames,
                         return ListTile(
                           title: Text(suggestion['name']),
                           subtitle: Text(suggestion['phone_number']),
-                          trailing: Text(suggestion['total_spent']
-                              .toString()
-                              .formatToFinancial(isMoneySymbol: true)),
+                          trailing: Text(
+                            suggestion['total_spent']
+                                .toString()
+                                .formatToFinancial(isMoneySymbol: true),
+                          ),
                           onTap: () {
                             selectUserFromSugestion(suggestion);
                           },

@@ -119,25 +119,23 @@ class _KitchenNavigationScreenState extends State<KitchenNavigationScreen> {
                         ),
                       ),
                     ),
-                    InkWell(
-                      child: Icon(Icons.person_outlined, size: 10),
-                      onTap: () {
-                        ws.sendNotification(
-                          toUserIds: [JwtService().decodedToken?['sub']],
-                          title: 'New Notification',
-                          payload: {"body": 'I want to go home'},
-                        );
-                      },
+                    Row(
+                      spacing: 20,
+                      children: [
+                        const InkWell(
+                          child: Icon(Icons.person_outlined, size: 12),
+                        ),
+                        const ThemeSwitchButton(),
+                        InkWell(
+                          child: const Icon(Icons.logout_outlined, size: 12),
+                          onTap: () {
+                            JwtService().logout();
+                            context.router.replaceAll([LoginRoute()]);
+                          },
+                        ),
+                        const WindowButtons(),
+                      ],
                     ),
-                    const ThemeSwitchButton(),
-                    IconButton(
-                      icon: const Icon(Icons.logout_outlined, size: 12),
-                      onPressed: () {
-                        JwtService().logout();
-                        context.router.replaceAll([LoginRoute()]);
-                      },
-                    ),
-                    const WindowButtons(),
                   ],
                 ),
               ),

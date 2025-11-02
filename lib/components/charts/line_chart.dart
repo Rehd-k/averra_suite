@@ -209,7 +209,7 @@ class _LineChart extends StatelessWidget {
     );
   }
 
-  double getMaxX(xAxis) {
+  double getMaxX(dynamic xAxis) {
     if (xAxis < 4) {
       return 7;
     } else {

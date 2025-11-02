@@ -148,7 +148,7 @@ class ApprovalCards extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: ListView.separated(
           itemCount: products.length,
-          separatorBuilder: (_, __) => const Divider(),
+          separatorBuilder: (_, _) => const Divider(),
           itemBuilder: (_, index) {
             final product = products[index];
             return ListTile(

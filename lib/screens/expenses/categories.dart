@@ -40,18 +40,18 @@ class CategoriesState extends State<CategoriesScreen> {
   ApiService apiService = ApiService();
   late List categories = [];
 
-  void selectIcon(icon) {
+  void selectIcon(dynamic icon) {
     setState(() {
       selectedIconName = icon;
     });
   }
 
-  Future<void> handleUpdate(id, update) async {
+  Future<void> handleUpdate(String id, update) async {
     await apiService.patch('expense/category/update/$id', update);
     getCategories();
   }
 
-  Future<void> handleDelete(id) async {
+  Future<void> handleDelete(String id) async {
     await apiService.delete('expense/category/delete/$id');
     getCategories();
   }

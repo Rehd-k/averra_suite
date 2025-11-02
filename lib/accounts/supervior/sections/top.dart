@@ -87,9 +87,7 @@ class Top extends StatelessWidget {
             SizedBox(
               width: cardWidth,
               child: InkWell(
-                onTap: () {
-                  print('clicked');
-                },
+                onTap: () {},
                 child: FinanceCard(
                   fontSize: cardsPerRow == 3 ? 10 : 5,
                   isFinancial: false,

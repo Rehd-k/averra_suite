@@ -32,7 +32,7 @@ class AccountingDashboardState extends State<AccountingDashboardScreen> {
     getData(rangeLabel);
   }
 
-  Future getData(dateRange) async {
+  Future getData(dynamic dateRange) async {
     final range = getDateRange(dateRange);
 
     var futures = await Future.wait([
@@ -69,7 +69,7 @@ class AccountingDashboardState extends State<AccountingDashboardScreen> {
     });
   }
 
-  Future getCardsData(range) async {
+  Future getCardsData(dynamic range) async {
     return await Future.wait([
       apiService.get(
         'sales/all-sells-data?startDate=${range.startDate}&endDate=${range.endDate}',
@@ -83,11 +83,11 @@ class AccountingDashboardState extends State<AccountingDashboardScreen> {
     ]);
   }
 
-  Future getChartData(range) {
+  Future getChartData(dynamic range) {
     return apiService.get('analytics/get-sales-chart?filter=$range');
   }
 
-  Future getExpensesChartData(range) {
+  Future getExpensesChartData(dynamic range) {
     return apiService.get('expense/chart?filter=$range');
   }
 

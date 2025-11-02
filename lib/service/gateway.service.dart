@@ -1,6 +1,6 @@
 // ignore_for_file: slash_for_doc_comments
 
-import 'package:dio/src/response.dart';
+import 'package:dio/dio.dart';
 
 import 'api.service.dart';
 
@@ -16,7 +16,12 @@ class GatewayService {
    *   Bank Apis    *
    ******************/
 
-  Future<dynamic> createBank(name, accountName, accountNumber, access) async {
+  Future<dynamic> createBank(
+    String name,
+    String accountName,
+    String accountNumber,
+    dynamic access,
+  ) async {
     return apiService.post('/bank', {
       'name': name,
       'accountName': accountName,

@@ -141,7 +141,7 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
     debugPrint(_selectedRows.toString());
   }
 
-  Future<void> handleDamagedGoodsClicked(rowData) async {
+  Future<void> handleDamagedGoodsClicked(dynamic rowData) async {
     if (returnedSelection.isEmpty) {
       if (rowData['quantity'] == getSold(rowData['sold'])) {
         doAlerts('This batch have been sold out');
@@ -156,7 +156,7 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
     }
   }
 
-  Future<void> handleReturnGoodsClicked(rowData) async {
+  Future<void> handleReturnGoodsClicked(dynamic rowData) async {
     if (returnedSelection.isEmpty) {
       if (rowData['quantity'] == getSold(rowData['sold'])) {
         doAlerts('This batch have been sold out');
@@ -171,14 +171,14 @@ class RawMaterialDashboardState extends State<RawMaterialDashboard> {
     }
   }
 
-  Future<void> handleDamagedGoods(data) async {
+  Future<void> handleDamagedGoods(dynamic data) async {
     await apiService.put('rm-purchases/doDamage/${data['_id']}', {
       ...data,
       "rawmaterialId": rawmaterialId,
     });
   }
 
-  Future<void> handleReturndGoods(data) async {
+  Future<void> handleReturndGoods(dynamic data) async {
     num amountSpent = data['totalPayable'] - data['debt'];
     num quantityPaidFor = amountSpent ~/ data['price'];
     num quantityRemening = data['quantity'] - quantityPaidFor;

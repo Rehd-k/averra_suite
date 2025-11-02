@@ -224,16 +224,14 @@ class _LoginFormState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  const CircleAvatar(child: Icon(Icons.person_outlined)),
-                  const ThemeSwitchButton(),
-                  IconButton(
-                    icon: const Icon(Icons.logout_outlined, size: 12),
-                    onPressed: () {
-                      JwtService().logout();
-                      context.router.replaceAll([LoginRoute()]);
-                    },
+                  Row(
+                    spacing: 20,
+                    children: [
+                      const ThemeSwitchButton(),
+
+                      const WindowButtons(),
+                    ],
                   ),
-                  const WindowButtons(),
                 ],
               ),
             ),
@@ -252,9 +250,7 @@ class _LoginFormState extends State<LoginScreen> {
                 BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
                   child: Container(
-                    color: Colors.black.withOpacity(
-                      0.3,
-                    ), // optional dark overlay
+                    color: Colors.black.withAlpha(200), // optional dark overlay
                   ),
                 ),
 

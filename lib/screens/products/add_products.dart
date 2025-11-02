@@ -542,35 +542,27 @@ class AddProductsState extends State<AddProducts> {
 
                         Expanded(
                           flex: 1,
-                          child: Column(
-                            children: [
-                              ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: const Text('True'),
-                                leading: Radio<bool>(
-                                  value: true,
-                                  groupValue: isAvailableController,
-                                  onChanged: (bool? value) {
-                                    setState(() {
-                                      isAvailableController = value!;
-                                    });
-                                  },
+                          child: RadioGroup<bool>(
+                            groupValue: isAvailableController,
+                            onChanged: (bool? newValue) {
+                              setState(() {
+                                isAvailableController = newValue!;
+                              });
+                            },
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: const Text('True'),
+                                  leading: Radio<bool>(value: true),
                                 ),
-                              ),
-                              ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: const Text('False'),
-                                leading: Radio<bool>(
-                                  value: false,
-                                  groupValue: isAvailableController,
-                                  onChanged: (bool? value) {
-                                    setState(() {
-                                      isAvailableController = value!;
-                                    });
-                                  },
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: const Text('False'),
+                                  leading: Radio<bool>(value: false),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -586,35 +578,27 @@ class AddProductsState extends State<AddProducts> {
 
                           Expanded(
                             flex: 1,
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  title: const Text('True'),
-                                  leading: Radio<bool>(
-                                    value: true,
-                                    groupValue: sellUnits,
-                                    onChanged: (bool? value) {
-                                      setState(() {
-                                        sellUnits = value!;
-                                      });
-                                    },
+                            child: RadioGroup<bool>(
+                              groupValue: sellUnits,
+                              onChanged: (bool? newValue) {
+                                setState(() {
+                                  sellUnits = newValue!;
+                                });
+                              },
+                              child: Column(
+                                children: [
+                                  ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    title: const Text('True'),
+                                    leading: Radio<bool>(value: true),
                                   ),
-                                ),
-                                ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  title: const Text('False'),
-                                  leading: Radio<bool>(
-                                    value: false,
-                                    groupValue: sellUnits,
-                                    onChanged: (bool? value) {
-                                      setState(() {
-                                        sellUnits = value!;
-                                      });
-                                    },
+                                  ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    title: const Text('False'),
+                                    leading: Radio<bool>(value: false),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ],

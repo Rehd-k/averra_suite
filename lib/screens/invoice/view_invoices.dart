@@ -37,19 +37,19 @@ class ViewInvoicesState extends State<ViewInvoices> {
   bool _isLoading = false;
   bool _hasMore = true;
 
-  void onFieldChange(value) {
+  void onFieldChange(dynamic value) {
     setState(() {
       selectedDateField = value;
     });
   }
 
-  void onInputChange(value) {
+  void onInputChange(dynamic value) {
     setState(() {
       selectedForSearch = value;
     });
   }
 
-  void onSelectStatus(value) {
+  void onSelectStatus(dynamic value) {
     setState(() {
       selectedStatus = value;
     });
@@ -77,7 +77,7 @@ class ViewInvoicesState extends State<ViewInvoices> {
     });
   }
 
-  Future<void> onSearchParamsChange(value) async {
+  Future<void> onSearchParamsChange(dynamic value) async {
     await Future.delayed(const Duration(seconds: 1));
     _invoices = [];
     setState(() {
