@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:averra_suite/components/emptylist.dart';
 import 'package:averra_suite/service/toast.service.dart';
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
@@ -98,6 +99,7 @@ class DepartmentHistoryState extends State<DepartmentHistory> {
   String? showFilter = 'all';
   String status = 'all';
   String department = 'Select';
+  int limit = 10;
   late List statuses = [
     {'title': "all"},
     {'title': "true"},
@@ -106,7 +108,7 @@ class DepartmentHistoryState extends State<DepartmentHistory> {
 
   Future<Map<String, dynamic>> fetchRequests(int page) async {
     final response = await apiService.get(
-      'department-history?filter={"department":"$department","confirmed":"$status"}&skip=$page&sort={"createdAt":-1}&startDate=$startDate&endDate=$endDate',
+      'department-history?department=$department&confirmed=$status&skip=$page&createdAt=-1&limit=$limit&startDate=$startDate&endDate=$endDate',
     );
 
     final data = response.data;
@@ -161,14 +163,18 @@ class DepartmentHistoryState extends State<DepartmentHistory> {
         endDate = picked;
       });
     }
+    _loadMore();
   }
 
   void handleDateReset() {
     setState(() {
       startDate = DateTime.now();
       endDate = DateTime.now();
-      // getSales();
+      status = 'all';
+      department = 'Select';
     });
+
+    _loadMore();
   }
 
   void handleSelectStatus(dynamic value) {
@@ -195,8 +201,12 @@ class DepartmentHistoryState extends State<DepartmentHistory> {
         toDepartments.add(element);
       }
     }
+
     setState(() {
-      departmentFronts = toDepartments;
+      departmentFronts = [
+        {'title': 'Select'},
+        ...toDepartments,
+      ];
       loading = false;
 
       _loadMore();
@@ -271,7 +281,12 @@ class DepartmentHistoryState extends State<DepartmentHistory> {
         // Expanded widget to allow GridView to take remaining space
         Expanded(
           child: _requests.isEmpty && !_isLoading
-              ? const Center(child: Text('No requests found'))
+              ? EmptyComponent(
+                  icon: Icons.request_page_outlined,
+                  message: 'No Stock Movement',
+                  reload: _loadMore,
+                  subMessage: 'Stock Have Not Been Moved Aroud Today',
+                )
               : GridView.builder(
                   controller: _scrollController,
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(

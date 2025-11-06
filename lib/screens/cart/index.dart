@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../components/emptylist.dart';
 import '../../components/filter.pill.dart';
+import '../../helpers/webSocket.connect.dart';
 import '../../service/date_range_helper.dart';
 import '../../service/token.service.dart';
 import 'orderitem.dart';
@@ -19,6 +20,7 @@ class CartScreen extends StatefulWidget {
 class _CartState extends State<CartScreen> {
   ApiService apiService = ApiService();
   JwtService jwtService = JwtService();
+  final webSocketService = WebSocketService();
   late List orders = [];
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();

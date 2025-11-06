@@ -29,6 +29,7 @@ class WipState extends State<Wip> {
   late Map departmentFront = {};
   late List departmentFronts = [];
   late List products = [];
+  late List filteredProducts = [];
   List<Map> selectedProducts = [];
   late List wipProgress = [];
 
@@ -41,7 +42,16 @@ class WipState extends State<Wip> {
   bool isWip = false;
 
   void doSearch(String query) {
-    getProductsFromDepartment();
+    final lowerQuery = query.toLowerCase();
+
+    setState(() {
+      filteredProducts = products.where((product) {
+        final title = product['title'].toString().toLowerCase();
+        return title.contains(lowerQuery);
+      }).toList();
+    });
+
+    // getProductsFromDepartment();
   }
 
   void getProductsFromDepartment() async {
@@ -53,6 +63,7 @@ class WipState extends State<Wip> {
         setState(() {
           departmentFront = result.data;
           products = result.data['RawGoods'];
+          filteredProducts = result.data['RawGoods'];
           loading = false;
         });
       } catch (e) {
@@ -259,7 +270,7 @@ class WipState extends State<Wip> {
 
     setState(() {
       selectedProducts = [];
-      products = [];
+      filteredProducts = [];
       toPoint = '';
       fromPoint = '';
       fromPointName = '';
@@ -297,7 +308,7 @@ class WipState extends State<Wip> {
 
     setState(() {
       selectedProducts = [];
-      products = [];
+      filteredProducts = [];
       toPoint = '';
       fromPoint = '';
       fromPointName = '';
@@ -525,16 +536,16 @@ class WipState extends State<Wip> {
             child: Center(child: Text('Select A Point To Send From')),
           ),
 
-        if (fromPoint.isNotEmpty && products.isEmpty)
+        if (fromPoint.isNotEmpty && filteredProducts.isEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 20),
             child: Center(child: Text('No Products at the $fromPointName')),
           ),
-        if (products.isNotEmpty && fromPoint.isNotEmpty)
+        if (filteredProducts.isNotEmpty && fromPoint.isNotEmpty)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
-              columnSpacing: 133,
+              columnSpacing: isSmallScreen ? 100 : 160,
               columns: [
                 DataColumn(label: Text('Product Title')),
                 DataColumn(label: Text('Quantity At Department')),
@@ -542,7 +553,7 @@ class WipState extends State<Wip> {
                 DataColumn(label: Text('Quantity To Send')),
                 DataColumn(label: Text('At Cost')),
               ],
-              rows: products.asMap().entries.map((entry) {
+              rows: filteredProducts.asMap().entries.map((entry) {
                 final product = entry.value;
                 final exists = selectedProducts.any(
                   (selected) => selected['_id'] == product['_id'],

@@ -52,7 +52,7 @@ class WebSocketService {
     _socket = null;
 
     _socket = IO.io(
-      'http://localhost:3000', // <-- replace with prod URL
+      'http://localhost:3000/', // <-- replace with prod URL
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .setQuery({'userId': _userId!})
@@ -87,10 +87,7 @@ class WebSocketService {
       ..on('notification', (data) {
         final map = _safeJson(data);
         _notificationController.add(map);
-        localNotificationService.showNotification(
-          map['title'],
-          map['payload']['body'],
-        );
+        localNotificationService.showNotification(map['title'], map['message']);
       });
   }
 
@@ -120,10 +117,26 @@ class WebSocketService {
   void sendNotification({
     required List<String> toUserIds,
     required String title,
+    required String message,
     Map<String, dynamic> payload = const {},
   }) {
     if (!isConnected) return;
     _socket!.emit('notification', {
+      'to': toUserIds,
+      'title': title,
+      'message': message,
+      'payload': payload,
+    });
+  }
+
+  /// Send a generic notification (server must emit `notification` back to others)
+  void sendNotificationToRole({
+    required List<String> toUserIds,
+    required String title,
+    Map<String, dynamic> payload = const {},
+  }) {
+    if (!isConnected) return;
+    _socket!.emit('role-notification', {
       'to': toUserIds,
       'title': title,
       'payload': payload,

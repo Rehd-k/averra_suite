@@ -102,6 +102,8 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: SendProducts.page),
         AutoRoute(page: DepartmentHistory.page),
         AutoRoute(page: SendToBranchRoute.page),
+        AutoRoute(page: Wip.page),
+        AutoRoute(page: CustomerDetails.page),
       ],
     ),
     AutoRoute(

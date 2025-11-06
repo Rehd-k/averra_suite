@@ -44,12 +44,25 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     };
     if (widget.updateInfo == null) {
       await apiService.post('expense', data);
+      // await sendNotification();
     } else {
       await apiService.patch('expense/${widget.updateInfo?['_id']}', data);
     }
 
     showToast('Added', ToastificationType.success);
     clearExpencesForm();
+  }
+
+  Future<void> sendNotification(
+    List<String> recipient,
+    String message,
+    String title,
+  ) async {
+    await apiService.post('notifications', {
+      "message": message,
+      "recipient": recipient,
+      "title": title,
+    });
   }
 
   Future<void> clearExpencesForm() async {

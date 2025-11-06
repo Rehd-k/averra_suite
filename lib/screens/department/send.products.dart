@@ -27,6 +27,7 @@ class SendProductsState extends State<SendProducts> {
   late String departmentPoint = '';
   late Map departmentFront = {};
   late List departmentFronts = [];
+  late List filteredProducts = [];
   late List products = [];
   List<Map> selectedProducts = [];
 
@@ -36,7 +37,16 @@ class SendProductsState extends State<SendProducts> {
   String fromPointName = '';
 
   void doSearch(String query) {
-    getProductsFromDepartment(query);
+    final lowerQuery = query.toLowerCase();
+
+    setState(() {
+      filteredProducts = products.where((product) {
+        final title = product['title'].toString().toLowerCase();
+        return title.contains(lowerQuery);
+      }).toList();
+    });
+
+    // getProductsFromDepartment();
   }
 
   void getProductsFromDepartment(dynamic query) async {
@@ -46,6 +56,7 @@ class SendProductsState extends State<SendProducts> {
       );
       setState(() {
         departmentFront = result.data;
+        filteredProducts = result.data['finishedGoods'];
         products = result.data['finishedGoods'];
         loading = false;
       });
@@ -224,7 +235,7 @@ class SendProductsState extends State<SendProducts> {
 
     setState(() {
       selectedProducts = [];
-      products = [];
+      filteredProducts = [];
       toPoint = '';
       fromPoint = '';
       fromPointName = '';
@@ -347,17 +358,17 @@ class SendProductsState extends State<SendProducts> {
             child: Center(child: Text('Select A Department To Send From')),
           ),
 
-        if (fromPoint.isNotEmpty && products.isEmpty)
+        if (fromPoint.isNotEmpty && filteredProducts.isEmpty)
           Expanded(
             child: Center(child: Text('No Products at the $fromPointName')),
           ),
-        if (products.isNotEmpty && fromPoint.isNotEmpty)
+        if (filteredProducts.isNotEmpty && fromPoint.isNotEmpty)
           Expanded(
             child: SingleChildScrollView(
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
-                  columnSpacing: smallScreen ? 100 : 183,
+                  columnSpacing: smallScreen ? 100 : 230,
                   columns: [
                     DataColumn(label: Text('Product Title')),
                     DataColumn(label: Text('Quantity At Department')),
@@ -365,7 +376,7 @@ class SendProductsState extends State<SendProducts> {
                     DataColumn(label: Text('Quantity To Send')),
                     // DataColumn(label: Text('At Price')),
                   ],
-                  rows: products.asMap().entries.map((entry) {
+                  rows: filteredProducts.asMap().entries.map((entry) {
                     final product = entry.value;
                     final exists = selectedProducts.any(
                       (selected) => selected['_id'] == product['_id'],

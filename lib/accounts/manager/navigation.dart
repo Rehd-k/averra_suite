@@ -8,7 +8,9 @@ import 'package:flutter_svg/svg.dart';
 import '../../app_router.gr.dart';
 import '../../components/theme_switch_button.dart';
 import '../../helpers/financial_string_formart.dart';
+import '../../helpers/notificationbar.dart';
 import '../../helpers/title_bar.dart';
+import '../../helpers/user.profile.dart';
 import '../../service/token.service.dart';
 
 /// A type-safe data model for our navigation items.
@@ -179,6 +181,11 @@ final List<MenuItem> menuData = [
         title: 'Move Products',
         link: SendProducts(),
       ),
+      MenuItem(
+        icon: Icons.local_shipping_outlined,
+        title: 'Move Rawmaterial',
+        link: Wip(),
+      ),
 
       MenuItem(
         icon: Icons.list_alt,
@@ -240,9 +247,8 @@ class ManagerNavigationScreen extends StatelessWidget {
                   Row(
                     spacing: 20,
                     children: [
-                      const InkWell(
-                        child: Icon(Icons.person_outlined, size: 12),
-                      ),
+                      SlidingNotificationDropdown(),
+                      SlidingProfileDropdown(),
                       const ThemeSwitchButton(),
                       InkWell(
                         child: const Icon(Icons.logout_outlined, size: 12),
