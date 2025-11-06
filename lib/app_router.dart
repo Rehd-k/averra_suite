@@ -104,6 +104,10 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: SendToBranchRoute.page),
         AutoRoute(page: Wip.page),
         AutoRoute(page: CustomerDetails.page),
+        AutoRoute(page: AddOtherIncomeRoute.page),
+        AutoRoute(page: OtherIncomeCategoriesRoute.page),
+        AutoRoute(page: OtherIncomesDashbaord.page),
+        AutoRoute(page: ViewOtherIncomes.page),
       ],
     ),
     AutoRoute(

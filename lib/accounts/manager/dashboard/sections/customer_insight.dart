@@ -36,7 +36,7 @@ class CustomerInsight extends StatelessWidget {
             SizedBox(height: 20),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 14),
-              height: isBigScreen ? 175 : 70,
+              height: isBigScreen ? 175 : 300,
               child: grids(isBigScreen, context),
             ),
             SizedBox(height: 5),

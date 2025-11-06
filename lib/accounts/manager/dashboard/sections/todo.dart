@@ -72,6 +72,7 @@ class TodoTableState extends State<TodoTable> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Todo'),
         actions: [
           DropdownButton<bool>(

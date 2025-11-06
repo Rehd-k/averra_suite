@@ -8,6 +8,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../app_router.gr.dart';
 import '../../components/theme_switch_button.dart';
 import '../../helpers/financial_string_formart.dart';
+import '../../helpers/notificationbar.dart';
 import '../../helpers/title_bar.dart';
 import '../../service/token.service.dart';
 
@@ -163,6 +164,7 @@ class AccountingNavigationScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 10),
               ),
               actions: [
+                SlidingNotificationDropdown(),
                 ThemeSwitchButton(),
                 IconButton(
                   icon: const Icon(Icons.logout_outlined, size: 10),
@@ -203,9 +205,7 @@ class AccountingNavigationScreen extends StatelessWidget {
                   Row(
                     spacing: 20,
                     children: [
-                      const InkWell(
-                        child: Icon(Icons.person_outlined, size: 12),
-                      ),
+                      SlidingNotificationDropdown(),
                       const ThemeSwitchButton(),
                       InkWell(
                         child: const Icon(Icons.logout_outlined, size: 12),

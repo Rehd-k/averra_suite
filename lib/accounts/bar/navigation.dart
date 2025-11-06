@@ -7,6 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../app_router.gr.dart';
 import '../../components/theme_switch_button.dart';
 import '../../helpers/financial_string_formart.dart';
+import '../../helpers/notificationbar.dart';
 import '../../helpers/title_bar.dart';
 import '../../service/token.service.dart';
 
@@ -35,7 +36,7 @@ class _BarNavigationScreenState extends State<BarNavigationScreen> {
                 style: const TextStyle(fontSize: 12),
               ),
               actions: [
-                const CircleAvatar(child: Icon(Icons.person_outlined)),
+                SlidingNotificationDropdown(),
                 const ThemeSwitchButton(),
                 IconButton(
                   icon: const Icon(Icons.logout_outlined, size: 12),
@@ -94,9 +95,7 @@ class _BarNavigationScreenState extends State<BarNavigationScreen> {
                   Row(
                     spacing: 20,
                     children: [
-                      const InkWell(
-                        child: Icon(Icons.person_outlined, size: 12),
-                      ),
+                      SlidingNotificationDropdown(),
                       const ThemeSwitchButton(),
                       InkWell(
                         child: const Icon(Icons.logout_outlined, size: 12),

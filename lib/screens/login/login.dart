@@ -113,15 +113,15 @@ class _LoginFormState extends State<LoginScreen> {
       token = response.data['access_token'];
       String role = response.data['role'];
       String id = response.data['sub'];
-      // if (Platform.isAndroid) {
-      //   final service = NotificationService();
-      //   String? fcmToken = await service.getToken();
-      //   if (fcmToken != null) {
-      //     await service.registerToken(fcmToken, id); // From auth
-      //   }
-      //   service.handleMessages();
-      // }
-      // ws.init(id);
+      if (Platform.isAndroid) {
+        final service = NotificationService();
+        String? fcmToken = await service.getToken();
+        if (fcmToken != null) {
+          await service.registerToken(fcmToken, id); // From auth
+        }
+        service.handleMessages();
+      }
+      ws.init(id);
 
       if (!mounted) return;
       JwtService().setToken = token;

@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../helpers/financial_string_formart.dart';
+import '../../service/attendance.calendar.dart';
 
 @RoutePage()
 class ViewUser extends StatefulWidget {
@@ -34,6 +35,20 @@ class ViewUserState extends State<ViewUser> {
       setState(() {
         selectedFiles.addAll(result.paths.map((path) => File(path!)).toList());
       });
+    }
+  }
+
+  Future<void> toggleCreditSales(bool value) async {
+    try {
+      await apiService.patch('user/${widget.id}', {'credit_sale': value});
+      setState(() {
+        loadedUser['credit_sale'] = value;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating credit sale permission')),
+      );
     }
   }
 
@@ -213,10 +228,34 @@ class ViewUserState extends State<ViewUser> {
                                                   ),
                                                 ),
                                                 Text(
-                                                  'Staff Access: ${loadedUser['role']}',
+                                                  'Staff Role: ${loadedUser['role']}',
                                                   style: TextStyle(
                                                     fontSize: 10,
                                                   ),
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                      'Credit Sales: ',
+                                                      style: TextStyle(
+                                                        fontSize: 10,
+                                                      ),
+                                                    ),
+                                                    Transform.scale(
+                                                      scale: 0.7,
+                                                      child: Switch(
+                                                        value:
+                                                            loadedUser['credit_sale'] ??
+                                                            false,
+                                                        onChanged:
+                                                            (bool value) async {
+                                                              toggleCreditSales(
+                                                                value,
+                                                              );
+                                                            },
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ],
                                             ),
@@ -633,6 +672,15 @@ class ViewUserState extends State<ViewUser> {
                                             ),
                                           ],
                                         ],
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    SizedBox(
+                                      height: 500,
+                                      child: Card(
+                                        child: AttendanceCalendar(
+                                          userId: widget.id,
+                                        ),
                                       ),
                                     ),
                                   ],

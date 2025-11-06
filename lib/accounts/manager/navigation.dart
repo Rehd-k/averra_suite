@@ -33,7 +33,7 @@ final List<MenuItem> menuData = [
   MenuItem(
     icon: Icons.dashboard_customize_outlined,
     title: 'Dashboard',
-    link: ManagerNavigationRoute(children: [DashbaordManagerRoute()]),
+    link: DashbaordManagerRoute(),
   ),
   MenuItem(
     icon: Icons.supervised_user_circle_outlined,
@@ -43,18 +43,10 @@ final List<MenuItem> menuData = [
       MenuItem(
         icon: Icons.settings,
         title: 'Dashbaord',
-        link: ManagerNavigationRoute(children: [StaffDashboard()]),
+        link: StaffDashboard(),
       ),
-      MenuItem(
-        icon: Icons.settings,
-        title: 'Add New',
-        link: ManagerNavigationRoute(children: [AddUser()]),
-      ),
-      MenuItem(
-        icon: Icons.settings,
-        title: 'View Staff',
-        link: ManagerNavigationRoute(children: [ViewUsers()]),
-      ),
+      MenuItem(icon: Icons.settings, title: 'Add New', link: AddUser()),
+      MenuItem(icon: Icons.settings, title: 'View Staff', link: ViewUsers()),
     ],
   ),
 
@@ -66,29 +58,29 @@ final List<MenuItem> menuData = [
       MenuItem(
         icon: Icons.local_shipping_outlined,
         title: 'Dashboards',
-        link: ManagerNavigationRoute(children: [SuppliersDashbaordRoute()]),
+        link: SuppliersDashbaordRoute(),
       ),
       MenuItem(
         icon: Icons.local_shipping_outlined,
         title: 'Add New',
-        link: ManagerNavigationRoute(children: [AddSupplier()]),
+        link: AddSupplier(),
       ),
       MenuItem(
         icon: Icons.local_shipping_outlined,
         title: 'View Suppliers',
-        link: ManagerNavigationRoute(children: [ViewSuppliersRoute()]),
+        link: ViewSuppliersRoute(),
       ),
     ],
   ),
   MenuItem(
     icon: Icons.perm_identity_outlined,
     title: 'Customers',
-    link: ManagerNavigationRoute(children: [CustomerRoute()]),
+    link: CustomerRoute(),
   ),
   MenuItem(
     icon: Icons.data_array_outlined,
     title: 'Sales Report',
-    link: ManagerNavigationRoute(children: [IncomeReportsRoute()]),
+    link: IncomeReportsRoute(),
   ),
   MenuItem(
     title: 'Expenses',
@@ -98,25 +90,45 @@ final List<MenuItem> menuData = [
       MenuItem(
         icon: Icons.dashboard_customize_outlined,
         title: 'Dashbaord',
-        link: ManagerNavigationRoute(children: [ExpensesDashbaord()]),
+        link: ExpensesDashbaord(),
       ),
-      MenuItem(
-        icon: Icons.add,
-        title: 'Add New',
-        link: ManagerNavigationRoute(children: [AddExpenseRoute()]),
-      ),
+      MenuItem(icon: Icons.add, title: 'Add New', link: AddExpenseRoute()),
       MenuItem(
         icon: Icons.category_outlined,
         title: 'Categories',
-        link: ManagerNavigationRoute(children: [CategoriesRoute()]),
+        link: CategoriesRoute(),
       ),
       MenuItem(
         icon: Icons.dashboard_customize_outlined,
         title: 'View Expenses',
-        link: ManagerNavigationRoute(children: [ViewExpenses()]),
+        link: ViewExpenses(),
       ),
     ],
   ),
+  MenuItem(
+    title: 'Other Income',
+    icon: Icons.pending_actions,
+    link: ManagerNavigationRoute(),
+    children: [
+      MenuItem(
+        icon: Icons.dashboard_customize_outlined,
+        title: 'Dashbaord',
+        link: OtherIncomesDashbaord(),
+      ),
+      MenuItem(icon: Icons.add, title: 'Add New', link: AddOtherIncomeRoute()),
+      MenuItem(
+        icon: Icons.category_outlined,
+        title: 'Categories',
+        link: OtherIncomeCategoriesRoute(),
+      ),
+      MenuItem(
+        icon: Icons.dashboard_customize_outlined,
+        title: 'View Other Income',
+        link: ViewOtherIncomes(),
+      ),
+    ],
+  ),
+
   MenuItem(
     icon: Icons.point_of_sale_outlined,
     title: 'Goods',
@@ -125,22 +137,22 @@ final List<MenuItem> menuData = [
       MenuItem(
         icon: Icons.point_of_sale_outlined,
         title: 'Products',
-        link: ManagerNavigationRoute(children: [ProductsRoute()]),
+        link: ProductsRoute(),
       ),
       MenuItem(
         icon: Icons.raw_off_outlined,
         title: 'Raw Material',
-        link: ManagerNavigationRoute(children: [RawMaterialIndex()]),
+        link: RawMaterialIndex(),
       ),
       MenuItem(
         icon: Icons.perm_identity_outlined,
         title: 'Category',
-        link: ManagerNavigationRoute(children: [CategoryRoute()]),
+        link: CategoryRoute(),
       ),
       MenuItem(
         icon: Icons.perm_identity_outlined,
         title: 'Serving Size',
-        link: ManagerNavigationRoute(children: [IndexServingsizeRoute()]),
+        link: IndexServingsizeRoute(),
       ),
     ],
   ),
@@ -152,17 +164,17 @@ final List<MenuItem> menuData = [
       MenuItem(
         icon: Icons.settings,
         title: 'Create',
-        link: ManagerNavigationRoute(children: [CreateRequisition()]),
+        link: CreateRequisition(),
       ),
       MenuItem(
         icon: Icons.settings,
         title: 'Show Requisition',
-        link: ManagerNavigationRoute(children: [RequisitionIndex()]),
+        link: RequisitionIndex(),
       ),
       MenuItem(
         title: 'Pending Requisition',
         icon: Icons.pending_actions,
-        link: ManagerNavigationRoute(children: [PendingRequisition()]),
+        link: PendingRequisition(),
       ),
     ],
   ),
@@ -207,6 +219,7 @@ class ManagerNavigationScreen extends StatelessWidget {
           ? AppBar(
               title: const Text("Admin Panel", style: TextStyle(fontSize: 10)),
               actions: [
+                SlidingNotificationDropdown(),
                 const ThemeSwitchButton(),
                 IconButton(
                   icon: const Icon(Icons.logout_outlined, size: 10),

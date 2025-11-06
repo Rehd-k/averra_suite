@@ -56,6 +56,8 @@ class AddUserState extends State<AddUser> {
 
   final shiftSchedule = TextEditingController();
 
+  final phoneNumber = TextEditingController();
+
   late List branches = [];
   late List departments = [];
   late String locations;
@@ -72,6 +74,7 @@ class AddUserState extends State<AddUser> {
     nationality.dispose();
     maritalStatus.dispose();
     shiftSchedule.dispose();
+    phoneNumber.dispose();
     super.dispose();
   }
 
@@ -79,7 +82,9 @@ class AddUserState extends State<AddUser> {
   void initState() {
     super.initState();
     getLocations();
-    getDepartments();
+    if (widget.isGod == false) {
+      getDepartments();
+    }
   }
 
   void getLocations() async {
@@ -151,6 +156,7 @@ class AddUserState extends State<AddUser> {
         'email': email.text,
         'shiftSchedule': shiftSchedule.text,
         'department': department.text,
+        'phone_number': phoneNumber.text,
       });
       _showToast('User Added Successfully', ToastificationType.success);
     }
@@ -284,25 +290,6 @@ class AddUserState extends State<AddUser> {
                                 ),
                               ),
                             ),
-                            SizedBox(
-                              width: cardWidth,
-                              child: TextFormField(
-                                controller: address,
-                                decoration: InputDecoration(
-                                  labelText: 'Address',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(5.0),
-                                    ),
-                                    borderSide: BorderSide(color: Colors.blue),
-                                  ),
-                                  labelStyle: TextStyle(
-                                    color: Theme.of(context).hintColor,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                            ),
 
                             SizedBox(
                               width: cardWidth,
@@ -326,9 +313,152 @@ class AddUserState extends State<AddUser> {
                             SizedBox(
                               width: cardWidth,
                               child: TextFormField(
+                                controller: phoneNumber,
+                                decoration: InputDecoration(
+                                  labelText: 'Phone Number *',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(5.0),
+                                    ),
+                                    borderSide: BorderSide(color: Colors.blue),
+                                  ),
+                                  labelStyle: TextStyle(
+                                    color: Theme.of(context).hintColor,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a Phone Number';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            SizedBox(
+                              width: cardWidth,
+                              child: TextFormField(
                                 controller: password,
                                 decoration: InputDecoration(
                                   labelText: 'Password',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(5.0),
+                                    ),
+                                    borderSide: BorderSide(color: Colors.blue),
+                                  ),
+                                  labelStyle: TextStyle(
+                                    color: Theme.of(context).hintColor,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(
+                              width: cardWidth,
+                              child: DropdownButtonFormField<Map<String, dynamic>>(
+                                decoration: InputDecoration(
+                                  labelText: 'Department',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                ),
+                                items: departments
+                                    .map<
+                                      DropdownMenuItem<Map<String, dynamic>>
+                                    >((branch) {
+                                      return DropdownMenuItem<
+                                        Map<String, dynamic>
+                                      >(
+                                        value:
+                                            branch, // Assuming 'id' is the key for the value
+                                        child: Text(
+                                          capitalizeFirstLetter(
+                                            branch['title'],
+                                          ),
+                                        ), // Assuming 'name' is the key for the display text
+                                      );
+                                    })
+                                    .toList(),
+                                onChanged: (value) {
+                                  department.text = value?['_id']!;
+                                },
+                              ),
+                            ),
+
+                            SizedBox(
+                              width: cardWidth,
+                              child: DropdownButtonFormField<String>(
+                                initialValue: 'waiter', // 👈 initial value
+                                onChanged: (value) {
+                                  role.text = value ?? '';
+                                },
+                                decoration: const InputDecoration(
+                                  labelText: 'Role',
+                                  border: OutlineInputBorder(),
+                                ),
+                                items:
+                                    [
+                                      'admin',
+                                      'accountant',
+                                      'bar',
+                                      'cashier',
+                                      'chef',
+                                      'manager',
+                                      'staff',
+                                      'supervisor',
+                                      'store keeper',
+                                      'waiter',
+                                    ].map((category) {
+                                      return DropdownMenuItem<String>(
+                                        value: category,
+                                        child: Text(
+                                          capitalizeFirstLetter(category),
+                                        ),
+                                      );
+                                    }).toList(),
+                              ),
+                            ),
+
+                            SizedBox(
+                              width: cardWidth,
+                              child: DropdownButtonFormField<String>(
+                                decoration: InputDecoration(
+                                  labelText: 'Select Location',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                ),
+                                items: branches.map<DropdownMenuItem<String>>((
+                                  branch,
+                                ) {
+                                  return DropdownMenuItem<String>(
+                                    value: branch['name']
+                                        .toString(), // Assuming 'id' is the key for the value
+                                    child: Text(
+                                      branch['name'],
+                                    ), // Assuming 'name' is the key for the display text
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  handleAddLocation(value!);
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please select a location';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+
+                            SizedBox(
+                              width: cardWidth,
+                              child: TextFormField(
+                                controller: address,
+                                decoration: InputDecoration(
+                                  labelText: 'Address',
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.all(
                                       Radius.circular(5.0),
@@ -399,37 +529,6 @@ class AddUserState extends State<AddUser> {
                                     fontSize: 15,
                                   ),
                                 ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: cardWidth,
-                              child: DropdownButtonFormField<Map<String, dynamic>>(
-                                decoration: InputDecoration(
-                                  labelText: 'Department',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                ),
-                                items: departments
-                                    .map<
-                                      DropdownMenuItem<Map<String, dynamic>>
-                                    >((branch) {
-                                      return DropdownMenuItem<
-                                        Map<String, dynamic>
-                                      >(
-                                        value:
-                                            branch, // Assuming 'id' is the key for the value
-                                        child: Text(
-                                          capitalizeFirstLetter(
-                                            branch['title'],
-                                          ),
-                                        ), // Assuming 'name' is the key for the display text
-                                      );
-                                    })
-                                    .toList(),
-                                onChanged: (value) {
-                                  department.text = value?['_id']!;
-                                },
                               ),
                             ),
 
@@ -526,71 +625,6 @@ class AddUserState extends State<AddUser> {
                                     fontSize: 15,
                                   ),
                                 ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: cardWidth,
-                              child: DropdownButtonFormField<String>(
-                                initialValue: 'waiter', // 👈 initial value
-                                onChanged: (value) {
-                                  role.text = value ?? '';
-                                },
-                                decoration: const InputDecoration(
-                                  labelText: 'Role',
-                                  border: OutlineInputBorder(),
-                                ),
-                                items:
-                                    [
-                                      'admin',
-                                      'accountant',
-                                      'bar',
-                                      'cashier',
-                                      'chef',
-                                      'manager',
-                                      'staff',
-                                      'supervisor',
-                                      'store keeper',
-                                      'waiter',
-                                    ].map((category) {
-                                      return DropdownMenuItem<String>(
-                                        value: category,
-                                        child: Text(
-                                          capitalizeFirstLetter(category),
-                                        ),
-                                      );
-                                    }).toList(),
-                              ),
-                            ),
-
-                            SizedBox(
-                              width: cardWidth,
-                              child: DropdownButtonFormField<String>(
-                                decoration: InputDecoration(
-                                  labelText: 'Select Location',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                ),
-                                items: branches.map<DropdownMenuItem<String>>((
-                                  branch,
-                                ) {
-                                  return DropdownMenuItem<String>(
-                                    value: branch['name']
-                                        .toString(), // Assuming 'id' is the key for the value
-                                    child: Text(
-                                      branch['name'],
-                                    ), // Assuming 'name' is the key for the display text
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
-                                  handleAddLocation(value!);
-                                },
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please select a location';
-                                  }
-                                  return null;
-                                },
                               ),
                             ),
 

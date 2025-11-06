@@ -1,3 +1,5 @@
+import 'package:averra_suite/service/api.service.dart';
+import 'package:averra_suite/service/token.service.dart';
 import 'package:flutter/material.dart';
 
 class SlidingNotificationDropdown extends StatefulWidget {
@@ -15,10 +17,14 @@ class _SlidingNotificationDropdownState
   final LayerLink _layerLink = LayerLink();
   late AnimationController _controller;
   late Animation<Offset> _slideAnimation;
+  final jwtService = JwtService();
+  final apiService = ApiService();
+  var notifications = [];
 
   @override
   void initState() {
     super.initState();
+    getNotification();
     _controller = AnimationController(
       duration: const Duration(milliseconds: 250),
       vsync: this,
@@ -29,10 +35,20 @@ class _SlidingNotificationDropdownState
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
   }
 
+  Future<void> getNotification() async {
+    var res = await apiService.get(
+      'notifications/${jwtService.decodedToken?['username']}',
+    );
+    setState(() {
+      notifications = res.data;
+    });
+  }
+
   void _toggleDropdown() {
     if (_overlayEntry != null) {
       _closeDropdown();
     } else {
+      getNotification();
       _showDropdown();
     }
   }
@@ -75,41 +91,56 @@ class _SlidingNotificationDropdownState
                         color: Theme.of(context).cardColor,
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxHeight: 350),
-                          child: ListView(
-                            padding: const EdgeInsets.all(2),
-                            shrinkWrap: true,
-                            children: const [
-                              ListTile(
-                                leading: Icon(
-                                  Icons.horizontal_distribute_outlined,
-                                  size: 12,
+                          child: notifications.isEmpty
+                              ? SizedBox(
+                                  child: Center(
+                                    child: Text('No Notifications'),
+                                  ),
+                                )
+                              : ListView(
+                                  padding: const EdgeInsets.all(2),
+                                  shrinkWrap: true,
+                                  children: [
+                                    ...notifications.map(
+                                      (res) => ListTile(
+                                        leading: const Icon(
+                                          Icons.horizontal_distribute_outlined,
+                                          size: 12,
+                                        ),
+                                        title: Text(
+                                          res['title'],
+                                          style: const TextStyle(fontSize: 10),
+                                        ),
+                                        subtitle: Text(
+                                          (() {
+                                            final date = DateTime.parse(
+                                              res['createdAt'],
+                                            );
+                                            final now = DateTime.now();
+                                            final difference = now.difference(
+                                              date,
+                                            );
+
+                                            if (difference.inSeconds < 60) {
+                                              return '${res['message']} - ${difference.inSeconds} seconds ago';
+                                            } else if (difference.inMinutes <
+                                                60) {
+                                              return '${res['message']} - ${difference.inMinutes} minutes ago';
+                                            } else if (difference.inHours <
+                                                24) {
+                                              return '${res['message']} - ${difference.inHours} hours ago';
+                                            } else if (difference.inDays == 1) {
+                                              return '${res['message']} - yesterday';
+                                            } else {
+                                              return '${res['message']} - ${date.toString().substring(0, 16)}';
+                                            }
+                                          })(),
+                                          style: const TextStyle(fontSize: 10),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                title: Text(
-                                  'New order received',
-                                  style: TextStyle(fontSize: 10),
-                                ),
-                                subtitle: Text(
-                                  '2 mins ago',
-                                  style: TextStyle(fontSize: 10),
-                                ),
-                              ),
-                              ListTile(
-                                leading: Icon(Icons.payment),
-                                title: Text('Payment processed'),
-                                subtitle: Text('10 mins ago'),
-                              ),
-                              ListTile(
-                                leading: Icon(Icons.system_update),
-                                title: Text('System update available'),
-                                subtitle: Text('1 hr ago'),
-                              ),
-                              ListTile(
-                                leading: Icon(Icons.check_circle),
-                                title: Text('Task completed successfully'),
-                                subtitle: Text('Yesterday'),
-                              ),
-                            ],
-                          ),
                         ),
                       ),
                     ),

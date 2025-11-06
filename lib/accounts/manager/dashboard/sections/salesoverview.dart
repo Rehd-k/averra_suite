@@ -69,7 +69,7 @@ class SalesoverviewState extends State<Salesoverview> {
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-        height: isBigScreen ? 1000 : 700,
+        height: isBigScreen ? 1000 : 1000,
         child: Column(
           children: [
             Align(
@@ -86,15 +86,21 @@ class SalesoverviewState extends State<Salesoverview> {
                 ),
               ),
             ),
+
             SizedBox(height: 20),
+
             Container(
               padding: EdgeInsets.symmetric(horizontal: isBigScreen ? 14 : 0),
-              height: isBigScreen ? 350 : 175,
+              height: isBigScreen ? 280 : 500,
               child: grids(isBigScreen, context),
             ),
+
             SizedBox(height: 1),
+
             Divider(color: Theme.of(context).colorScheme.surface),
+
             SizedBox(height: 5),
+
             Expanded(
               child: MainLineChart(
                 onRangeChanged: handleRangeChanged,

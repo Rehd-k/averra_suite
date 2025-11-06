@@ -317,54 +317,7 @@ class MyAsyncDataSource extends AsyncDataTableSource {
                   ),
                 },
               ),
-              PopupMenuItem(
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.details,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withAlpha(180),
-                      size: 16,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      "Show Report",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withAlpha(180),
-                      ),
-                    ),
-                  ],
-                ),
-                onTap: () => {},
-              ),
-              PopupMenuItem(
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.upload_file_outlined,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withAlpha(180),
-                      size: 16,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      "Send Report",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withAlpha(180),
-                      ),
-                    ),
-                  ],
-                ),
-                onTap: () async {},
-              ),
+
               PopupMenuItem(
                 child: Row(
                   children: [
@@ -445,7 +398,8 @@ class MyAsyncDataSource extends AsyncDataTableSource {
               'god',
               'admin',
               'manager',
-              'accounting',
+              'accountant',
+              'supervisor',
             ].contains(JwtService().decodedToken!['role'])) {
               context.router.push(
                 ProductDashboard(
@@ -485,7 +439,8 @@ class MyAsyncDataSource extends AsyncDataTableSource {
               'god',
               'admin',
               'manager',
-              'accounting',
+              'accountant',
+              'supervisor',
             ].contains(JwtService().decodedToken!['role'])) {
               context.router.push(
                 RawMaterialDashboard(

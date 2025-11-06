@@ -320,7 +320,7 @@ class ViewOtherIncomesState extends State<ViewOtherIncomes> {
                                               children: [
                                                 if ([
                                                       'god',
-                                                      'account',
+                                                      'accountant',
                                                       'manager',
                                                       'admin',
                                                       'supervisor',
@@ -345,7 +345,7 @@ class ViewOtherIncomesState extends State<ViewOtherIncomes> {
                                                 const SizedBox(width: 4),
                                                 if ([
                                                       'god',
-                                                      'account',
+                                                      'accountant',
                                                       'manager',
                                                       'admin',
                                                       'supervisor',
@@ -370,7 +370,7 @@ class ViewOtherIncomesState extends State<ViewOtherIncomes> {
                                                   ),
                                                 if ([
                                                   'god',
-                                                  'account',
+                                                  'accountant',
                                                   'manager',
                                                   'admin',
                                                 ].contains(

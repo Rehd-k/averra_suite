@@ -143,7 +143,7 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
                       isFinancial: true,
                       amount: cardsData['approvedInRange'],
                       title: 'Total Approved Expenses',
-                      icon: Icon(Icons.money),
+                      icon: Icon(Icons.check_circle_outline_outlined),
                     ),
                   ),
 
@@ -154,7 +154,7 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
                       isFinancial: true,
                       amount: cardsData['unapprovedInRange'],
                       title: 'Total Expenses Pending',
-                      icon: Icon(Icons.money),
+                      icon: Icon(Icons.pending_actions_outlined),
                     ),
                   ),
 
@@ -165,7 +165,7 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
                       isFinancial: true,
                       info: cardsData['highestSpendingCategory']['_id'],
                       title: 'Highest Spending Category',
-                      icon: Icon(Icons.money),
+                      icon: Icon(Icons.receipt_long_outlined),
                     ),
                   ),
                   SizedBox(
@@ -175,7 +175,7 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
                       isFinancial: false,
                       amount: cardsData['documentCountInRange'],
                       title: 'Number Of Transactions',
-                      icon: Icon(Icons.money),
+                      icon: Icon(Icons.list_alt),
                     ),
                   ),
 
@@ -184,9 +184,9 @@ class ExpensesDashbaordState extends State<ExpensesDashbaord> {
                     child: FinanceCard(
                       fontSize: isBigScreen ? 10 : 5,
                       isFinancial: false,
-                      amount: 58,
+                      amount: 0,
                       title: 'Monthly Budget',
-                      icon: Icon(Icons.money),
+                      icon: Icon(Icons.savings_outlined),
                     ),
                   ),
                 ],

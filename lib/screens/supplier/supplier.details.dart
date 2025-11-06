@@ -119,7 +119,7 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Supplier Details',
+          capitalizeFirstLetter('${supplierDetails['name']}'),
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: smallScreen
@@ -179,106 +179,73 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
                   CustomDataTable(
                     columns: const [
                       DataColumn(
-                        label: SizedBox(
-                          width: 120,
-                          child: Text(
-                            'Date/Time',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
+                        label: Text(
+                          'Date/Time',
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                       DataColumn(
-                        label: SizedBox(
-                          width: 120,
-                          child: Text(
-                            'Money In',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
+                        label: Text(
+                          'Money In',
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                       DataColumn(
-                        label: SizedBox(
-                          width: 120,
-                          child: Text(
-                            'Money out',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
+                        label: Text(
+                          'Money out',
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                       DataColumn(
-                        label: SizedBox(
-                          width: 300,
-                          child: Text(
-                            'Description',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
+                        label: Text(
+                          'Description',
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                       DataColumn(
-                        label: SizedBox(
-                          width: 120,
-                          child: Text(
-                            'Balance',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
+                        label: Text(
+                          'Balance',
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
                     data: cashflow,
                     cellBuilder: (flow) => [
                       DataCell(
-                        SizedBox(
-                          width: 120,
-                          child: Text(
-                            formatBackendTime(flow['createdAt']),
-                            style: TextStyle(fontSize: 10),
-                          ),
+                        Text(
+                          formatBackendTime(flow['createdAt']),
+                          style: TextStyle(fontSize: 10),
                         ),
                       ),
                       DataCell(
-                        SizedBox(
-                          width: 120,
-                          child: Text(
-                            flow['type'] == 'in'
-                                ? flow['amount'].toString().formatToFinancial(
-                                    isMoneySymbol: true,
-                                  )
-                                : '-',
-                            style: TextStyle(fontSize: 10),
-                          ),
+                        Text(
+                          flow['type'] == 'in'
+                              ? flow['amount'].toString().formatToFinancial(
+                                  isMoneySymbol: true,
+                                )
+                              : '-',
+                          style: TextStyle(fontSize: 10),
                         ),
                       ),
                       DataCell(
-                        SizedBox(
-                          width: 120,
-                          child: Text(
-                            flow['type'] == 'out'
-                                ? flow['amount'].toString().formatToFinancial(
-                                    isMoneySymbol: true,
-                                  )
-                                : '-',
-                            style: TextStyle(fontSize: 10),
-                          ),
+                        Text(
+                          flow['type'] == 'out'
+                              ? flow['amount'].toString().formatToFinancial(
+                                  isMoneySymbol: true,
+                                )
+                              : '-',
+                          style: TextStyle(fontSize: 10),
                         ),
                       ),
                       DataCell(
-                        SizedBox(
-                          width: 200,
-                          child: Text(
-                            flow['title'],
-                            style: TextStyle(fontSize: 10),
-                          ),
-                        ),
+                        Text(flow['title'], style: TextStyle(fontSize: 10)),
                       ),
                       DataCell(
-                        SizedBox(
-                          width: 120,
-                          child: Text(
-                            flow['balanceAfter'].toString().formatToFinancial(
-                              isMoneySymbol: true,
-                            ),
-                            style: TextStyle(fontSize: 10),
+                        Text(
+                          flow['balanceAfter'].toString().formatToFinancial(
+                            isMoneySymbol: true,
                           ),
+                          style: TextStyle(fontSize: 10),
                         ),
                       ),
                     ],
@@ -431,143 +398,337 @@ class SupplierDetailsState extends State<SupplierDetailsScreen> {
                 ),
               ],
             ),
-            Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Row(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Contact Information',
-                          style: TextStyle(fontSize: smallScreen ? 10 : 14),
-                        ),
-                        smallScreen
-                            ? IconButton.filledTonal(
-                                onPressed: () {
-                                  updateSuppliersList();
-                                },
-                                icon: Icon(Icons.add, size: 12),
-                                tooltip: 'Add New Contact',
-                              )
-                            : ElevatedButton.icon(
-                                onPressed: () {
-                                  updateSuppliersList();
-                                },
-                                label: Text(
-                                  'Add New Contact',
-                                  style: TextStyle(fontSize: 10),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 7,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Contact Information',
+                                style: TextStyle(
+                                  fontSize: smallScreen ? 10 : 14,
                                 ),
-                                icon: Icon(Icons.add),
                               ),
+                              smallScreen
+                                  ? IconButton.filledTonal(
+                                      onPressed: () {
+                                        updateSuppliersList();
+                                      },
+                                      icon: Icon(Icons.add, size: 12),
+                                      tooltip: 'Add New Contact',
+                                    )
+                                  : ElevatedButton.icon(
+                                      onPressed: () {
+                                        updateSuppliersList();
+                                      },
+                                      label: Text(
+                                        'Add New Contact',
+                                        style: TextStyle(fontSize: 10),
+                                      ),
+                                      icon: Icon(Icons.add),
+                                    ),
+                            ],
+                          ),
+                        ),
+                        CustomDataTable(
+                          columns: [
+                            DataColumn(
+                              label: Text(
+                                'Name',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Email',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Phone',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Role',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Delete',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                          data: supplierDetails['otherContacts'] ?? [],
+                          cellBuilder: (supplier) => [
+                            DataCell(
+                              Text(
+                                capitalizeFirstLetter(supplier['name']),
+                                style: TextStyle(fontSize: 10),
+                              ),
+                            ),
+                            DataCell(
+                              Text(
+                                supplier['email'],
+                                style: TextStyle(fontSize: 10),
+                              ),
+                            ),
+                            DataCell(
+                              Text(
+                                supplier['phone_number'].toString(),
+                                style: TextStyle(fontSize: 10),
+                              ),
+                            ),
+                            DataCell(
+                              Text(
+                                supplier['role'].toString(),
+                                style: TextStyle(fontSize: 10),
+                              ),
+                            ),
+
+                            DataCell(
+                              IconButton(
+                                onPressed: () {
+                                  removeExtraContact(supplier['_id']);
+                                },
+                                icon: Icon(Icons.delete_outline, size: 10),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                  CustomDataTable(
-                    columns: [
-                      DataColumn(
-                        label: SizedBox(
-                          width: smallScreen ? 100 : 200,
-                          child: Text(
+                ),
+                SizedBox(width: 10),
+                if (!smallScreen)
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 7,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Associated Products',
+                                  style: TextStyle(
+                                    fontSize: smallScreen ? 10 : 14,
+                                  ),
+                                ),
+                                smallScreen
+                                    ? IconButton.filledTonal(
+                                        onPressed: () {},
+                                        icon: Icon(Icons.add, size: 12),
+                                        tooltip: 'Add New Product',
+                                      )
+                                    : ElevatedButton.icon(
+                                        onPressed: () {},
+                                        label: Text(
+                                          'Add New Product',
+                                          style: TextStyle(fontSize: 10),
+                                        ),
+                                        icon: Icon(Icons.add),
+                                      ),
+                              ],
+                            ),
+                          ),
+                          CustomDataTable(
+                            columns: [
+                              DataColumn(
+                                label: Text(
+                                  'Name',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Current Stock',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Price',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+
+                              DataColumn(
+                                label: Text(
+                                  'Remove',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                            data: supplierDetails['otherContacts'] ?? [],
+                            cellBuilder: (supplier) => [
+                              DataCell(
+                                Text(
+                                  capitalizeFirstLetter(supplier['name']),
+                                  style: TextStyle(fontSize: 10),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  supplier['email'],
+                                  style: TextStyle(fontSize: 10),
+                                ),
+                              ),
+
+                              DataCell(
+                                Text(
+                                  supplier['role'].toString(),
+                                  style: TextStyle(fontSize: 10),
+                                ),
+                              ),
+
+                              DataCell(
+                                IconButton(
+                                  onPressed: () {
+                                    removeExtraContact(supplier['_id']);
+                                  },
+                                  icon: Icon(Icons.delete_outline, size: 10),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            if (smallScreen)
+              Center(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 7,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Associated Products',
+                            style: TextStyle(fontSize: smallScreen ? 10 : 14),
+                          ),
+                          smallScreen
+                              ? IconButton.filledTonal(
+                                  onPressed: () {
+                                    updateSuppliersList();
+                                  },
+                                  icon: Icon(Icons.add, size: 12),
+                                  tooltip: 'Add New Product',
+                                )
+                              : ElevatedButton.icon(
+                                  onPressed: () {
+                                    updateSuppliersList();
+                                  },
+                                  label: Text(
+                                    'Add New Product',
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                  icon: Icon(Icons.add),
+                                ),
+                        ],
+                      ),
+                    ),
+                    CustomDataTable(
+                      columns: [
+                        DataColumn(
+                          label: Text(
                             'Name',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(
-                          width: smallScreen ? 100 : 200,
-                          child: Text(
+                        DataColumn(
+                          label: Text(
                             'Email',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(
-                          width: smallScreen ? 100 : 200,
-                          child: Text(
+                        DataColumn(
+                          label: Text(
                             'Phone',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(
-                          width: smallScreen ? 100 : 200,
-                          child: Text(
+                        DataColumn(
+                          label: Text(
                             'Role',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(
-                          width: smallScreen ? 100 : 200,
-                          child: Text(
+                        DataColumn(
+                          label: Text(
                             'Delete',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
-                      ),
-                    ],
-                    data: supplierDetails['otherContacts'] ?? [],
-                    cellBuilder: (supplier) => [
-                      DataCell(
-                        SizedBox(
-                          width: 200,
-                          child: Text(
+                      ],
+                      data: supplierDetails['otherContacts'] ?? [],
+                      cellBuilder: (supplier) => [
+                        DataCell(
+                          Text(
                             capitalizeFirstLetter(supplier['name']),
                             style: TextStyle(fontSize: 10),
                           ),
                         ),
-                      ),
-                      DataCell(
-                        SizedBox(
-                          width: 200,
-                          child: Text(
+                        DataCell(
+                          Text(
                             supplier['email'],
                             style: TextStyle(fontSize: 10),
                           ),
                         ),
-                      ),
-                      DataCell(
-                        SizedBox(
-                          width: 100,
-                          child: Text(
+                        DataCell(
+                          Text(
                             supplier['phone_number'].toString(),
                             style: TextStyle(fontSize: 10),
                           ),
                         ),
-                      ),
-                      DataCell(
-                        SizedBox(
-                          width: 100,
-                          child: Text(
+                        DataCell(
+                          Text(
                             supplier['role'].toString(),
                             style: TextStyle(fontSize: 10),
                           ),
                         ),
-                      ),
 
-                      DataCell(
-                        SizedBox(
-                          width: 100,
-                          child: IconButton(
+                        DataCell(
+                          IconButton(
                             onPressed: () {
                               removeExtraContact(supplier['_id']);
                             },
                             icon: Icon(Icons.delete_outline, size: 10),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
 
             Center(
               child: Column(

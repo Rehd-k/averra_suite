@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+import '../barchart.dart';
+
 class Financialsummary extends StatefulWidget {
   final List salesData;
   const Financialsummary({super.key, required this.salesData});
@@ -64,8 +66,11 @@ class FinancialsummaryState extends State<Financialsummary> {
       constraints: BoxConstraints(minHeight: 400),
       child: Column(
         children: [
-          // Barchart(
-          //     cashData: barGroups, period: 'this week', weekDays: weekDays),
+          Barchart(
+            cashData: barGroups,
+            period: 'this week',
+            weekDays: weekDays,
+          ),
         ],
       ),
     );

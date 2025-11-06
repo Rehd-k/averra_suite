@@ -8,6 +8,8 @@ class SupplierTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cardColor = Theme.of(context).cardColor;
+    double width = MediaQuery.sizeOf(context).width;
+    bool smallScreen = width <= 1200;
 
     return Card(
       margin: const EdgeInsets.all(12),
@@ -15,33 +17,24 @@ class SupplierTable extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         child: DataTable(
           headingRowColor: WidgetStateProperty.all(cardColor),
-
-          columns: const [
+          columnSpacing: smallScreen ? 90 : 235,
+          columns: [
             DataColumn(
-              label: SizedBox(
-                width: 200, // Supplier Name widest
-                child: Text(
-                  'Supplier Name',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+              label: Text(
+                'Supplier Name',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
             DataColumn(
-              label: SizedBox(
-                width: 120,
-                child: Text(
-                  'Address',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+              label: Text(
+                'Address',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
             DataColumn(
-              label: SizedBox(
-                width: 120,
-                child: Text(
-                  'Total Spend',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+              label: Text(
+                'Total Spend',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -50,32 +43,20 @@ class SupplierTable extends StatelessWidget {
                 (supplier) => DataRow(
                   cells: [
                     DataCell(
-                      SizedBox(
-                        width: 200,
-                        child: Text(
-                          capitalizeFirstLetter(supplier['name']),
-                          style: TextStyle(fontSize: 10),
-                        ),
+                      Text(
+                        capitalizeFirstLetter(supplier['name']),
+                        style: TextStyle(fontSize: 10),
                       ),
                     ),
                     DataCell(
-                      SizedBox(
-                        width: 200,
-                        child: Text(
-                          supplier['address'],
-                          style: TextStyle(fontSize: 10),
-                        ),
-                      ),
+                      Text(supplier['address'], style: TextStyle(fontSize: 10)),
                     ),
                     DataCell(
-                      SizedBox(
-                        width: 100,
-                        child: Text(
-                          supplier['amountSpent'].toString().formatToFinancial(
-                            isMoneySymbol: true,
-                          ),
-                          style: TextStyle(fontSize: 10),
+                      Text(
+                        supplier['amountSpent'].toString().formatToFinancial(
+                          isMoneySymbol: true,
                         ),
+                        style: TextStyle(fontSize: 10),
                       ),
                     ),
                   ],
@@ -86,5 +67,4 @@ class SupplierTable extends StatelessWidget {
       ),
     );
   }
-
 }

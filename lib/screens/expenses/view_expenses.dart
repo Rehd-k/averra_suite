@@ -24,6 +24,7 @@ class ViewExpenses extends StatefulWidget {
 
 class ViewExpensesState extends State<ViewExpenses> {
   final apiService = ApiService();
+  final jwtService = JwtService();
   List filteredExpenses = [];
   late List expenses = [];
   bool isLoading = true;
@@ -195,6 +196,37 @@ class ViewExpensesState extends State<ViewExpenses> {
     getExpenses();
   }
 
+  Future<void> showConfirmDialog(
+    BuildContext context,
+    String confirmationMessage,
+    String id,
+  ) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Are you sure?'),
+        content: Text(confirmationMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('No'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      await handleUpdate(id, {
+        "funded": true,
+        "fundedBy": jwtService.decodedToken?['username'],
+      });
+    }
+  }
+
   void handlePageChange(dynamic pageNumber) {
     setState(() {
       selectedPageNumber = pageNumber;
@@ -342,7 +374,7 @@ class ViewExpensesState extends State<ViewExpenses> {
                                                 if (!res['approved'] &&
                                                     [
                                                       'god',
-                                                      'account',
+                                                      'accountant',
                                                       'manager',
                                                       'admin',
                                                       'supervisor',
@@ -368,7 +400,7 @@ class ViewExpensesState extends State<ViewExpenses> {
                                                 if (!res['approved'] &&
                                                     [
                                                       'god',
-                                                      'account',
+                                                      'accountant',
                                                       'manager',
                                                       'admin',
                                                       'supervisor',
@@ -393,7 +425,7 @@ class ViewExpensesState extends State<ViewExpenses> {
                                                   ),
                                                 if ([
                                                   'god',
-                                                  'account',
+                                                  'accountant',
                                                   'manager',
                                                   'admin',
                                                 ].contains(
@@ -415,6 +447,36 @@ class ViewExpensesState extends State<ViewExpenses> {
                                                       });
                                                     },
                                                   ),
+                                                if (res['approved'])
+                                                  if ([
+                                                    'god',
+                                                    'accountant',
+                                                    'admin',
+                                                  ].contains(
+                                                    JwtService()
+                                                        .decodedToken?['role'],
+                                                  ))
+                                                    _ActionButton(
+                                                      tooltip: res['funded']
+                                                          ? 'Funded'
+                                                          : 'Not Funded',
+                                                      icon: res['funded']
+                                                          ? Icons.money_outlined
+                                                          : Icons
+                                                                .money_off_csred_outlined,
+                                                      color: res['approved']
+                                                          ? Colors.redAccent
+                                                          : Colors.green,
+                                                      onTap: () {
+                                                        if (!res['funded']) {
+                                                          showConfirmDialog(
+                                                            context,
+                                                            'Please confirm that you have released ${res['amount']} for this expense',
+                                                            res['_id'],
+                                                          );
+                                                        }
+                                                      },
+                                                    ),
                                               ],
                                             ),
                                           ),
@@ -503,21 +565,26 @@ class _ActionButton extends StatelessWidget {
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
+  final String? tooltip;
 
   const _ActionButton({
     required this.icon,
     required this.color,
     required this.onTap,
+    this.tooltip,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkResponse(
-      onTap: onTap,
-      radius: 20,
-      child: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: Icon(icon, size: 18, color: color),
+    return Tooltip(
+      message: tooltip ?? '',
+      child: InkResponse(
+        onTap: onTap,
+        radius: 20,
+        child: Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: Icon(icon, size: 18, color: color),
+        ),
       ),
     );
   }
@@ -527,9 +594,6 @@ void _showEditExpenceSheet(BuildContext context, data, handleUpdate) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    // shape: const RoundedRectangleBorder(
-    //   borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    // ),
     builder: (context) {
       return FractionallySizedBox(
         heightFactor: 0.9,
@@ -538,6 +602,8 @@ void _showEditExpenceSheet(BuildContext context, data, handleUpdate) {
     },
   );
 }
+
+void doFunded() {}
 
 void _showDeleteConfirmation(
   BuildContext context,

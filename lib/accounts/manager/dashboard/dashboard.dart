@@ -92,22 +92,21 @@ class DashboardState extends State<DashbaordManagerScreen> {
           : SingleChildScrollView(
               child: Column(
                 children: [
-                  Salesoverview(
-                    totalSales: dashboardInfo[0]['totalRevenue'],
-                    topSellingProducts: dashboardInfo[1],
+                  SizedBox(
+                    child: Salesoverview(
+                      totalSales: dashboardInfo[0]['totalRevenue'],
+                      topSellingProducts: dashboardInfo[1],
+                    ),
                   ),
                   SizedBox(height: 20),
                   Container(
                     constraints: BoxConstraints(maxHeight: 400),
                     child: TodoTable(),
                   ),
-                  SizedBox(height: 20),
                   Inventorysummery(data: dashboardInfo[2]),
-                  SizedBox(height: 20),
                   CustomerInsight(data: dashboardInfo[3]),
-                  SizedBox(height: 20),
+
                   Financialsummary(salesData: dashboardInfo[4]),
-                  SizedBox(height: 20),
                 ],
               ),
             ),

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import '../../app_router.gr.dart';
 import '../../components/theme_switch_button.dart';
+import '../../helpers/notificationbar.dart';
 import '../../helpers/title_bar.dart';
 import '../../helpers/webSocket.connect.dart';
 import '../../service/token.service.dart';
@@ -48,10 +49,7 @@ class _KitchenNavigationScreenState extends State<KitchenNavigationScreen> {
                 style: const TextStyle(fontSize: 12),
               ),
               actions: [
-                InkWell(
-                  child: Icon(Icons.person_outlined, size: 10),
-                  onTap: () {},
-                ),
+                SlidingNotificationDropdown(),
                 const ThemeSwitchButton(),
                 IconButton(
                   icon: const Icon(Icons.logout_outlined, size: 12),
@@ -122,9 +120,7 @@ class _KitchenNavigationScreenState extends State<KitchenNavigationScreen> {
                     Row(
                       spacing: 20,
                       children: [
-                        const InkWell(
-                          child: Icon(Icons.person_outlined, size: 12),
-                        ),
+                        SlidingNotificationDropdown(),
                         const ThemeSwitchButton(),
                         InkWell(
                           child: const Icon(Icons.logout_outlined, size: 12),

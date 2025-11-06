@@ -188,7 +188,7 @@ class SuppliersDashbaordState extends State<SuppliersDashbaordScreen> {
                           ),
 
                     Padding(
-                      padding: const EdgeInsets.only(top: 20.0),
+                      padding: const EdgeInsets.only(top: 20.0, left: 20),
                       child: Text(
                         'Top 5 Suppliers By Purchasd Volume',
                         style: TextStyle(
@@ -210,13 +210,35 @@ class SuppliersDashbaordState extends State<SuppliersDashbaordScreen> {
                           if (!smallScreen)
                             Expanded(
                               flex: 2,
-                              child: SupplierTable(
-                                suppliers: res['topSuppliers'],
-                              ),
+                              child: SizedBox(),
+
+                              // SupplierTable(
+                              //   suppliers: res['latestAdditions'],
+                              // ),
                             ),
                       ],
                     ),
-                  
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20.0, left: 20),
+                      child: Text(
+                        'Latest Suppliers',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: smallScreen ? 1 : 4,
+                          child: SupplierTable(
+                            suppliers: res['latestAdditions'],
+                          ),
+                        ),
+                        if (!smallScreen) Expanded(flex: 2, child: SizedBox()),
+                      ],
+                    ),
                   ],
                 ),
         ),

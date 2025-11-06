@@ -75,7 +75,7 @@ class AccountingDashboardState extends State<AccountingDashboardScreen> {
         'sales/all-sells-data?startDate=${range.startDate}&endDate=${range.endDate}',
       ),
       apiService.get(
-        'income/otherIncomeTotal?startDate=${range.startDate}&endDate=${range.endDate}',
+        'otherIncome/otherIncomeTotal?startDate=${range.startDate}&endDate=${range.endDate}',
       ),
       apiService.get(
         'expense/total?startDate=${range.startDate}&endDate=${range.endDate}',

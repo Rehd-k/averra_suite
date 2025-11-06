@@ -41,7 +41,7 @@ class ViewUsersState extends State<ViewUsers> {
   late List departments = [
     {'title': 'department'},
     {'title': 'HR'},
-    {'title': 'Accounting'},
+    {'title': 'Accountant'},
     {'title': 'Admin'},
     {'title': 'Manager'},
     {'title': 'Supervisor'},

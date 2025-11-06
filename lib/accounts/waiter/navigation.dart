@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'package:auto_route/auto_route.dart';
-import 'package:averra_suite/service/api.service.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../app_router.gr.dart';
 import '../../components/theme_switch_button.dart';
+import '../../helpers/notificationbar.dart';
 import '../../helpers/title_bar.dart';
 import '../../service/token.service.dart';
 
@@ -34,20 +34,9 @@ class _WaiterNavigationScreenState extends State<WaiterNavigationScreen> {
     return Scaffold(
       appBar: (Platform.isAndroid || Platform.isIOS)
           ? AppBar(
-              title: const Text("Admin Panel", style: TextStyle(fontSize: 10)),
+              title: const Text("Waiter", style: TextStyle(fontSize: 10)),
               actions: [
-                CircleAvatar(
-                  child: IconButton(
-                    icon: const Icon(Icons.person_outlined),
-                    onPressed: () async {
-                      JwtService jwtService = JwtService();
-                      ApiService apiService = ApiService();
-                      await apiService.get(
-                        'notification/test/${jwtService.decodedToken?['sub']}/this_title/testingnotification',
-                      );
-                    },
-                  ),
-                ),
+                SlidingNotificationDropdown(),
                 const ThemeSwitchButton(),
                 IconButton(
                   tooltip: 'Logout',
@@ -113,9 +102,7 @@ class _WaiterNavigationScreenState extends State<WaiterNavigationScreen> {
                   Row(
                     spacing: 20,
                     children: [
-                      const InkWell(
-                        child: Icon(Icons.person_outlined, size: 12),
-                      ),
+                      SlidingNotificationDropdown(),
                       const ThemeSwitchButton(),
                       InkWell(
                         child: const Icon(Icons.logout_outlined, size: 12),

@@ -12,7 +12,7 @@ class Inventorysummery extends StatelessWidget {
     bool isBigScreen = width >= 1200;
 
     return ConstrainedBox(
-      constraints: BoxConstraints(minHeight: isBigScreen ? 450 : 350),
+      constraints: BoxConstraints(minHeight: isBigScreen ? 450 : 1100),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),

@@ -4,7 +4,9 @@ import 'dart:convert';
 import 'dart:developer';
 // ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:toastification/toastification.dart';
 
+import '../service/toast.service.dart';
 import 'noti_service.dart';
 
 /// ---------------------------------------------------------------------------
@@ -52,7 +54,8 @@ class WebSocketService {
     _socket = null;
 
     _socket = IO.io(
-      'http://localhost:3000/', // <-- replace with prod URL
+      // 'http://localhost:3000/', // <-- replace with prod URL
+      'http://80.66.72.159:3000/',
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .setQuery({'userId': _userId!})
@@ -74,7 +77,13 @@ class WebSocketService {
       ..onDisconnect((_) {
         _scheduleReconnect();
       })
-      ..onReconnect((attempt) => log('Reconnected (attempt $attempt)'))
+      ..onReconnect(
+        (attempt) => showToast(
+          'Reconnecting...',
+          ToastificationType.info,
+          description: 'Reconnection attempt $attempt',
+        ),
+      )
       ..onReconnectError((err) => log('Reconnect error: $err'))
       ..onReconnectFailed((_) => log('Reconnect failed permanently'));
 
