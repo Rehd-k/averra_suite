@@ -17,7 +17,6 @@ class NotificationService {
       NotificationSettings settings = await messaging.requestPermission();
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         String? token = await FirebaseMessaging.instance.getToken();
-
         messaging.onTokenRefresh.listen((token) async {
           await registerToken(userId, token);
         });
@@ -31,7 +30,7 @@ class NotificationService {
     return null;
   }
 
-  Future<void> registerToken(String token, String userId) async {
+  Future registerToken(String token, String userId) async {
     await apiService.patch('user/$userId', {'fcmToken': token});
   }
 

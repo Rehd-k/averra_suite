@@ -164,6 +164,8 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: ViewOtherIncomes.page),
         AutoRoute(page: DepartmentHistory.page),
         AutoRoute(page: DisplayStockRoute.page),
+        AutoRoute(page: ViewUsers.page),
+        AutoRoute(page: ViewUser.page),
       ],
     ),
     AutoRoute(

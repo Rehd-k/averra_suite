@@ -49,7 +49,6 @@ class DepartmentRequestState extends State<DepartmentRequest> {
         var result = await apiService.get(
           'department/$fromPoint?select=$goodsFrom',
         );
-
         setState(() {
           departmentFront = result.data;
           products = result.data[goodsFrom];
@@ -91,6 +90,7 @@ class DepartmentRequestState extends State<DepartmentRequest> {
       fromPointName = res;
       fromPoint = value;
     });
+
     getProductsFromDepartment();
   }
 
@@ -226,7 +226,6 @@ class DepartmentRequestState extends State<DepartmentRequest> {
 
   @override
   void initState() {
-    goodsFrom = 'RawGoods';
     if (jwtService.decodedToken?['role'] == 'chef') {
       setState(() {
         goodsFrom = 'RawGoods';

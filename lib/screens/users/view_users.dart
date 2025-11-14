@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/helpers/financial_string_formart.dart';
+import 'package:averra_suite/service/token.service.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:number_pagination/number_pagination.dart';
@@ -19,6 +20,7 @@ class ViewUsers extends StatefulWidget {
 
 class ViewUsersState extends State<ViewUsers> {
   final apiService = ApiService();
+  final jwtService = JwtService();
   List filteredUsers = [];
   late List users = [];
   final TextEditingController _searchController = TextEditingController();
@@ -79,7 +81,7 @@ class ViewUsersState extends State<ViewUsers> {
 
   Future getUsersList() async {
     var dbusers = await apiService.get(
-      'user?select=" firstName lastName role "',
+      'user?filter={"reporting_manager" : "${jwtService.decodedToken?['username']}"}&select=" firstName lastName role "',
     );
     setState(() {
       users = dbusers.data;
@@ -169,137 +171,120 @@ class ViewUsersState extends State<ViewUsers> {
   Widget build(BuildContext context) {
     double width = MediaQuery.sizeOf(context).width;
     bool smallScreen = width <= 1200;
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text('Staff Directory'),
-        actions: [
-          ElevatedButton.icon(
-            style: ButtonStyle(),
-            onPressed: () {
-              // AddUser()
-              // context.router.push();
-            },
-            label: Text('Add New Staff', style: TextStyle(fontSize: 10)),
-            icon: Icon(Icons.add, size: 10),
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  searchBox(smallScreen),
-                  Row(
-                    children: [
-                      FiltersDropdown(
-                        pillIcon: Icons.pending_actions,
-                        selected: status,
-                        menuList: statuses,
-                        doSelect: handleSelectStatus,
-                      ),
-                      SizedBox(width: 10),
-                      FiltersDropdown(
-                        pillIcon: Icons.departure_board,
-                        selected: department,
-                        menuList: departments,
-                        doSelect: handleSelectDepartment,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-
-              Expanded(
-                child: users.isEmpty
-                    ? Center(
-                        child: EmptyComponent(
-                          icon: Icons.receipt_long,
-                          message: "No Staff Yet",
-                          subMessage:
-                              "Start tracking your spending by adding an expense.",
-                          reload: () {},
-                        ),
-                      )
-                    : SingleChildScrollView(
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            bottom: 60,
-                          ), // Add padding for pagination
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              // Determine how many cards per row based on screen width
-                              double maxWidth = constraints.maxWidth;
-                              int cardsPerRow;
-
-                              if (maxWidth >= 900) {
-                                cardsPerRow = 4; // large screen
-                              } else if (maxWidth >= 600) {
-                                cardsPerRow = 2; // medium screen
-                              } else {
-                                cardsPerRow = 1; // small screen
-                              }
-
-                              // Card width calculation with spacing
-                              double spacing = 5;
-                              double cardWidth =
-                                  (maxWidth - (spacing * (cardsPerRow - 1))) /
-                                  cardsPerRow;
-
-                              return Wrap(
-                                spacing: spacing,
-                                runSpacing: spacing,
-                                children: [...users]
-                                    .map(
-                                      (res) => SizedBox(
-                                        width: cardWidth,
-                                        child: Stack(
-                                          children: [StaffCard(user: res)],
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-              ),
-            ],
-          ),
-          // Fixed pagination at bottom
-          if (totalPages > 0)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: NumberPagination(
-                  onPageChanged: (int pageNumber) {
-                    handlePageChange(pageNumber);
-                  },
-                  fontSize: 10,
-                  buttonRadius: 20,
-                  buttonElevation: 3,
-                  controlButtonColor: Theme.of(context).colorScheme.primary,
-                  unSelectedButtonColor: Theme.of(context).colorScheme.primary,
-                  selectedButtonColor: Theme.of(context).cardColor,
-                  controlButtonSize: Size(20, 20),
-                  numberButtonSize: const Size(20, 20),
-                  visiblePagesCount: smallScreen ? 5 : 15,
-                  totalPages: totalPages,
-                  currentPage: selectedPageNumber,
-                  enableInteraction: true,
+    return Stack(
+      children: [
+        Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                searchBox(smallScreen),
+                Row(
+                  children: [
+                    FiltersDropdown(
+                      pillIcon: Icons.pending_actions,
+                      selected: status,
+                      menuList: statuses,
+                      doSelect: handleSelectStatus,
+                    ),
+                    SizedBox(width: 10),
+                    FiltersDropdown(
+                      pillIcon: Icons.departure_board,
+                      selected: department,
+                      menuList: departments,
+                      doSelect: handleSelectDepartment,
+                    ),
+                  ],
                 ),
+              ],
+            ),
+
+            Expanded(
+              child: users.isEmpty
+                  ? Center(
+                      child: EmptyComponent(
+                        icon: Icons.receipt_long,
+                        message: "No Staff Yet",
+                        subMessage:
+                            "Start tracking your spending by adding an expense.",
+                        reload: () {},
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          bottom: 60,
+                        ), // Add padding for pagination
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            // Determine how many cards per row based on screen width
+                            double maxWidth = constraints.maxWidth;
+                            int cardsPerRow;
+
+                            if (maxWidth >= 900) {
+                              cardsPerRow = 4; // large screen
+                            } else if (maxWidth >= 600) {
+                              cardsPerRow = 2; // medium screen
+                            } else {
+                              cardsPerRow = 1; // small screen
+                            }
+
+                            // Card width calculation with spacing
+                            double spacing = 5;
+                            double cardWidth =
+                                (maxWidth - (spacing * (cardsPerRow - 1))) /
+                                cardsPerRow;
+
+                            return Wrap(
+                              spacing: spacing,
+                              runSpacing: spacing,
+                              children: [...users]
+                                  .map(
+                                    (res) => SizedBox(
+                                      width: cardWidth,
+                                      child: Stack(
+                                        children: [StaffCard(user: res)],
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+            ),
+          ],
+        ),
+        // Fixed pagination at bottom
+        if (totalPages > 0)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: NumberPagination(
+                onPageChanged: (int pageNumber) {
+                  handlePageChange(pageNumber);
+                },
+                fontSize: 10,
+                buttonRadius: 20,
+                buttonElevation: 3,
+                controlButtonColor: Theme.of(context).colorScheme.primary,
+                unSelectedButtonColor: Theme.of(context).colorScheme.primary,
+                selectedButtonColor: Theme.of(context).cardColor,
+                controlButtonSize: Size(20, 20),
+                numberButtonSize: const Size(20, 20),
+                visiblePagesCount: smallScreen ? 5 : 15,
+                totalPages: totalPages,
+                currentPage: selectedPageNumber,
+                enableInteraction: true,
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 

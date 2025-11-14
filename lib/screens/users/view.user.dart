@@ -129,7 +129,6 @@ class ViewUserState extends State<ViewUser> {
     double width = MediaQuery.sizeOf(context).width;
     bool smallScreen = width <= 1200;
     return Scaffold(
-      appBar: AppBar(),
       body: loadedUser.isEmpty
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(

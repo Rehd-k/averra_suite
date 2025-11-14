@@ -31,11 +31,11 @@ class IncomeReportsHeader extends StatelessWidget {
     double width = MediaQuery.sizeOf(context).width;
     bool isBigScreen = width >= 1200;
     return Padding(
-        padding: EdgeInsets.all(isBigScreen ? 16.0 : 5),
-        child: Row(
-          children: [
-            Expanded(
-                child: Column(
+      padding: EdgeInsets.all(isBigScreen ? 16.0 : 5),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 DropdownButtonFormField<String>(
@@ -52,10 +52,7 @@ class IncomeReportsHeader extends StatelessWidget {
                       value: 'barcodeId',
                       child: Text('Please Select'),
                     ),
-                    DropdownMenuItem(
-                      value: 'handler',
-                      child: Text('handler'),
-                    ),
+                    DropdownMenuItem(value: 'handler', child: Text('handler')),
                   ],
                   onChanged: onFieldChange,
                   initialValue: selectedField,
@@ -63,10 +60,11 @@ class IncomeReportsHeader extends StatelessWidget {
                 SizedBox(height: 16.0),
                 searchBox(context),
               ],
-            )),
-            SizedBox(width: isBigScreen ? 30 : 10),
-            Expanded(
-                child: Column(
+            ),
+          ),
+          SizedBox(width: isBigScreen ? 30 : 10),
+          Expanded(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 DropdownButtonFormField<String>(
@@ -77,9 +75,9 @@ class IncomeReportsHeader extends StatelessWidget {
                   items: cashiers.map<DropdownMenuItem<String>>((cashier) {
                     return DropdownMenuItem<String>(
                       value: cashier.toString(),
-                      child: Text(cashier.toString() == ''
-                          ? 'All'
-                          : cashier.toString()),
+                      child: Text(
+                        cashier.toString() == '' ? 'All' : cashier.toString(),
+                      ),
                     );
                   }).toList(),
                   onChanged: onAccountChange,
@@ -92,34 +90,24 @@ class IncomeReportsHeader extends StatelessWidget {
                     border: OutlineInputBorder(),
                   ),
                   items: [
-                    DropdownMenuItem(
-                      value: '',
-                      child: Text('All'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'cash',
-                      child: Text('Cash'),
-                    ),
+                    DropdownMenuItem(value: '', child: Text('All')),
+                    DropdownMenuItem(value: 'cash', child: Text('Cash')),
                     DropdownMenuItem(
                       value: 'transfer',
                       child: Text('Transfer'),
                     ),
-                    DropdownMenuItem(
-                      value: 'card',
-                      child: Text('Card'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'mixed',
-                      child: Text('Mixed'),
-                    ),
+                    DropdownMenuItem(value: 'card', child: Text('Card')),
+                    DropdownMenuItem(value: 'mixed', child: Text('Mixed')),
                   ],
                   onChanged: onPaymentMethodChange,
                   initialValue: selectedPaymentMethod,
                 ),
               ],
-            ))
-          ],
-        ));
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   SizedBox searchBox(BuildContext context) {
@@ -137,9 +125,7 @@ class IncomeReportsHeader extends StatelessWidget {
           hintText: "Search...",
           fillColor: Theme.of(context).colorScheme.surface,
           filled: true,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
           suffixIcon: InkWell(
             child: Icon(Icons.search),
             onTap: () => onSearcfieldChange,

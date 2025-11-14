@@ -75,7 +75,7 @@ class LoginForm extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 100),
+              SizedBox(height: 80),
               TextFormField(
                 onChanged: (value) {
                   emptyErrorMessage();
@@ -228,6 +228,69 @@ class LoginForm extends StatelessWidget {
                         style: Theme.of(context).primaryTextTheme.bodySmall,
                       ),
                     ),
+              SizedBox(height: 20),
+              Padding(
+                padding: EdgeInsetsGeometry.symmetric(vertical: 8.0),
+                child: Text('Demo Accounts'),
+              ),
+              Table(
+                border: TableBorder.all(
+                  color: Theme.of(context).dividerColor,
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+
+                children: [
+                  TableRow(
+                    children: [
+                      SelectableText('Role', textAlign: TextAlign.center),
+                      SelectableText('Username', textAlign: TextAlign.center),
+                      SelectableText('Password', textAlign: TextAlign.center),
+                    ],
+                  ),
+                  TableRow(
+                    children: [
+                      SelectableText('Manager', textAlign: TextAlign.center),
+                      SelectableText('etim', textAlign: TextAlign.center),
+                      SelectableText('password', textAlign: TextAlign.center),
+                    ],
+                  ),
+                  TableRow(
+                    children: [
+                      SelectableText('Supervisor', textAlign: TextAlign.center),
+                      SelectableText('uju', textAlign: TextAlign.center),
+                      SelectableText('password', textAlign: TextAlign.center),
+                    ],
+                  ),
+                  TableRow(
+                    children: [
+                      SelectableText('Waiter', textAlign: TextAlign.center),
+                      SelectableText('udosen', textAlign: TextAlign.center),
+                      SelectableText('password', textAlign: TextAlign.center),
+                    ],
+                  ),
+                  TableRow(
+                    children: [
+                      SelectableText('Accountant', textAlign: TextAlign.center),
+                      SelectableText('robin', textAlign: TextAlign.center),
+                      SelectableText('password', textAlign: TextAlign.center),
+                    ],
+                  ),
+                  TableRow(
+                    children: [
+                      SelectableText('Chef', textAlign: TextAlign.center),
+                      SelectableText('eka', textAlign: TextAlign.center),
+                      SelectableText('password', textAlign: TextAlign.center),
+                    ],
+                  ),
+                  TableRow(
+                    children: [
+                      SelectableText('Bar', textAlign: TextAlign.center),
+                      SelectableText('ekanem', textAlign: TextAlign.center),
+                      SelectableText('password', textAlign: TextAlign.center),
+                    ],
+                  ),
+                ],
+              ),
             ],
           ),
         ],

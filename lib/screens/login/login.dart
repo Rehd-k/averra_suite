@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -111,6 +110,7 @@ class _LoginFormState extends State<LoginScreen> {
       });
 
       token = response.data['access_token'];
+      JwtService().setToken = token;
       String role = response.data['role'];
       String id = response.data['sub'];
       if (Platform.isAndroid) {
@@ -124,7 +124,7 @@ class _LoginFormState extends State<LoginScreen> {
       ws.init(id);
 
       if (!mounted) return;
-      JwtService().setToken = token;
+
       if (role == 'god' || role == 'admin') {
         context.router.replaceAll([
           const AdminNavigation(children: [AdminDashbaord()]),
@@ -197,10 +197,10 @@ class _LoginFormState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isSmallScreen = MediaQuery.of(context).size.width < 600;
+    final isSmallScreen = MediaQuery.of(context).size.width < 1200;
     return Scaffold(
       appBar: widget.isGod == true
-          ? AppBar(title: const Text('God Login'))
+          ? AppBar(title: const Text('Super User Login'))
           : null,
       body: Column(
         children: [
@@ -237,53 +237,41 @@ class _LoginFormState extends State<LoginScreen> {
             ),
 
           Expanded(
-            child: Stack(
-              fit: StackFit.expand,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                // 🖼️ Background image
-                Image.asset(
-                  'assets/images/banner.png', // <-- put your image in assets folder
-                  fit: BoxFit.cover,
-                ),
-
-                // 🌫️ Blur filter
-                BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                  child: Container(
-                    color: Colors.black.withAlpha(200), // optional dark overlay
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: !showForm
+                        ? const Center(child: CircularProgressIndicator())
+                        : LoginForm(
+                            formKey: _formKey,
+                            userController: _userController,
+                            passwordController: _passwordController,
+                            submit: _submit,
+                            passwordErrorMessage: passwordErrorMessage,
+                            usernameErrorMessage: usernameErrorMessage,
+                            usernameFocus: usernameFocus,
+                            passwordFocus: passwordFocus,
+                            emptyErrorMessage: emptyErrorMessage,
+                            hidePassword: hidePassword,
+                            toggleHideShowPassword: toggleHideShowPassword,
+                            isLoading: isLoading,
+                            branches: branches,
+                            handleAddLocation: handleAddLocation,
+                            isGod: widget.isGod ?? false,
+                          ),
                   ),
                 ),
-
-                // 🪟 Foreground login card
-                Center(
-                  child: SizedBox(
-                    width: isSmallScreen ? double.infinity : 400,
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: !showForm
-                            ? const Center(child: CircularProgressIndicator())
-                            : LoginForm(
-                                formKey: _formKey,
-                                userController: _userController,
-                                passwordController: _passwordController,
-                                submit: _submit,
-                                passwordErrorMessage: passwordErrorMessage,
-                                usernameErrorMessage: usernameErrorMessage,
-                                usernameFocus: usernameFocus,
-                                passwordFocus: passwordFocus,
-                                emptyErrorMessage: emptyErrorMessage,
-                                hidePassword: hidePassword,
-                                toggleHideShowPassword: toggleHideShowPassword,
-                                isLoading: isLoading,
-                                branches: branches,
-                                handleAddLocation: handleAddLocation,
-                                isGod: widget.isGod ?? false,
-                              ),
-                      ),
+                if (!isSmallScreen)
+                  Expanded(
+                    flex: 2,
+                    child: Image.asset(
+                      'assets/images/banner.png', // <-- put your image in assets folder
+                      fit: BoxFit.cover,
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -292,15 +280,3 @@ class _LoginFormState extends State<LoginScreen> {
     );
   }
 }
-
-// class LoginPage extends StatelessWidget {
-//   const LoginPage({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body:
-
-//     );
-//   }
-// }

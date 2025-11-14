@@ -58,8 +58,11 @@ class AddUserState extends State<AddUser> {
 
   final phoneNumber = TextEditingController();
 
+  String selectedSupervisor = '';
+
   late List branches = [];
   late List departments = [];
+  late List supervisors = [];
   late String locations;
   late FocusNode usernameFocus;
   bool showForm = false;
@@ -82,9 +85,19 @@ class AddUserState extends State<AddUser> {
   void initState() {
     super.initState();
     getLocations();
-    if (widget.isGod == false) {
-      getDepartments();
-    }
+    getDepartments();
+    getSupervisors();
+  }
+
+  void getSupervisors() async {
+    var responce = await apiService.get(
+      'user?filter={"role" : "supervisor"}&select=" username "',
+    );
+    setState(() {
+      showForm = true;
+      supervisors = responce.data;
+      supervisors.insert(0, {'_id': 'all', 'username': 'Select Supervisor'});
+    });
   }
 
   void getLocations() async {
@@ -106,6 +119,12 @@ class AddUserState extends State<AddUser> {
   void handleAddLocation(String location) {
     setState(() {
       locations = location;
+    });
+  }
+
+  void handleSelectedSupervisor(String res) {
+    setState(() {
+      selectedSupervisor = res;
     });
   }
 
@@ -143,6 +162,7 @@ class AddUserState extends State<AddUser> {
         'role': widget.isGod == true ? 'god' : role.text,
         'location': 'all',
         'email': email.text,
+        'phone_number': phoneNumber.text,
       });
       _showToast('User Added Successfully', ToastificationType.success);
     } else {
@@ -157,6 +177,7 @@ class AddUserState extends State<AddUser> {
         'shiftSchedule': shiftSchedule.text,
         'department': department.text,
         'phone_number': phoneNumber.text,
+        'reporting_manager': selectedSupervisor,
       });
       _showToast('User Added Successfully', ToastificationType.success);
     }
@@ -455,6 +476,32 @@ class AddUserState extends State<AddUser> {
 
                             SizedBox(
                               width: cardWidth,
+                              child: DropdownButtonFormField<String>(
+                                decoration: InputDecoration(
+                                  labelText: 'Reporting Supervisor',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                ),
+                                items: supervisors.map<DropdownMenuItem<String>>((
+                                  branch,
+                                ) {
+                                  return DropdownMenuItem<String>(
+                                    value: branch['username']
+                                        .toString(), // Assuming 'id' is the key for the value
+                                    child: Text(
+                                      branch['username'],
+                                    ), // Assuming 'name' is the key for the display text
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  handleSelectedSupervisor(value!);
+                                },
+                              ),
+                            ),
+
+                            SizedBox(
+                              width: cardWidth,
                               child: TextFormField(
                                 controller: address,
                                 decoration: InputDecoration(
@@ -604,27 +651,6 @@ class AddUserState extends State<AddUser> {
                                 onChanged: (value) {
                                   maritalStatus.text = value!;
                                 },
-                              ),
-                            ),
-
-                            SizedBox(
-                              width: cardWidth,
-                              child: TextFormField(
-                                controller: reportingManager,
-                                keyboardType: TextInputType.datetime,
-                                decoration: InputDecoration(
-                                  labelText: 'Reporting Manager',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(5.0),
-                                    ),
-                                    borderSide: BorderSide(color: Colors.blue),
-                                  ),
-                                  labelStyle: TextStyle(
-                                    color: Theme.of(context).hintColor,
-                                    fontSize: 15,
-                                  ),
-                                ),
                               ),
                             ),
 

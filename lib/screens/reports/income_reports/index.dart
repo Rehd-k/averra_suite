@@ -45,7 +45,9 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
   String? searchFeildForSearchText = '';
   String? paymentMethordToShow = '';
   String? selectedAccount = '';
+  String? selectedBank = '';
   List cashiers = [''];
+  List banks = [];
   bool showDetails = false;
   bool showHeader = false;
   String query = '';
@@ -194,7 +196,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
     });
 
     var dbproducts = await apiService.get(
-      'sales?filter={"$searchFeild" : {"\$regex" : "${query.toLowerCase()}"}, "handler" : "$selectedAccount", "paymentMethod" : "$paymentMethordToShow"}&sort=$sorting&startDate=$_fromDate&endDate=$_toDate&skip=$offset&limit=$limit',
+      'sales?filter={"$searchFeild" : {"\$regex" : "${query.toLowerCase()}"}, "handler" : "$selectedAccount", "paymentMethod" : "$paymentMethordToShow", "bank" : "$selectedBank"}&sort=$sorting&startDate=$_fromDate&endDate=$_toDate&skip=$offset&limit=$limit',
     );
 
     var {
@@ -217,7 +219,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
 
   Future<void> handleCalculations() async {
     var dbproducts = await apiService.get(
-      'sales?filter={"$searchFeild" : {"\$regex" : "${query.toLowerCase()}"}, "handler" : "$selectedAccount", "paymentMethod" : "$paymentMethordToShow"}&startDate=$_fromDate&endDate=$_toDate',
+      'sales?filter={"$searchFeild" : {"\$regex" : "${query.toLowerCase()}"}, "handler" : "$selectedAccount", "paymentMethod" : "$paymentMethordToShow", "bank" : "$selectedBank"}&startDate=$_fromDate&endDate=$_toDate',
     );
     var {
       "summary": summary,
@@ -248,6 +250,24 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
     return;
   }
 
+  Future<void> getBanks() async {
+    banks = [];
+    var res = await apiService.get('bank');
+
+    setState(() {
+      banks.add({'accountNumber': '', 'name': ''});
+      banks.addAll(res.data);
+    });
+  }
+
+  Future<void> handleSelectBank(String bank) async {
+    setState(() {
+      selectedBank = bank;
+    });
+
+    await handleCalculations();
+  }
+
   Future<void> doRePrint(Map saleData) async {
     final profile = await CapabilityProfile.load();
     _printerService.printData(
@@ -267,6 +287,7 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
       _printerService.startScan();
     });
     handleCalculations();
+    getBanks();
     _columnDefinitions = salesColumnDefinitionMaps
         .map((map) => ColumnDefinition.fromMap(map))
         .toList();
@@ -352,29 +373,37 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
                         cashiers: cashiers,
                       ),
                       SizedBox(height: 10),
+
                       Row(
-                        mainAxisAlignment: isBigScreen
-                            ? MainAxisAlignment.center
-                            : MainAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          isBigScreen
-                              ? SizedBox(
-                                  width: isBigScreen
-                                      ? MediaQuery.of(context).size.width / 2
-                                      : MediaQuery.of(context).size.width,
-                                  child: dateRangeHolder(context, isBigScreen),
-                                )
-                              : Expanded(
-                                  child: SizedBox(
-                                    width: isBigScreen
-                                        ? MediaQuery.of(context).size.width / 2
-                                        : MediaQuery.of(context).size.width,
-                                    child: dateRangeHolder(
-                                      context,
-                                      isBigScreen,
-                                    ),
+                          Expanded(
+                            child: dateRangeHolder(context, isBigScreen),
+                          ),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              decoration: InputDecoration(
+                                labelText: 'Bank',
+                                border: OutlineInputBorder(),
+                              ),
+                              items: banks.map<DropdownMenuItem<String>>((
+                                bank,
+                              ) {
+                                return DropdownMenuItem<String>(
+                                  value: bank['accountNumber'].toString(),
+                                  child: Text(
+                                    bank['name'].toString() == ''
+                                        ? 'All'
+                                        : bank['name'].toString(),
                                   ),
-                                ),
+                                );
+                              }).toList(),
+                              onChanged: (bank) {
+                                handleSelectBank(bank ?? '');
+                              },
+                              initialValue: selectedAccount,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -476,69 +505,140 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
         borderRadius: BorderRadius.circular(10),
         color: Theme.of(context).colorScheme.surface,
       ),
-      child: Row(
-        children: [
-          Row(
-            children: [
-              isBigScreen ? Text('From :') : SizedBox.shrink(),
-              IconButton(
-                icon: Icon(Icons.calendar_today),
-                tooltip: 'From date',
-                onPressed: () async {
-                  final DateTime? picked = await showDatePicker(
-                    context: context,
-                    initialDate: _fromDate ?? DateTime.now(),
-                    firstDate: DateTime(2000),
-                    lastDate: _toDate ?? DateTime.now(),
-                  );
-                  if (picked != null) {
-                    handleRangeChange('from', picked);
-                  }
-                },
-              ),
-              Text(
-                _fromDate != null
-                    ? "${_fromDate!.toLocal()}".split(' ')[0]
-                    : "From",
-              ),
-            ],
-          ),
-          SizedBox(width: 16),
-          Row(
-            children: [
-              isBigScreen ? Text('To :') : SizedBox.shrink(),
-              IconButton(
-                icon: Icon(Icons.calendar_today),
-                tooltip: 'To date',
-                onPressed: () async {
-                  final DateTime? picked = await showDatePicker(
-                    context: context,
-                    initialDate: _toDate ?? DateTime.now(),
-                    firstDate: _fromDate ?? DateTime(2000),
-                    lastDate: DateTime.now(),
-                  );
-                  if (picked != null) {
-                    handleRangeChange('to', picked);
-                  }
-                },
-              ),
-              Text(
-                _toDate != null ? "${_toDate!.toLocal()}".split(' ')[0] : "To",
-              ),
-            ],
-          ),
-          Spacer(),
-          isBigScreen
-              ? OutlinedButton(
-                  onPressed: () {
-                    setState(() {
-                      _fromDate = DateTime.now();
-                      _toDate = DateTime.now();
-                    });
-                  },
-                  child: Text('Reset'),
-                )
-              : IconButton(
+      child: isBigScreen
+          ? Row(
+              children: [
+                Row(
+                  children: [
+                    isBigScreen ? Text('From :') : SizedBox.shrink(),
+                    IconButton(
+                      icon: Icon(Icons.calendar_today),
+                      tooltip: 'From date',
+                      onPressed: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: _fromDate ?? DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: _toDate ?? DateTime.now(),
+                        );
+                        if (picked != null) {
+                          handleRangeChange('from', picked);
+                        }
+                      },
+                    ),
+                    Text(
+                      _fromDate != null
+                          ? "${_fromDate!.toLocal()}".split(' ')[0]
+                          : "From",
+                    ),
+                  ],
+                ),
+                SizedBox(width: 16),
+                Row(
+                  children: [
+                    isBigScreen ? Text('To :') : SizedBox.shrink(),
+                    IconButton(
+                      icon: Icon(Icons.calendar_today),
+                      tooltip: 'To date',
+                      onPressed: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: _toDate ?? DateTime.now(),
+                          firstDate: _fromDate ?? DateTime(2000),
+                          lastDate: DateTime.now(),
+                        );
+                        if (picked != null) {
+                          handleRangeChange('to', picked);
+                        }
+                      },
+                    ),
+                    Text(
+                      _toDate != null
+                          ? "${_toDate!.toLocal()}".split(' ')[0]
+                          : "To",
+                    ),
+                  ],
+                ),
+                Spacer(),
+                isBigScreen
+                    ? OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            _fromDate = DateTime.now();
+                            _toDate = DateTime.now();
+                          });
+                        },
+                        child: Text('Reset'),
+                      )
+                    : IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _fromDate = DateTime.now();
+                            _toDate = DateTime.now();
+                          });
+                        },
+                        icon: Icon(Icons.cancel_outlined),
+                      ),
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.calendar_today),
+                            tooltip: 'From date',
+                            onPressed: () async {
+                              final DateTime? picked = await showDatePicker(
+                                context: context,
+                                initialDate: _fromDate ?? DateTime.now(),
+                                firstDate: DateTime(2000),
+                                lastDate: _toDate ?? DateTime.now(),
+                              );
+                              if (picked != null) {
+                                handleRangeChange('from', picked);
+                              }
+                            },
+                          ),
+                          Text(
+                            _fromDate != null
+                                ? "${_fromDate!.toLocal()}".split(' ')[0]
+                                : "From",
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          if (isBigScreen) Text('To :'),
+                          IconButton(
+                            icon: Icon(Icons.calendar_today),
+                            tooltip: 'To date',
+                            onPressed: () async {
+                              final DateTime? picked = await showDatePicker(
+                                context: context,
+                                initialDate: _toDate ?? DateTime.now(),
+                                firstDate: _fromDate ?? DateTime(2000),
+                                lastDate: DateTime.now(),
+                              );
+                              if (picked != null) {
+                                handleRangeChange('to', picked);
+                              }
+                            },
+                          ),
+                          Text(
+                            _toDate != null
+                                ? "${_toDate!.toLocal()}".split(' ')[0]
+                                : "To",
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
                   onPressed: () {
                     setState(() {
                       _fromDate = DateTime.now();
@@ -547,8 +647,8 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
                   },
                   icon: Icon(Icons.cancel_outlined),
                 ),
-        ],
-      ),
+              ],
+            ),
     );
   }
 

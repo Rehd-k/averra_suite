@@ -87,86 +87,91 @@ class _CartState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: DateRangeHolder(
-                  fromDate: startDate,
-                  toDate: endDate,
-                  handleRangeChange: (String handle, DateTime picked) {
-                    handleRangeChange(handle, picked);
-                  },
-                  handleDateReset: () {},
-                ),
-              ),
-
-              SizedBox(width: 10),
-              FiltersDropdown(
-                pillIcon: Icons.pending_actions,
-                selected: settled,
-                menuList: statuses,
-                doSelect: handleSelectOrders,
-              ),
-            ],
-          ),
-        ),
-
-        Expanded(
-          child: orders.isEmpty
-              ? Center(
-                  child: EmptyComponent(
-                    icon: Icons.remove_shopping_cart_outlined,
-                    message: "No Orders Yet",
-                    subMessage: "No Waiting Order Today",
-                    reload: getOrders,
+    return RefreshIndicator(
+      onRefresh: getOrders,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: DateRangeHolder(
+                    fromDate: startDate,
+                    toDate: endDate,
+                    handleRangeChange: (String handle, DateTime picked) {
+                      handleRangeChange(handle, picked);
+                    },
+                    handleDateReset: () {},
                   ),
-                )
-              : SingleChildScrollView(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      // Determine how many cards per row based on screen width
-                      double maxWidth = constraints.maxWidth;
-                      int cardsPerRow;
+                ),
 
-                      if (maxWidth >= 900) {
-                        cardsPerRow = 4; // large screen
-                      } else if (maxWidth >= 600) {
-                        cardsPerRow = 3; // medium screen
-                      } else {
-                        cardsPerRow = 1; // small screen
-                      }
+                SizedBox(width: 10),
+                FiltersDropdown(
+                  pillIcon: Icons.pending_actions,
+                  selected: settled,
+                  menuList: statuses,
+                  doSelect: handleSelectOrders,
+                ),
+                SizedBox(width: 10),
+                IconButton(onPressed: getOrders, icon: Icon(Icons.refresh)),
+              ],
+            ),
+          ),
 
-                      // Card width calculation with spacing
-                      double spacing = 16.0;
-                      double cardWidth =
-                          (maxWidth - (spacing * (cardsPerRow - 1))) /
-                          cardsPerRow;
+          Expanded(
+            child: orders.isEmpty
+                ? Center(
+                    child: EmptyComponent(
+                      icon: Icons.remove_shopping_cart_outlined,
+                      message: "No Orders Yet",
+                      subMessage: "No Waiting Order Today",
+                      reload: getOrders,
+                    ),
+                  )
+                : SingleChildScrollView(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Determine how many cards per row based on screen width
+                        double maxWidth = constraints.maxWidth;
+                        int cardsPerRow;
 
-                      return Wrap(
-                        spacing: spacing,
-                        runSpacing: spacing,
-                        children: [
-                          ...orders.map(
-                            (order) => SizedBox(
-                              width: cardWidth,
-                              child: OrderItem(
-                                orderItem: order,
-                                sendNotification: sendNotification,
+                        if (maxWidth >= 900) {
+                          cardsPerRow = 4; // large screen
+                        } else if (maxWidth >= 600) {
+                          cardsPerRow = 3; // medium screen
+                        } else {
+                          cardsPerRow = 1; // small screen
+                        }
+
+                        // Card width calculation with spacing
+                        double spacing = 16.0;
+                        double cardWidth =
+                            (maxWidth - (spacing * (cardsPerRow - 1))) /
+                            cardsPerRow;
+
+                        return Wrap(
+                          spacing: spacing,
+                          runSpacing: spacing,
+                          children: [
+                            ...orders.map(
+                              (order) => SizedBox(
+                                width: cardWidth,
+                                child: OrderItem(
+                                  orderItem: order,
+                                  sendNotification: sendNotification,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      );
-                    },
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                ),
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }

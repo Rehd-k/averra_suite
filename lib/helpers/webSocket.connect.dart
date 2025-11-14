@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 // ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:toastification/toastification.dart';
@@ -96,7 +97,12 @@ class WebSocketService {
       ..on('notification', (data) {
         final map = _safeJson(data);
         _notificationController.add(map);
-        localNotificationService.showNotification(map['title'], map['message']);
+        if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+          localNotificationService.showNotification(
+            map['title'],
+            map['message'],
+          );
+        }
       });
   }
 

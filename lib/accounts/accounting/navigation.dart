@@ -160,7 +160,7 @@ class AccountingNavigationScreen extends StatelessWidget {
       appBar: (Platform.isAndroid || Platform.isIOS)
           ? AppBar(
               title: const Text(
-                "Account Module",
+                "Accountant's Module",
                 style: TextStyle(fontSize: 10),
               ),
               actions: [
@@ -257,8 +257,6 @@ class MenuListState extends State<MenuList> {
 
   @override
   Widget build(BuildContext context) {
-    final isLargeScreen = MediaQuery.of(context).size.width > 1200;
-
     return Container(
       color: Theme.of(context).appBarTheme.backgroundColor,
       child: ListView(
@@ -269,47 +267,16 @@ class MenuListState extends State<MenuList> {
               color: Theme.of(context).appBarTheme.backgroundColor,
             ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: const CircleAvatar(
-                        child: Icon(Icons.person_outlined),
-                      ),
-                    ),
-                    // On large screens, the ThemeSwitchButton is here because there's no AppBar.
-                    if (isLargeScreen)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const ThemeSwitchButton(),
-                          IconButton(
-                            icon: const Icon(Icons.logout_outlined, size: 10),
-                            onPressed: () {
-                              jwtService.logout();
-                              context.router.replaceAll([LoginRoute()]);
-                            },
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      capitalizeFirstLetter(
-                        jwtService.decodedToken?['username'],
-                      ),
-                    ),
-                  ],
+                const CircleAvatar(child: Icon(Icons.person_outlined)),
+                Text(
+                  capitalizeFirstLetter(jwtService.decodedToken?['username']),
                 ),
               ],
             ),
-          ),
-          // Generate the list of menu items dynamically
+          ), // Generate the list of menu items dynamically
           ...menuData.map((item) => _buildMenuItem(item)),
         ],
       ),

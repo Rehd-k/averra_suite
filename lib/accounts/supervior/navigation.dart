@@ -34,7 +34,7 @@ final List<MenuItem> menuData = [
     title: 'Dashboard',
     link: SuperviorNavigationRoute(children: [DashbaordSuperviorRoute()]),
   ),
-
+  MenuItem(icon: Icons.settings, title: 'View Staff', link: ViewUsers()),
   MenuItem(
     icon: Icons.local_shipping_outlined,
     title: 'Suppliers',
@@ -94,7 +94,6 @@ final List<MenuItem> menuData = [
       ),
     ],
   ),
-
   MenuItem(
     title: 'Other Income',
     icon: Icons.pending_actions,
@@ -124,7 +123,6 @@ final List<MenuItem> menuData = [
       ),
     ],
   ),
-
   MenuItem(
     icon: Icons.point_of_sale_outlined,
     title: 'Goods',
@@ -196,7 +194,10 @@ class SuperviorNavigationScreen extends StatelessWidget {
       // Only show the AppBar and the hamburger menu icon on smaller screens
       appBar: (Platform.isAndroid || Platform.isIOS)
           ? AppBar(
-              title: const Text("Admin Panel", style: TextStyle(fontSize: 10)),
+              title: const Text(
+                "Supervisor's Module",
+                style: TextStyle(fontSize: 10),
+              ),
               actions: [
                 SlidingNotificationDropdown(),
                 const ThemeSwitchButton(),
@@ -291,8 +292,6 @@ class MenuListState extends State<MenuList> {
 
   @override
   Widget build(BuildContext context) {
-    final isLargeScreen = MediaQuery.of(context).size.width > 1200;
-
     return Container(
       color: Theme.of(context).appBarTheme.backgroundColor,
       child: ListView(
@@ -303,42 +302,12 @@ class MenuListState extends State<MenuList> {
               color: Theme.of(context).appBarTheme.backgroundColor,
             ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: const CircleAvatar(
-                        child: Icon(Icons.person_outlined),
-                      ),
-                    ),
-                    // On large screens, the ThemeSwitchButton is here because there's no AppBar.
-                    if (isLargeScreen)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const ThemeSwitchButton(),
-                          IconButton(
-                            icon: const Icon(Icons.logout_outlined, size: 10),
-                            onPressed: () {
-                              jwtService.logout();
-                              context.router.replaceAll([LoginRoute()]);
-                            },
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      capitalizeFirstLetter(
-                        jwtService.decodedToken?['username'],
-                      ),
-                    ),
-                  ],
+                const CircleAvatar(child: Icon(Icons.person_outlined)),
+                Text(
+                  capitalizeFirstLetter(jwtService.decodedToken?['username']),
                 ),
               ],
             ),

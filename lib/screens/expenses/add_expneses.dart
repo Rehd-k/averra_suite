@@ -44,9 +44,18 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     };
     if (widget.updateInfo == null) {
       await apiService.post('expense', data);
-      // await sendNotification();
+      await sendNotification(
+        ['admin', 'manager'],
+        "An expense from ${data['category']} is waiting for you're approval",
+        'New Expense Added',
+      );
     } else {
       await apiService.patch('expense/${widget.updateInfo?['_id']}', data);
+      await sendNotification(
+        ['admin', 'manager'],
+        "The ${data['category']} expense was updated and waiting for you're approval",
+        'Expense Updated',
+      );
     }
 
     showToast('Added', ToastificationType.success);
@@ -60,7 +69,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   ) async {
     await apiService.post('notifications', {
       "message": message,
-      "recipient": recipient,
+      "recipients": recipient,
       "title": title,
     });
   }
