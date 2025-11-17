@@ -2,8 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:averra_suite/components/charts/line_chart.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:showcaseview/showcaseview.dart';
 
 import '../../components/charts/range.dart';
 import '../../components/finance_card.dart';
@@ -19,11 +17,6 @@ class AccountingDashboardScreen extends StatefulWidget {
 
 class AccountingDashboardState extends State<AccountingDashboardScreen> {
   final ApiService apiService = ApiService();
-  final GlobalKey _one = GlobalKey();
-  final GlobalKey _two = GlobalKey();
-  final GlobalKey _three = GlobalKey();
-  final GlobalKey _four = GlobalKey();
-  final GlobalKey _five = GlobalKey();
   bool isAlreadyShows = true;
   dynamic rangeInfo;
   String selectedRange = 'Today';
@@ -99,90 +92,14 @@ class AccountingDashboardState extends State<AccountingDashboardScreen> {
     return apiService.get('expense/chart?filter=$range');
   }
 
-  Future saveUserShowCaseState() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    List learnt = prefs.getStringList('learnt') ?? [];
-    if (!learnt.contains('accountant_dasboard')) {
-      await prefs.setStringList('learnt', <String>[
-        ...learnt,
-        'accountant_dasboard',
-      ]);
-    }
-  }
-
-  Future checkIfDone() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    List learnt = prefs.getStringList('learnt') ?? [];
-
-    setState(() {
-      isAlreadyShows = learnt.contains('accountant_dasboard');
-    });
-  }
-
   @override
   void initState() {
-    checkIfDone();
     handleRangeChanged('Today');
-    ShowcaseView.register(
-      onFinish: () => saveUserShowCaseState(),
-      onDismiss: (dismissedAt) => saveUserShowCaseState(),
-      // enableShowcase: showcaseEnabled,
-      autoPlayDelay: const Duration(seconds: 3),
-      globalFloatingActionWidget: (showcaseContext) => FloatingActionWidget(
-        left: 16,
-        bottom: 16,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ElevatedButton(
-            onPressed: () => ShowcaseView.get().dismiss(),
-
-            child: const Text('Skip'),
-          ),
-        ),
-      ),
-      globalTooltipActionConfig: const TooltipActionConfig(
-        position: TooltipActionPosition.inside,
-        alignment: MainAxisAlignment.spaceBetween,
-        actionGap: 20,
-      ),
-      globalTooltipActions: [
-        TooltipActionButton(
-          type: TooltipDefaultActionType.previous,
-          textStyle: const TextStyle(color: Colors.white),
-          // Here we don't need previous action for the first showcase widget
-          // so we hide this action for the first showcase widget
-          hideActionWidgetForShowcase: [_one],
-        ),
-        TooltipActionButton(
-          type: TooltipDefaultActionType.next,
-          textStyle: const TextStyle(color: Colors.white),
-          // Here we don't need next action for the last showcase widget so we
-          // hide this action for the last showcase widget
-          hideActionWidgetForShowcase: [_five],
-        ),
-      ],
-    );
-
-    if (!isAlreadyShows) {
-      // Start showcase after the screen is rendered to ensure internal initialization.
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => ShowcaseView.get().startShowCase([
-          _one,
-          _two,
-          _three,
-          _four,
-          _five,
-        ]),
-      );
-    }
     super.initState();
   }
 
   @override
   void dispose() {
-    // Unregister the showcase view
-    ShowcaseView.get().unregister();
     super.dispose();
   }
 
@@ -218,70 +135,34 @@ class AccountingDashboardState extends State<AccountingDashboardScreen> {
                 children: [
                   SizedBox(
                     width: cardWidth,
-                    child: Showcase(
-                      tooltipBackgroundColor: Theme.of(context).cardColor,
-                      showArrow: false,
-                      key: _one,
+                    child: FinanceCard(
+                      fontSize: isBigScreen ? 10 : 5,
+                      isFinancial: true,
+                      amount: cardsData['revenue'],
                       title: 'Total Revenue',
-                      titleTextStyle: TextStyle(
-                        fontSize: isBigScreen ? 12 : 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      descTextStyle: TextStyle(fontSize: isBigScreen ? 12 : 10),
-                      description: 'This Shows All The Revenue Gotten That Day',
-                      child: FinanceCard(
-                        fontSize: isBigScreen ? 10 : 5,
-                        isFinancial: true,
-                        amount: cardsData['revenue'],
-                        title: 'Total Revenue',
-                        icon: Icon(Icons.account_tree_outlined),
-                      ),
+                      icon: Icon(Icons.account_tree_outlined),
                     ),
                   ),
 
                   SizedBox(
                     width: cardWidth,
-                    child: Showcase(
-                      key: _two,
-                      tooltipBackgroundColor: Theme.of(context).cardColor,
+                    child: FinanceCard(
+                      fontSize: isBigScreen ? 10 : 5,
+                      isFinancial: true,
+                      amount: cardsData['expenses'],
                       title: 'Total Expenses',
-                      description:
-                          'This Shows All The Expenses Gotten That Day',
-                      titleTextStyle: TextStyle(
-                        fontSize: isBigScreen ? 12 : 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      descTextStyle: TextStyle(fontSize: isBigScreen ? 12 : 10),
-                      child: FinanceCard(
-                        fontSize: isBigScreen ? 10 : 5,
-                        isFinancial: true,
-                        amount: cardsData['expenses'],
-                        title: 'Total Expenses',
-                        icon: Icon(Icons.receipt_long_outlined),
-                      ),
+                      icon: Icon(Icons.receipt_long_outlined),
                     ),
                   ),
 
                   SizedBox(
                     width: cardWidth,
-                    child: Showcase(
-                      key: _three,
-                      tooltipBackgroundColor: Theme.of(context).cardColor,
-                      titleTextStyle: TextStyle(
-                        fontSize: isBigScreen ? 12 : 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      descTextStyle: TextStyle(fontSize: isBigScreen ? 12 : 10),
-                      title: 'Total Expenses',
-                      description:
-                          'This Shows All The Expenses Gotten That Day',
-                      child: FinanceCard(
-                        fontSize: isBigScreen ? 10 : 5,
-                        isFinancial: false,
-                        amount: cardsData['revenue'] - cardsData['expenses'],
-                        title: 'Difference',
-                        icon: Icon(Icons.trending_up_outlined),
-                      ),
+                    child: FinanceCard(
+                      fontSize: isBigScreen ? 10 : 5,
+                      isFinancial: false,
+                      amount: cardsData['revenue'] - cardsData['expenses'],
+                      title: 'Difference',
+                      icon: Icon(Icons.trending_up_outlined),
                     ),
                   ),
                 ],
@@ -297,26 +178,14 @@ class AccountingDashboardState extends State<AccountingDashboardScreen> {
             child: Card(
               elevation: 3,
               color: Theme.of(context).colorScheme.surface,
-              child: Showcase(
-                key: _four,
-                title: 'Revenue/Expenses Visualization',
-                description: 'It Shows The Revenue And Expenses Over Time',
-                tooltipBackgroundColor: Theme.of(context).cardColor,
-                titleTextStyle: TextStyle(
-                  fontSize: isBigScreen ? 12 : 10,
-                  fontWeight: FontWeight.bold,
-                ),
-                descTextStyle: TextStyle(fontSize: isBigScreen ? 12 : 10),
-                child: MainLineChart(
-                  showCaseKey: _five,
-                  onRangeChanged: handleRangeChanged,
-                  rangeInfo: rangeInfo,
-                  selectedRange: selectedRange,
-                  spots: spots,
-                  redSpots: expensesSport,
-                  isCurved: true,
-                  heading: 'Revenue Visualization',
-                ),
+              child: MainLineChart(
+                onRangeChanged: handleRangeChanged,
+                rangeInfo: rangeInfo,
+                selectedRange: selectedRange,
+                spots: spots,
+                redSpots: expensesSport,
+                isCurved: true,
+                heading: 'Revenue Visualization',
               ),
             ),
           ),

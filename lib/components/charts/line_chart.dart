@@ -52,7 +52,6 @@ class MainLineChart extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: FiltersDropdown(
-                  showCaseKey: showCaseKey,
                   selected: selectedRange,
                   menuList: RangeLabel.values.map<Map>((RangeLabel value) {
                     return {'title': value.label};
