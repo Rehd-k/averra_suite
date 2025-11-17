@@ -200,6 +200,7 @@ class SuperviorNavigationScreen extends StatelessWidget {
               ),
               actions: [
                 SlidingNotificationDropdown(),
+                SizedBox(width: 10),
                 const ThemeSwitchButton(),
                 IconButton(
                   icon: const Icon(Icons.logout_outlined, size: 10),

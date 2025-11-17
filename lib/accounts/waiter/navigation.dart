@@ -34,13 +34,16 @@ class _WaiterNavigationScreenState extends State<WaiterNavigationScreen> {
     return Scaffold(
       appBar: (Platform.isAndroid || Platform.isIOS)
           ? AppBar(
-              title: const Text("Waiter", style: TextStyle(fontSize: 10)),
+              title: const Text(
+                "Waiter's Module",
+                style: TextStyle(fontSize: 10),
+              ),
               actions: [
                 SlidingNotificationDropdown(),
+                SizedBox(width: 10),
                 const ThemeSwitchButton(),
                 IconButton(
-                  tooltip: 'Logout',
-                  icon: const Icon(Icons.logout_outlined, size: 12),
+                  icon: const Icon(Icons.logout_outlined, size: 10),
                   onPressed: () {
                     JwtService().logout();
                     context.router.replaceAll([LoginRoute()]);

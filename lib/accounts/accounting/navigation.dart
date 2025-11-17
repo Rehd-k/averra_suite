@@ -42,17 +42,17 @@ final List<MenuItem> menuData = [
       MenuItem(
         icon: Icons.adjust_outlined,
         title: 'Dashboards',
-        link: AccountingNavigationRoute(children: [SuppliersDashbaordRoute()]),
+        link: SuppliersDashbaordRoute(),
       ),
       MenuItem(
         icon: Icons.adjust_outlined,
         title: 'Add New',
-        link: AccountingNavigationRoute(children: [AddSupplier()]),
+        link: AddSupplier(),
       ),
       MenuItem(
         icon: Icons.adjust_outlined,
         title: 'View Suppliers',
-        link: AccountingNavigationRoute(children: [ViewSuppliersRoute()]),
+        link: ViewSuppliersRoute(),
       ),
     ],
   ),
@@ -165,7 +165,8 @@ class AccountingNavigationScreen extends StatelessWidget {
               ),
               actions: [
                 SlidingNotificationDropdown(),
-                ThemeSwitchButton(),
+                SizedBox(width: 10),
+                const ThemeSwitchButton(),
                 IconButton(
                   icon: const Icon(Icons.logout_outlined, size: 10),
                   onPressed: () {

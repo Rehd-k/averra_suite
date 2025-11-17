@@ -11,6 +11,7 @@ class MainLineChart extends StatelessWidget {
   final List<FlSpot> redSpots;
   final bool isCurved;
   final String? heading;
+  final GlobalKey? showCaseKey;
 
   const MainLineChart({
     super.key,
@@ -21,6 +22,7 @@ class MainLineChart extends StatelessWidget {
     required this.isCurved,
     required this.redSpots,
     this.heading,
+    this.showCaseKey,
   });
 
   @override
@@ -50,6 +52,7 @@ class MainLineChart extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: FiltersDropdown(
+                  showCaseKey: showCaseKey,
                   selected: selectedRange,
                   menuList: RangeLabel.values.map<Map>((RangeLabel value) {
                     return {'title': value.label};

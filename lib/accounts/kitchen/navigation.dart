@@ -50,9 +50,10 @@ class _KitchenNavigationScreenState extends State<KitchenNavigationScreen> {
               ),
               actions: [
                 SlidingNotificationDropdown(),
+                SizedBox(width: 10),
                 const ThemeSwitchButton(),
                 IconButton(
-                  icon: const Icon(Icons.logout_outlined, size: 12),
+                  icon: const Icon(Icons.logout_outlined, size: 10),
                   onPressed: () {
                     JwtService().logout();
                     context.router.replaceAll([LoginRoute()]);

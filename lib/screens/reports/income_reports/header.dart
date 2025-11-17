@@ -57,6 +57,7 @@ class IncomeReportsHeader extends StatelessWidget {
                   onChanged: onFieldChange,
                   initialValue: selectedField,
                 ),
+
                 SizedBox(height: 16.0),
                 searchBox(context),
               ],
