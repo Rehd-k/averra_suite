@@ -85,8 +85,10 @@ class AddUserState extends State<AddUser> {
   void initState() {
     super.initState();
     getLocations();
-    getDepartments();
-    getSupervisors();
+    if (widget.isGod != true) {
+      getDepartments();
+      getSupervisors();
+    }
   }
 
   void getSupervisors() async {

@@ -42,7 +42,7 @@ class ApiService {
   final Dio _dio = Dio(
     BaseOptions(
       // baseUrl: 'http://localhost:3000/',
-      baseUrl: 'http://80.66.72.159:3000/',
+      baseUrl: 'http://46.202.194.7:3000/',
       contentType: "application/json",
       validateStatus: (_) => true,
     ),

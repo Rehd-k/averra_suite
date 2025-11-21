@@ -73,6 +73,7 @@ dependencies:
   flutter_expandable_fab: ^2.5.2
   socket_io_client: ^3.1.2
   table_calendar: ^3.2.0
+  overlay_tooltip: ^0.2.4
 
 dev_dependencies:
   flutter_test:
@@ -88,6 +89,7 @@ dev_dependencies:
   build_runner: ^2.5.4
   msix: ^3.16.12
   flutter_launcher_icons: ^0.14.4
+  inno_bundle: ^0.11.2
   
  
   
@@ -166,3 +168,7 @@ msix_config:
   
    # Optional: Custom SignTool args for timestamp (keeps sig valid post-expiry)
     sign_command: signtool sign /fd SHA256 /a /f "{0}" /p "{1}" /tr http://timestamp.digicert.com /td SHA256
+
+inno_bundle:
+  id: 785746d0-c40d-11f0-9d6d-bfd7f3b5df3b
+  publisher: Rhed

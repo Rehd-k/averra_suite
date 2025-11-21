@@ -56,7 +56,7 @@ class WebSocketService {
 
     _socket = IO.io(
       // 'http://localhost:3000/', // <-- replace with prod URL
-      'http://80.66.72.159:3000/',
+      'http://46.202.194.7:3000/',
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .setQuery({'userId': _userId!})

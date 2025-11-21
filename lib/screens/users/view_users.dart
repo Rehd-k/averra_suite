@@ -52,7 +52,15 @@ class ViewUsersState extends State<ViewUsers> {
   @override
   void initState() {
     super.initState();
-    getUsersList();
+    if ([
+      'admin',
+      'god',
+      'manager',
+    ].contains(jwtService.decodedToken?['role'])) {
+      getAllUsersList();
+    } else {
+      getUsersList();
+    }
   }
 
   // Search logic
@@ -82,6 +90,17 @@ class ViewUsersState extends State<ViewUsers> {
   Future getUsersList() async {
     var dbusers = await apiService.get(
       'user?filter={"reporting_manager" : "${jwtService.decodedToken?['username']}"}&select=" firstName lastName role "',
+    );
+    setState(() {
+      users = dbusers.data;
+      getFilteredAndSortedRows();
+      isLoading = false;
+    });
+  }
+
+  Future getAllUsersList() async {
+    var dbusers = await apiService.get(
+      'user?&select=" firstName lastName role "',
     );
     setState(() {
       users = dbusers.data;
