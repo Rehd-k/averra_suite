@@ -196,6 +196,7 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: ViewUser.page),
         AutoRoute(page: AddUser.page),
         AutoRoute(page: ProfitLossStatementRoute.page),
+        AutoRoute(page: DailySaleIndexRoute.page),
       ],
     ),
   ];

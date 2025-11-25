@@ -70,7 +70,7 @@ class MakeReturnState extends State<MakeReturn> {
       );
       return;
     }
-    if (userRole['role'] == 'admin' || userRole['role'] == 'god') {
+    if (['god', 'admin', 'manager', 'supervisor'].contains(userRole['role'])) {
       // Capture the context before the async gap
       if (!mounted) return;
       final scaffoldMessenger = ScaffoldMessenger.of(context);
@@ -109,7 +109,7 @@ class MakeReturnState extends State<MakeReturn> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    'Manager have been notified, Review is being made, Return will be made shorty',
+                    'A manager is reviewing your request. Your return will be completed shortly',
                   ),
                   backgroundColor: Colors.green,
                 ),

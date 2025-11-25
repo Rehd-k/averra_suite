@@ -373,7 +373,6 @@ class IncomeReportsScreenState extends State<IncomeReportsScreen> {
                         cashiers: cashiers,
                       ),
                       SizedBox(height: 10),
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   bitsdojo_window_windows
   firebase_core
   flutter_thermal_printer
+  permission_handler_windows
   share_plus
   url_launcher_windows
 )

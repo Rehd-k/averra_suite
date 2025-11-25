@@ -138,6 +138,23 @@ final List<MenuItem> menuData = [
     ],
   ),
   MenuItem(
+    icon: Icons.request_quote,
+    title: 'Reports',
+    link: DailySaleIndexRoute(),
+    children: [
+      MenuItem(
+        icon: Icons.adjust_outlined,
+        title: 'Product Sales Report',
+        link: DailySaleIndexRoute(),
+      ),
+      MenuItem(
+        title: 'Pending Requisition',
+        icon: Icons.adjust_outlined,
+        link: AccountingNavigationRoute(children: [PendingRequisition()]),
+      ),
+    ],
+  ),
+  MenuItem(
     icon: Icons.book_online,
     title: 'Cash Statement',
     link: CashStatementRoute(),

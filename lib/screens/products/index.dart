@@ -46,6 +46,8 @@ class ProductsIndexState extends State<ProductsScreen> {
   String quntfilter = '';
   int rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
 
+  bool showHeader = false;
+
   @override
   void initState() {
     getCategories();
@@ -177,7 +179,23 @@ class ProductsIndexState extends State<ProductsScreen> {
     bool smallScreen = width <= 1200;
 
     return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false, actions: []),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                showHeader = !showHeader;
+              });
+            },
+            icon: AnimatedRotation(
+              turns: showHeader ? 0.5 : 0.0,
+              duration: Duration(milliseconds: 300),
+              child: Icon(Icons.keyboard_arrow_down),
+            ),
+          ),
+        ],
+      ),
       body: KeyboardListener(
         focusNode: _scannerFocusNode,
         onKeyEvent: (event) async {
@@ -195,7 +213,13 @@ class ProductsIndexState extends State<ProductsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            header(context, smallScreen),
+            AnimatedContainer(
+              width: double.infinity,
+              duration: Duration(milliseconds: 1000),
+              curve: Curves.easeInOut,
+              height: showHeader ? 130 : 0,
+              child: header(context, smallScreen),
+            ),
             Expanded(
               flex: 1,
               child: ViewProducts(
@@ -275,7 +299,7 @@ class ProductsIndexState extends State<ProductsScreen> {
                   if (!smallScreen)
                     IconButton(
                       onPressed: () {},
-                      tooltip: 'Print Result',
+                      tooltip: 'Generate Report',
                       icon: Icon(Icons.print_outlined),
                     ),
 
@@ -390,13 +414,18 @@ class ProductsIndexState extends State<ProductsScreen> {
                     ),
                 ],
 
-                tableHeader: IconButton(
-                  onPressed: () {
-                    setState(() {});
-                  },
-                  tooltip: 'Refresh Table',
-                  icon: Icon(Icons.refresh_outlined),
+                tableHeader: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        setState(() {});
+                      },
+                      tooltip: 'Refresh Table',
+                      icon: Icon(Icons.refresh_outlined),
+                    ),
+                  ],
                 ),
+
                 filter: quntfilter,
               ),
             ),
