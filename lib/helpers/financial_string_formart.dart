@@ -14,6 +14,14 @@ extension FinancialFormat on String {
   }
 }
 
+String formatNaira(double amount) {
+  final formatCurrency = NumberFormat.simpleCurrency(
+    locale: 'en_NG',
+    name: 'NGN',
+  );
+  return formatCurrency.format(amount);
+}
+
 String capitalizeFirstLetter(String input) {
   if (input.isEmpty) {
     return input;

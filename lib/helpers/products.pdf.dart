@@ -7,7 +7,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 
-class PdfReportService {
+class PdfProductsService {
   /// Main function to generate the PDF
   Future<Uint8List> generateStockReport(
     List<Map<String, dynamic>> data,
@@ -39,14 +39,11 @@ class PdfReportService {
     const tableHeaders = [
       'Title',
       'Category',
+      'Brand',
       'Unit Price', // sellingPriceUnit
-      'Opening Stock', // openingStock
-      'New STock', // newStock
-      'Sold Stock', // quantitySold
-      'Closeing Stock', // closingStock
-      'Unit Cost', // purchasingPriceUnit
-      'Sales', // salesAmount
-      'Profit', // grossProfit
+      'R.O.Q', // openingStock
+      'Quantity', // quantitySold
+      'Value', // closingStock
     ];
 
     // 2. Prepare Data Rows
@@ -54,14 +51,11 @@ class PdfReportService {
       return [
         item['title'] ?? '',
         item['category'] ?? '',
-        _formatCurrency(item['sellingPriceUnit']),
-        item['openingStock']?.toString() ?? '0',
-        item['newStock']?.toString() ?? '0',
-        item['quantitySold']?.toString() ?? '0',
-        item['closingStock']?.toString() ?? '0',
-        _formatCurrency(item['purchasingPriceUnit']),
-        _formatCurrency(item['quantitySold'] * item['sellingPriceUnit'] ?? 0),
-        _formatCurrency(item['grossProfit']),
+        item['brand'] ?? '',
+        _formatCurrency(item['price']),
+        item['roq'] ?? '',
+        item['quantity']?.toString() ?? '0',
+        _formatCurrency(item['price'] * item['quantity'] ?? 0),
       ];
     }).toList();
     // 3. Add Page
@@ -72,7 +66,7 @@ class PdfReportService {
 
         // --- WATERMARK CONFIGURATION ---
         pageTheme: pw.PageTheme(
-          pageFormat: PdfPageFormat.a4.landscape,
+          pageFormat: PdfPageFormat.a4.portrait,
           margin: const pw.EdgeInsets.all(10),
           theme: theme,
           // Watermark goes here
@@ -86,7 +80,7 @@ class PdfReportService {
                   child: pw.Text(
                     'CONFIDENTIAL',
                     style: pw.TextStyle(
-                      fontSize: 90,
+                      fontSize: 70,
                       fontWeight: pw.FontWeight.bold,
                       color: PdfColors.grey500,
                     ),
@@ -102,7 +96,7 @@ class PdfReportService {
           return [
             _buildHeader(logoBytes),
             pw.SizedBox(height: 20),
-            _buildTable(tableHeaders, tableData, dejaVuSans),
+            _buildTable(tableHeaders, dejaVuSans, tableData),
             pw.SizedBox(height: 20),
             _buildFooter(data, dejaVuSans),
           ];
@@ -120,7 +114,8 @@ class PdfReportService {
   ) async {
     // A. Generate the PDF
     final bytes = await generateStockReport(data, logoBytes);
-    final fileName = 'StockReport_${DateTime.now().microsecondsSinceEpoch}.pdf';
+    final fileName =
+        'products_report_${DateTime.now().microsecondsSinceEpoch}.pdf';
 
     // B. Save to Downloads (Android specific logic vs iOS/Desktop)
     File? downloadsFile;
@@ -201,19 +196,19 @@ class PdfReportService {
   // --- Helper: Table Section ---
   pw.Widget _buildTable(
     List<String> headers,
-    List<List<dynamic>> data,
     dejaVuSans,
+    List<List<dynamic>> data,
   ) {
     return pw.TableHelper.fromTextArray(
       headers: headers,
       data: data,
       border: null, // Clean look without grid lines
+      cellStyle: pw.TextStyle(font: dejaVuSans),
       headerStyle: pw.TextStyle(
         fontWeight: pw.FontWeight.bold,
         color: PdfColors.white,
-        font: dejaVuSans,
       ),
-      cellStyle: pw.TextStyle(font: dejaVuSans),
+
       headerDecoration: const pw.BoxDecoration(color: PdfColors.blue800),
       rowDecoration: const pw.BoxDecoration(
         border: pw.Border(
@@ -241,12 +236,9 @@ class PdfReportService {
   pw.Widget _buildFooter(List<Map<String, dynamic>> data, dejaVuSans) {
     // Calculate Total Sales and Profit
     double totalSales = 0;
-    double totalProfit = 0;
     for (var item in data) {
-      totalSales +=
-          ((item['quantitySold'] * item['sellingPriceUnit']) as num? ?? 0)
-              .toDouble();
-      totalProfit += (item['grossProfit'] as num? ?? 0).toDouble();
+      totalSales += ((item['quantity'] * item['price']) as num? ?? 0)
+          .toDouble();
     }
 
     return pw.Row(
@@ -256,21 +248,19 @@ class PdfReportService {
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
             pw.Text(
-              'Total Sales: ${_formatCurrency(totalSales)}',
-
+              'Total Products Value: ${_formatCurrency(totalSales)}',
               style: pw.TextStyle(
                 fontWeight: pw.FontWeight.bold,
                 font: dejaVuSans,
               ),
             ),
-            pw.Text(
-              'Total Gross Profit: ${_formatCurrency(totalProfit)}',
-              style: pw.TextStyle(
-                fontWeight: pw.FontWeight.bold,
-                color: PdfColors.green700,
-                font: dejaVuSans,
-              ),
-            ),
+            // pw.Text(
+            //   'Total Gross Profit: ${_formatCurrency(totalProfit)}',
+            //   style: pw.TextStyle(
+            //     fontWeight: pw.FontWeight.bold,
+            //     color: PdfColors.green700,
+            //   ),
+            // ),
             pw.SizedBox(height: 10),
             pw.Text(
               'Generated on: ${DateTime.now().toString().split('.')[0]}',

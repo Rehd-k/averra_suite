@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:toastification/toastification.dart';
 import '../../app_router.gr.dart';
 import '../../components/tables/gen_big_table/big_table_source.dart';
+import '../../helpers/products.pdf.dart';
 import '../../service/api.service.dart';
 import '../../service/products.excel.dart';
 import '../../service/token.service.dart';
@@ -25,7 +26,7 @@ class ProductsIndexState extends State<ProductsScreen> {
   final apiService = ApiService();
   final StringBuffer buffer = StringBuffer();
   final TextEditingController _searchController = TextEditingController();
-
+  final pdfProductsService = PdfProductsService();
   final FocusNode _scannerFocusNode = FocusNode();
   final FocusNode _searchFocusNode = FocusNode();
 
@@ -151,6 +152,18 @@ class ProductsIndexState extends State<ProductsScreen> {
     setState(() {
       quntfilter = v;
     });
+  }
+
+  Future<void> handleGetReport() async {
+    var res = await apiService.get('products?limit=0');
+    List<Map<String, dynamic>> data = List<Map<String, dynamic>>.from(
+      res.data['products'],
+    );
+    final ByteData bytes = await rootBundle.load('assets/images/logo.png');
+    final Uint8List logoBytes = bytes.buffer.asUint8List();
+
+    // 3. Execute
+    await pdfProductsService.saveAndShareFile(data, logoBytes);
   }
 
   @override
@@ -298,7 +311,9 @@ class ProductsIndexState extends State<ProductsScreen> {
 
                   if (!smallScreen)
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () async {
+                        await handleGetReport();
+                      },
                       tooltip: 'Generate Report',
                       icon: Icon(Icons.print_outlined),
                     ),
